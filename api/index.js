@@ -34,6 +34,10 @@ app.get("/", (req, res) => {
   res.send("✅ API is running...");
 });
 
+app.listen(process.env.PORT, () => {
+  console.log(`Server is running on port http://localhost:${process.env.PORT}`);
+});
+
 // --- BƯỚC QUAN TRỌNG NHẤT ---
 // Export ứng dụng Express để Vercel có thể sử dụng
 module.exports = app;

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const passport = require("passport");
 
 // Hàm trợ giúp để tạo JWT
 const generateToken = (user) => {
@@ -37,6 +38,45 @@ exports.findOrCreateUser = async (accessToken, refreshToken, profile, done) => {
     done(error, null);
   }
 };
+
+/**
+ * Hàm được Passport-Facebook-Strategy gọi sau khi xác thực thành công.
+ * Tìm user trong CSDL bằng facebookId, nếu không có thì tạo mới.
+ */
+exports.findOrCreateFacebookUser = async (
+  accessToken,
+  refreshToken,
+  profile,
+  done
+) => {
+  try {
+    let user = await User.findOne({ facebookId: profile.id });
+    if (user) return done(null, user);
+
+    const newUser = new User({
+      facebookId: profile.id,
+      fullName: profile.displayName,
+      email: profile.emails?.[0]?.value,
+      picture: profile.photos?.[0]?.value,
+      isVerified: true,
+    });
+    await newUser.save();
+    done(null, newUser);
+  } catch (error) {
+    done(error, null);
+  }
+};
+exports.facebookAuth = passport.authenticate('facebook', { scope: ['email'] });
+
+exports.facebookCallback = [
+  passport.authenticate('facebook', { session: false, failureRedirect: '/' }),
+  (req, res) => {
+    const user = req.user;
+    const token = generateToken(user);
+    const redirectUrl = `${process.env.EXPO_PUBLIC_SCHEME}://auth?token=${token}`;
+    res.redirect(redirectUrl);
+  },
+];
 
 /**
  * Hàm được gọi sau khi passport.authenticate trong route callback thành công.

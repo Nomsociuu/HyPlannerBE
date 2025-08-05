@@ -2,7 +2,7 @@ const passport = require("passport");
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
-const { googleCallback, getMe } = require("../controllers/authController");
+const { googleCallback, getMe, facebookAuth, facebookCallback } = require("../controllers/authController");
 
 router.get(
   "/google",
@@ -17,6 +17,10 @@ router.get(
   }),
   googleCallback
 );
+
+// Facebook OAuth
+router.get('/facebook', facebookAuth);
+router.get('/facebook/callback', facebookCallback);
 
 router.get("/me", protect, getMe);
 

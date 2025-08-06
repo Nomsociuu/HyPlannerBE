@@ -2,7 +2,7 @@ const passport = require("passport");
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
-const { googleCallback, getMe, facebookAuth, facebookCallback } = require("../controllers/authController");
+const { googleCallback, getMe, facebookAuth, facebookCallback, facebookToken } = require("../controllers/authController");
 
 router.get(
   "/google",
@@ -21,7 +21,7 @@ router.get(
 // Facebook OAuth
 router.get('/facebook', facebookAuth);
 router.get('/facebook/callback', facebookCallback);
-
+router.post('/facebook/token', facebookToken);
 router.get("/me", protect, getMe);
 
 module.exports = router;

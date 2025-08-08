@@ -79,8 +79,9 @@ exports.facebookCallback = [
 ];
 exports.facebookToken = async (req, res) => {
   const { access_token } = req.body;
-  if (!access_token)
+  if (!access_token) {
     return res.status(400).json({ message: "No access_token" });
+  }
 
   try {
     // Lấy thông tin user từ Facebook Graph API
@@ -89,25 +90,48 @@ exports.facebookToken = async (req, res) => {
     );
     const profile = fbRes.data;
 
-    // Tìm hoặc tạo user
-    let user = await User.findOne({ facebookId: profile.id });
-    if (!user) {
+    // Nếu Facebook không trả về email, không thể tiếp tục
+    if (!profile.email) {
+      return res
+        .status(400)
+        .json({ message: "Facebook did not return an email address." });
+    }
+
+    // <<< THAY ĐỔI QUAN TRỌNG BẮT ĐẦU TỪ ĐÂY >>>
+
+    // Tìm người dùng bằng EMAIL, không phải facebookId
+    let user = await User.findOne({ email: profile.email });
+
+    if (user) {
+      // Người dùng đã tồn tại (có thể đã đăng ký bằng Google hoặc email)
+      // Chúng ta sẽ cập nhật facebookId nếu nó chưa được liên kết
+      if (!user.facebookId) {
+        user.facebookId = profile.id;
+        // Bạn cũng có thể cập nhật ảnh đại diện mới nhất từ Facebook
+        user.picture = profile.picture?.data?.url;
+        await user.save();
+      }
+    } else {
+      // Người dùng chưa tồn tại -> tạo một người dùng hoàn toàn mới
       user = new User({
         facebookId: profile.id,
         fullName: profile.name,
         email: profile.email,
         picture: profile.picture?.data?.url,
-        isVerified: true,
+        isVerified: true, // Email từ Facebook được coi là đã xác thực
       });
       await user.save();
     }
 
-    // Tạo JWT
+    // <<< KẾT THÚC THAY ĐỔI QUAN TRỌNG >>>
+
+    // Tạo JWT cho người dùng (dù là cũ hay mới)
     const token = generateToken({
       id: user._id,
       name: user.fullName,
       email: user.email,
     });
+
     res.json({
       token,
       user: {
@@ -122,7 +146,14 @@ exports.facebookToken = async (req, res) => {
       "Facebook token login error:",
       error?.response?.data || error
     );
-    res.status(401).json({ message: "Invalid Facebook access token" });
+    // Phân biệt lỗi do token FB sai và lỗi server
+    if (error.isAxiosError) {
+      return res
+        .status(401)
+        .json({ message: "Invalid or expired Facebook access token" });
+    }
+    // Gửi lỗi chung nếu có vấn đề khác (ví dụ: lỗi database)
+    res.status(500).json({ message: "An internal server error occurred." });
   }
 };
 /**

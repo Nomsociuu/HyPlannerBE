@@ -1,6 +1,7 @@
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 const User = require("../models/User"); // Cần import User model
-const { findOrCreateUser } = require("../controllers/authController");
+const { findOrCreateUser, findOrCreateFacebookUser } = require("../controllers/authController");
 
 const configurePassport = (passport) => {
   // Cấu hình chiến lược Google OAuth
@@ -29,6 +30,19 @@ const configurePassport = (passport) => {
       done(error, null);
     }
   });
+
+  // Cấu hình chiến lược Facebook OAuth
+  passport.use(
+    new FacebookStrategy(
+      {
+        clientID: process.env.FACEBOOK_APP_ID,
+        clientSecret: process.env.FACEBOOK_APP_SECRET,
+        callbackURL: "/auth/facebook/callback",
+        profileFields: ["id", "displayName", "emails", "photos"],
+      },
+      findOrCreateFacebookUser // Hàm xử lý logic sau khi xác thực thành công
+    )
+  );
 };
 
 module.exports = configurePassport;

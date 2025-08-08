@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-
+const passport = require("passport");
+const axios = require("axios");
 // Hàm trợ giúp để tạo JWT
 const generateToken = (user) => {
   const payload = { id: user._id, name: user.fullName, email: user.email };
@@ -38,6 +39,92 @@ exports.findOrCreateUser = async (accessToken, refreshToken, profile, done) => {
   }
 };
 
+/**
+ * Hàm được Passport-Facebook-Strategy gọi sau khi xác thực thành công.
+ * Tìm user trong CSDL bằng facebookId, nếu không có thì tạo mới.
+ */
+exports.findOrCreateFacebookUser = async (
+  accessToken,
+  refreshToken,
+  profile,
+  done
+) => {
+  try {
+    let user = await User.findOne({ facebookId: profile.id });
+    if (user) return done(null, user);
+
+    const newUser = new User({
+      facebookId: profile.id,
+      fullName: profile.displayName,
+      email: profile.emails?.[0]?.value,
+      picture: profile.photos?.[0]?.value,
+      isVerified: true,
+    });
+    await newUser.save();
+    done(null, newUser);
+  } catch (error) {
+    done(error, null);
+  }
+};
+exports.facebookAuth = passport.authenticate("facebook", { scope: ["email"] });
+
+exports.facebookCallback = [
+  passport.authenticate("facebook", { session: false, failureRedirect: "/" }),
+  (req, res) => {
+    const user = req.user;
+    const token = generateToken(user);
+    const redirectUrl = `${process.env.EXPO_PUBLIC_SCHEME}://auth?token=${token}`;
+    res.redirect(redirectUrl);
+  },
+];
+exports.facebookToken = async (req, res) => {
+  const { access_token } = req.body;
+  if (!access_token)
+    return res.status(400).json({ message: "No access_token" });
+
+  try {
+    // Lấy thông tin user từ Facebook Graph API
+    const fbRes = await axios.get(
+      `https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token=${access_token}`
+    );
+    const profile = fbRes.data;
+
+    // Tìm hoặc tạo user
+    let user = await User.findOne({ facebookId: profile.id });
+    if (!user) {
+      user = new User({
+        facebookId: profile.id,
+        fullName: profile.name,
+        email: profile.email,
+        picture: profile.picture?.data?.url,
+        isVerified: true,
+      });
+      await user.save();
+    }
+
+    // Tạo JWT
+    const token = generateToken({
+      id: user._id,
+      name: user.fullName,
+      email: user.email,
+    });
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.fullName,
+        email: user.email,
+        picture: user.picture,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Facebook token login error:",
+      error?.response?.data || error
+    );
+    res.status(401).json({ message: "Invalid Facebook access token" });
+  }
+};
 /**
  * Hàm được gọi sau khi passport.authenticate trong route callback thành công.
  * Tạo JWT và chuyển hướng người dùng về ứng dụng client (Expo) với token.

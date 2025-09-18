@@ -9,7 +9,13 @@ exports.getAllPhases = async (req, res) => {
     // Lấy wedding event và populate phases
     const event = await weddingEvent.findById(eventId).populate({
       path: "phases",
-      populate: { path: "tasks" } // nếu muốn lấy luôn tasks trong mỗi phase
+      populate: {
+        path: "tasks",
+        populate: {
+          path: "member",
+          select: "-password",
+        },
+      }, 
     });
 
     if (!event) {
@@ -48,11 +54,13 @@ exports.createPhase = async (req, res) => {
     const savedPhase = await newPhase.save();
 
     // Thêm phase vào event tương ứng
-    const updatedEvent = await weddingEvent.findByIdAndUpdate(
-      eventId,
-      { $push: { phases: savedPhase._id } },
-      { new: true }
-    ).populate("phases");
+    const updatedEvent = await weddingEvent
+      .findByIdAndUpdate(
+        eventId,
+        { $push: { phases: savedPhase._id } },
+        { new: true }
+      )
+      .populate("phases");
 
     if (!updatedEvent) {
       // Nếu event không tồn tại, xóa phase vừa tạo để tránh rác
@@ -65,7 +73,6 @@ exports.createPhase = async (req, res) => {
     res.status(500).json({ message: "Error creating phase" });
   }
 };
-
 
 // chưa sử dụng hiện tại nhưng sẽ sử dụng trong tương lai
 // exports.addTaskToPhase = async (req, res) => {

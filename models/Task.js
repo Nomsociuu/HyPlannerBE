@@ -9,6 +9,14 @@ const taskSchema = new mongoose.Schema(
     taskNote: {
       type: String,
     },
+    expectedBudget: {
+      type: Number,
+      required: true,
+    },
+    actualBudget: {
+      type: Number,
+      default: 0,
+    },
     member: {
       type: [
         {

@@ -17,8 +17,8 @@ exports.getAllWeddingEvents = async (req, res) => {
 // POST http://localhost:8082/weddingEvents/createWeddingEvent
 exports.createWeddingEvent = async (req, res) => {
   try {
-    const { creatorId, brideName, groomName, timeToMarried } = req.body;
-    if (!creatorId || !brideName || !groomName || !timeToMarried) {
+    const { creatorId, brideName, groomName, budget, timeToMarried } = req.body;
+    if (!creatorId || !brideName || !groomName || !budget || !timeToMarried) {
       return res
         .status(400)
         .json({ message: "Please provide all required fields" });
@@ -32,6 +32,7 @@ exports.createWeddingEvent = async (req, res) => {
       creatorId,
       brideName,
       groomName,
+      budget,
       timeToMarried,
       member: [creatorId], // Thêm người tạo vào danh sách thành viên
       phases: [],

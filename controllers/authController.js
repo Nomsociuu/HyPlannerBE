@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const passport = require("passport");
 const axios = require("axios");
-const bcrypt = require("bcryptjs");
 // Hàm trợ giúp để tạo JWT
 const generateToken = (user) => {
   const payload = { id: user._id, name: user.fullName, email: user.email };
@@ -194,40 +193,34 @@ exports.getMe = (req, res) => {
 };
 
 /**
- * @desc    Đăng ký người dùng mới bằng email và mật khẩu
- * @route   POST /api/auth/register
- * @access  Public
+ * @desc    Đăng ký người dùng mới (ĐÃ REFACTOR)
  */
 exports.registerUser = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // 1. Kiểm tra dữ liệu đầu vào
-    if (!fullName || !email || !password) {
+    if (!fullName || !normalizedEmail || !password) {
       return res
         .status(400)
         .json({ message: "Vui lòng nhập đầy đủ thông tin." });
     }
 
-    // 2. Kiểm tra email đã tồn tại chưa
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({ message: "Email này đã được sử dụng." });
     }
 
-    // 3. Mã hóa mật khẩu
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // XÓA BỎ LOGIC MÃ HÓA TẠI ĐÂY
 
-    // 4. Tạo người dùng mới
     const newUser = new User({
       fullName,
-      email,
-      password: hashedPassword, // Lưu mật khẩu đã mã hóa
+      email: normalizedEmail,
+      password: password, // <-- Truyền thẳng mật khẩu thô. Model sẽ tự mã hóa.
     });
+
     await newUser.save();
 
-    // 5. Tạo JWT và trả về cho client
     const token = generateToken(newUser);
     res.status(201).json({
       token,
@@ -245,18 +238,12 @@ exports.registerUser = async (req, res) => {
 };
 
 /**
- * @desc    Đăng nhập người dùng bằng email và mật khẩu
- * @route   POST /api/auth/login
- * @access  Public
+ * @desc    Đăng nhập người dùng (ĐÃ REFACTOR)
  */
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const normalizedEmail = email.toLowerCase().trim();
-
-    console.log("--- BẮT ĐẦU ĐĂNG NHẬP ---");
-    console.log("Email nhận được từ request:", normalizedEmail);
-    console.log("Password nhận được từ request:", password);
 
     if (!normalizedEmail || !password) {
       return res
@@ -266,31 +253,8 @@ exports.loginUser = async (req, res) => {
 
     const user = await User.findOne({ email: normalizedEmail });
 
-    if (!user) {
-      console.log("Lỗi: Không tìm thấy user với email này.");
-      return res
-        .status(401)
-        .json({ message: "Email hoặc mật khẩu không chính xác." });
-    }
-
-    console.log("User tìm thấy trong DB:", user);
-    console.log("Password đã mã hóa trong DB:", user.password);
-
-    if (!user.password) {
-      console.log(
-        "Lỗi: User này không có mật khẩu (có thể đã đăng ký qua Google/Facebook)."
-      );
-      return res
-        .status(401)
-        .json({ message: "Tài khoản này không có mật khẩu." });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    console.log("Kết quả so sánh mật khẩu (isMatch):", isMatch);
-    console.log("--- KẾT THÚC ĐĂNG NHẬP ---");
-
-    if (isMatch) {
+    // Dùng phương thức user.matchPassword đã tạo trong model
+    if (user && (await user.matchPassword(password))) {
       const token = generateToken(user);
       res.status(200).json({
         token,

@@ -252,20 +252,45 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // 1. Kiểm tra dữ liệu đầu vào
-    if (!email || !password) {
+    console.log("--- BẮT ĐẦU ĐĂNG NHẬP ---");
+    console.log("Email nhận được từ request:", normalizedEmail);
+    console.log("Password nhận được từ request:", password);
+
+    if (!normalizedEmail || !password) {
       return res
         .status(400)
         .json({ message: "Vui lòng nhập email và mật khẩu." });
     }
 
-    // 2. Tìm người dùng trong CSDL
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
-    // 3. Nếu tìm thấy user, so sánh mật khẩu
-    if (user && (await bcrypt.compare(password, user.password))) {
-      // Mật khẩu khớp -> Tạo JWT và trả về
+    if (!user) {
+      console.log("Lỗi: Không tìm thấy user với email này.");
+      return res
+        .status(401)
+        .json({ message: "Email hoặc mật khẩu không chính xác." });
+    }
+
+    console.log("User tìm thấy trong DB:", user);
+    console.log("Password đã mã hóa trong DB:", user.password);
+
+    if (!user.password) {
+      console.log(
+        "Lỗi: User này không có mật khẩu (có thể đã đăng ký qua Google/Facebook)."
+      );
+      return res
+        .status(401)
+        .json({ message: "Tài khoản này không có mật khẩu." });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log("Kết quả so sánh mật khẩu (isMatch):", isMatch);
+    console.log("--- KẾT THÚC ĐĂNG NHẬP ---");
+
+    if (isMatch) {
       const token = generateToken(user);
       res.status(200).json({
         token,
@@ -277,7 +302,6 @@ exports.loginUser = async (req, res) => {
         },
       });
     } else {
-      // User không tồn tại hoặc sai mật khẩu
       return res
         .status(401)
         .json({ message: "Email hoặc mật khẩu không chính xác." });

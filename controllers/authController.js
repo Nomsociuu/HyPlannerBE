@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const passport = require("passport");
 const axios = require("axios");
+const bcrypt = require("bcryptjs");
 // Hàm trợ giúp để tạo JWT
 const generateToken = (user) => {
   const payload = { id: user._id, name: user.fullName, email: user.email };
@@ -190,4 +191,99 @@ exports.googleCallback = (req, res) => {
 exports.getMe = (req, res) => {
   // `req.user` đã được middleware `protect` gắn vào
   res.status(200).json(req.user);
+};
+
+/**
+ * @desc    Đăng ký người dùng mới bằng email và mật khẩu
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
+exports.registerUser = async (req, res) => {
+  try {
+    const { fullName, email, password } = req.body;
+
+    // 1. Kiểm tra dữ liệu đầu vào
+    if (!fullName || !email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ thông tin." });
+    }
+
+    // 2. Kiểm tra email đã tồn tại chưa
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "Email này đã được sử dụng." });
+    }
+
+    // 3. Mã hóa mật khẩu
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 4. Tạo người dùng mới
+    const newUser = new User({
+      fullName,
+      email,
+      password: hashedPassword, // Lưu mật khẩu đã mã hóa
+    });
+    await newUser.save();
+
+    // 5. Tạo JWT và trả về cho client
+    const token = generateToken(newUser);
+    res.status(201).json({
+      token,
+      user: {
+        id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        picture: newUser.picture,
+      },
+    });
+  } catch (error) {
+    console.error("Register Error:", error);
+    res.status(500).json({ message: "Lỗi máy chủ." });
+  }
+};
+
+/**
+ * @desc    Đăng nhập người dùng bằng email và mật khẩu
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // 1. Kiểm tra dữ liệu đầu vào
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập email và mật khẩu." });
+    }
+
+    // 2. Tìm người dùng trong CSDL
+    const user = await User.findOne({ email });
+
+    // 3. Nếu tìm thấy user, so sánh mật khẩu
+    if (user && (await bcrypt.compare(password, user.password))) {
+      // Mật khẩu khớp -> Tạo JWT và trả về
+      const token = generateToken(user);
+      res.status(200).json({
+        token,
+        user: {
+          id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          picture: user.picture,
+        },
+      });
+    } else {
+      // User không tồn tại hoặc sai mật khẩu
+      return res
+        .status(401)
+        .json({ message: "Email hoặc mật khẩu không chính xác." });
+    }
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ message: "Lỗi máy chủ." });
+  }
 };

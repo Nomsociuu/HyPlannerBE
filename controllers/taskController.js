@@ -8,7 +8,7 @@ exports.getAllTasks = async (req, res) => {
     // Lấy phase và populate tasks
     const phaseDoc = await phase.findById(phaseId).populate({
       path: "tasks",
-      populate: { path: "member", select: "fullName email" } // nếu muốn lấy thông tin member
+      populate: { path: "member", select: "fullName email" }, // nếu muốn lấy thông tin member
     });
 
     if (!phaseDoc) {
@@ -87,8 +87,9 @@ exports.markCompleted = async (req, res) => {
 
     res.json({
       task: updatedTask,
-      message: `Đánh dấu công việc là ${completed ? "hoàn thành" : "chưa hoàn thành"
-        }`,
+      message: `Đánh dấu công việc là ${
+        completed ? "hoàn thành" : "chưa hoàn thành"
+      }`,
     });
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi cập nhật trạng thái công việc" });
@@ -103,14 +104,13 @@ exports.updateTask = async (req, res) => {
   if (taskName !== undefined) updateFields.taskName = taskName;
   if (taskNote !== undefined) updateFields.taskNote = taskNote;
   if (member !== undefined) updateFields.member = member;
-  if (expectedBudget !== undefined) updateFields.expectedBudget = expectedBudget;
+  if (expectedBudget !== undefined)
+    updateFields.expectedBudget = expectedBudget;
   if (actualBudget !== undefined) updateFields.actualBudget = actualBudget;
   try {
-    const updatedTask = await task.findByIdAndUpdate(
-      taskId,
-      updateFields,
-      { new: true }
-    );
+    const updatedTask = await task.findByIdAndUpdate(taskId, updateFields, {
+      new: true,
+    });
 
     if (!updatedTask) {
       return res.status(404).json({ message: "Công việc không tồn tại" });
@@ -134,9 +134,10 @@ exports.deleteTask = async (req, res) => {
     }
 
     // Xóa task khỏi mảng tasks trong Phase
-    await phase.findByIdAndUpdate(deletedTask.phase, {
-      $pull: { tasks: deletedTask._id },
-    });
+    await phase.updateMany(
+      { tasks: deletedTask._id },
+      { $pull: { tasks: deletedTask._id } }
+    );
 
     res.json({ message: "Xóa công việc thành công" });
   } catch (error) {

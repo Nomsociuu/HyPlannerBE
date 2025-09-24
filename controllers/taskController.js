@@ -99,10 +99,16 @@ exports.markCompleted = async (req, res) => {
 exports.updateTask = async (req, res) => {
   const { taskId } = req.params;
   const { taskName, taskNote, member, expectedBudget, actualBudget } = req.body;
+  const updateFields = {};
+  if (taskName !== undefined) updateFields.taskName = taskName;
+  if (taskNote !== undefined) updateFields.taskNote = taskNote;
+  if (member !== undefined) updateFields.member = member;
+  if (expectedBudget !== undefined) updateFields.expectedBudget = expectedBudget;
+  if (actualBudget !== undefined) updateFields.actualBudget = actualBudget;
   try {
     const updatedTask = await task.findByIdAndUpdate(
       taskId,
-      { taskName, taskNote, member, expectedBudget, actualBudget },
+      updateFields,
       { new: true }
     );
 

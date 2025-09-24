@@ -11,7 +11,7 @@ const taskSchema = new mongoose.Schema(
     },
     expectedBudget: {
       type: Number,
-      required: true,
+      default: 0,
     },
     actualBudget: {
       type: Number,

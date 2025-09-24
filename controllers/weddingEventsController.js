@@ -49,7 +49,14 @@ exports.createWeddingEvent = async (req, res) => {
 exports.getUserWeddingEvents = async (req, res) => {
   try {
     const { userId } = req.params;
-    const events = await weddingEvent.findOne({ creatorId: userId }).populate("member", "-password");
+    const events = await weddingEvent
+      .findOne({
+        $or: [
+          { creatorId: userId },
+          { member: userId },
+        ],
+      })
+      .populate("member", "-password");
     res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -86,11 +93,9 @@ exports.joinWeddingEvent = async (req, res) => {
   try {
     const event = await weddingEvent.findById(eventId);
     if (!event) {
-      return res
-        .status(404)
-        .json({
-          message: "Sự kiện cưới không tồn tại. Hãy kiểm tra lại mã mời",
-        });
+      return res.status(404).json({
+        message: "Sự kiện cưới không tồn tại. Hãy kiểm tra lại mã mời",
+      });
     }
 
     // Kiểm tra nếu user đã là thành viên
@@ -137,7 +142,7 @@ exports.leaveWeddingEvent = async (req, res) => {
         .status(400)
         .json({ message: "Người tạo không thể rời khỏi sự kiện" });
     }
-    
+
     event.member.pull(userId);
     await event.save();
 

@@ -37,7 +37,7 @@ exports.getTask = async (req, res) => {
 // POST: http://localhost:8082/tasks/createTask/phaseId
 exports.createTask = async (req, res) => {
   const { phaseId } = req.params;
-  const { taskName, taskNote, member, expectedBudget, actualBudget } = req.body;
+  const { taskName, taskNote, member } = req.body;
   if (!taskName) {
     return res
       .status(400)
@@ -50,8 +50,6 @@ exports.createTask = async (req, res) => {
       taskNote,
       member,
       phase: phaseId,
-      expectedBudget,
-      actualBudget,
     });
 
     const savedTask = await newTask.save();
@@ -99,18 +97,20 @@ exports.markCompleted = async (req, res) => {
 // PUT: http://localhost:8082/tasks/updateTask/taskId
 exports.updateTask = async (req, res) => {
   const { taskId } = req.params;
-  const { taskName, taskNote, member, expectedBudget, actualBudget } = req.body;
-  const updateFields = {};
-  if (taskName !== undefined) updateFields.taskName = taskName;
-  if (taskNote !== undefined) updateFields.taskNote = taskNote;
-  if (member !== undefined) updateFields.member = member;
-  if (expectedBudget !== undefined)
-    updateFields.expectedBudget = expectedBudget;
-  if (actualBudget !== undefined) updateFields.actualBudget = actualBudget;
+  const { taskName, taskNote, member } = req.body;
+
   try {
-    const updatedTask = await task.findByIdAndUpdate(taskId, updateFields, {
-      new: true,
-    });
+    const updatedTask = await task.findByIdAndUpdate(
+      taskId,
+      {
+        taskName,
+        taskNote,
+        member,
+      },
+      {
+        new: true,
+      }
+    );
 
     if (!updatedTask) {
       return res.status(404).json({ message: "Công việc không tồn tại" });

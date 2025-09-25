@@ -36,6 +36,7 @@ exports.createWeddingEvent = async (req, res) => {
       timeToMarried,
       member: [creatorId], // Thêm người tạo vào danh sách thành viên
       phases: [],
+      groupActivities: [],
     });
     await newWeddingEvent.save();
     res.status(201).json({ message: "Wedding event created", newWeddingEvent });

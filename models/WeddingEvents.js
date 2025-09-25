@@ -35,6 +35,12 @@ const weddingEventSchema = new mongoose.Schema(
         ref: "phase",
       },
     ],
+    groupActivities: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "groupActivity",
+      },
+    ],
   },
   { collection: "weddingEvents", timestamps: true }
 );

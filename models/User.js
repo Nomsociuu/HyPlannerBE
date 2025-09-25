@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema({
   changeEmailOtpExpires: { type: Date }, // Thời gian hết hạn của OTP
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Mã hóa mật khẩu trước khi lưu

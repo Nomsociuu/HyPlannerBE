@@ -16,6 +16,7 @@ const {
   forgotPassword,
   verifyPasswordResetOtp,
   resetPassword,
+  verifyEmail,
 } = require("../controllers/authController");
 
 router.get(
@@ -40,6 +41,7 @@ router.get("/me", protect, getMe);
 
 //Normal login
 router.post("/register", registerUser);
+router.post("/verify-email", verifyEmail);
 router.post("/login", loginUser);
 
 //user profile

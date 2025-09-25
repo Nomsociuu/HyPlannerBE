@@ -198,47 +198,104 @@ exports.getMe = (req, res) => {
 /**
  * @desc    Đăng ký người dùng mới (ĐÃ REFACTOR)
  */
-exports.registerUser = async (req, res) => {
-  try {
-    const { fullName, email, password } = req.body;
-    const normalizedEmail = email.toLowerCase().trim();
+exports.registerUser = asyncHandler(async (req, res) => {
+  const { fullName, email, password } = req.body;
 
-    if (!fullName || !normalizedEmail || !password) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng nhập đầy đủ thông tin." });
-    }
-
-    const userExists = await User.findOne({ email: normalizedEmail });
-    if (userExists) {
-      return res.status(400).json({ message: "Email này đã được sử dụng." });
-    }
-
-    // XÓA BỎ LOGIC MÃ HÓA TẠI ĐÂY
-
-    const newUser = new User({
-      fullName,
-      email: normalizedEmail,
-      password: password, // <-- Truyền thẳng mật khẩu thô. Model sẽ tự mã hóa.
-    });
-
-    await newUser.save();
-
-    const token = generateToken(newUser);
-    res.status(201).json({
-      token,
-      user: {
-        id: newUser._id,
-        fullName: newUser.fullName,
-        email: newUser.email,
-        picture: newUser.picture,
-      },
-    });
-  } catch (error) {
-    console.error("Register Error:", error);
-    res.status(500).json({ message: "Lỗi máy chủ." });
+  // 1. Validation cơ bản
+  if (!fullName || !email || !password) {
+    res.status(400);
+    throw new Error("Vui lòng nhập đầy đủ thông tin.");
   }
-};
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const userExists = await User.findOne({ email: normalizedEmail });
+
+  // 2. Xử lý logic người dùng tồn tại
+  // Nếu user đã tồn tại VÀ đã được xác thực -> Báo lỗi
+  if (userExists && userExists.isVerified) {
+    res.status(400);
+    throw new Error("Email này đã được sử dụng.");
+  }
+
+  // Nếu user tồn tại nhưng CHƯA xác thực, ta sẽ dùng lại bản ghi đó.
+  // Nếu không, tạo một bản ghi mới.
+  const user = userExists || new User({ fullName, email: normalizedEmail });
+
+  // Chỉ gán mật khẩu cho người dùng mới hoàn toàn
+  if (!userExists) {
+    user.password = password;
+  }
+
+  // 3. Tạo và lưu OTP
+  const otp = crypto.randomInt(100000, 999999).toString();
+  user.otp = otp;
+  user.otpExpires = Date.now() + 10 * 60 * 1000; // OTP có hiệu lực 10 phút
+
+  // Đảm bảo trạng thái isVerified là false
+  user.isVerified = false;
+
+  await user.save();
+
+  // 4. Gửi email chứa OTP
+  const message = `Chào mừng bạn đến với HyPlanner! Mã xác thực đăng ký của bạn là: ${otp}. Mã này sẽ hết hạn sau 10 phút.`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Xác thực tài khoản HyPlanner",
+      message,
+    });
+
+    // 5. Trả về thông báo thành công (KHÔNG trả về token)
+    res.status(200).json({
+      success: true,
+      message:
+        "Mã xác thực đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.",
+    });
+  } catch (err) {
+    // Nếu gửi email thất bại, xóa OTP đã lưu để người dùng có thể thử lại
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    console.error("Email sending error:", err);
+    res.status(500);
+    throw new Error("Lỗi xảy ra khi gửi email xác thực, vui lòng thử lại.");
+  }
+});
+
+// === HÀM MỚI: XÁC THỰC EMAIL SAU KHI ĐĂNG KÝ ===
+exports.verifyEmail = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({
+    email,
+    otp,
+    otpExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error("Mã OTP không hợp lệ hoặc đã hết hạn.");
+  }
+
+  // Nếu OTP đúng -> xác thực user và đăng nhập
+  user.isVerified = true;
+  user.otp = undefined;
+  user.otpExpires = undefined;
+  await user.save();
+
+  // Trả về token và thông tin user để app tự động đăng nhập
+  res.status(200).json({
+    token: generateToken(user),
+    user: {
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      picture: user.picture,
+    },
+  });
+});
 
 /**
  * @desc    Đăng nhập người dùng (ĐÃ REFACTOR)

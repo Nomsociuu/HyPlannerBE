@@ -16,6 +16,9 @@ const UserSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   otp: { type: String },
   otpExpires: { type: Date },
+  pendingEmail: { type: String }, // Để lưu email mới đang chờ xác thực
+  changeEmailOtp: { type: String }, // Mã OTP để đổi email
+  changeEmailOtpExpires: { type: Date }, // Thời gian hết hạn của OTP
 });
 
 // Mã hóa mật khẩu trước khi lưu

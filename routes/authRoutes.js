@@ -11,6 +11,8 @@ const {
   registerUser,
   loginUser,
   updateUserProfile,
+  requestEmailChange,
+  verifyEmailChange,
 } = require("../controllers/authController");
 
 router.get(
@@ -39,5 +41,6 @@ router.post("/login", loginUser);
 
 //user profile
 router.put("/profile", protect, updateUserProfile);
-
+router.post("/change-email/request", protect, requestEmailChange);
+router.post("/change-email/verify", protect, verifyEmailChange);
 module.exports = router;

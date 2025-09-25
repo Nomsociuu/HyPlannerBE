@@ -1,4 +1,5 @@
 const weddingEvent = require("../models/WeddingEvents");
+const mongoose = require("mongoose");
 const phase = require("../models/Phase");
 const Hashids = require("hashids/cjs");
 const hashids = new Hashids(process.env.SECRET_KEY_SALT, 6);

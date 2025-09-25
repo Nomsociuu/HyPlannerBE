@@ -10,6 +10,7 @@ const {
   facebookToken,
   registerUser,
   loginUser,
+  updateUserProfile,
 } = require("../controllers/authController");
 
 router.get(
@@ -35,5 +36,8 @@ router.get("/me", protect, getMe);
 //Normal login
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+
+//user profile
+router.put("/profile", protect, updateUserProfile);
 
 module.exports = router;

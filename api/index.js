@@ -7,8 +7,11 @@ const session = require("express-session");
 const phaseRoutes = require("../routes/phaseRoutes");
 const taskRoutes = require("../routes/taskRoutes");
 const weddingEventRoutes = require("../routes/weddingEventsRoutes");
+const weddingCostumeRoutes = require("../routes/weddingCostumeRoutes");
+const userSelectionRoutes = require("../routes/userSelectionRoutes");
 const groupActivityRoutes = require("../routes/groupActivityRoutes");
 const activityRoutes = require("../routes/activityRoutes");
+const authRoutes = require("../routes/authRoutes");
 require("dotenv").config();
 
 const connectDB = require("../config/db");
@@ -34,13 +37,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 4. Routes
-app.use("/auth", require("../routes/authRoutes"));
+app.use("/auth", authRoutes);
 app.get("/", (req, res) => {
   res.send("✅ API is running...");
 });
 app.use("/phases", phaseRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/weddingEvents", weddingEventRoutes);
+app.use("/wedding-costume", weddingCostumeRoutes);
+app.use("/user", userSelectionRoutes);
 app.use("/groupActivities", groupActivityRoutes);
 app.use("/activities", activityRoutes);
 

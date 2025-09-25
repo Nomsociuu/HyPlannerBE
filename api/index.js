@@ -7,6 +7,8 @@ const session = require("express-session");
 const phaseRoutes = require("../routes/phaseRoutes");
 const taskRoutes = require("../routes/taskRoutes");
 const weddingEventRoutes = require("../routes/weddingEventsRoutes");
+const groupActivityRoutes = require("../routes/groupActivityRoutes");
+const activityRoutes = require("../routes/activityRoutes");
 require("dotenv").config();
 
 const connectDB = require("../config/db");

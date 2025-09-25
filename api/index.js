@@ -39,6 +39,8 @@ app.get("/", (req, res) => {
 app.use("/phases", phaseRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/weddingEvents", weddingEventRoutes);
+app.use("/groupActivities", groupActivityRoutes);
+app.use("/activities", activityRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port http://localhost:${process.env.PORT}`);

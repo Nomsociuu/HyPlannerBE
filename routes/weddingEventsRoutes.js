@@ -20,6 +20,10 @@ routes.post("/addMember", weddingEventsController.joinWeddingEvent);
 
 routes.post("/leaveWeddingEvent", weddingEventsController.leaveWeddingEvent);
 
-routes.get("/check-user", weddingEventsController.checkUserInEvent);
+routes.get(
+  "/check-user",
+  authMiddleware.protect,
+  weddingEventsController.checkUserInEvent
+);
 
 module.exports = routes;

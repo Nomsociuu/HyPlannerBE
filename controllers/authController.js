@@ -3,6 +3,8 @@ const User = require("../models/User");
 const passport = require("passport");
 const axios = require("axios");
 const asyncHandler = require("express-async-handler");
+const sendEmail = require("../utils/sendEmail");
+const crypto = require("crypto");
 // Hàm trợ giúp để tạo JWT
 const generateToken = (user) => {
   const payload = { id: user._id, name: user.fullName, email: user.email };
@@ -323,6 +325,88 @@ exports.updateUserProfile = asyncHandler(async (req, res) => {
 
   const updatedUser = await user.save();
 
+  res.json({
+    _id: updatedUser._id,
+    fullName: updatedUser.fullName,
+    email: updatedUser.email,
+    picture: updatedUser.picture,
+  });
+});
+
+/**
+ * @desc    YÊU CẦU ĐỔI EMAIL
+ * @route   POST auth/change-email/request
+ * @access  Private
+ */
+exports.requestEmailChange = asyncHandler(async (req, res) => {
+  const { newEmail } = req.body;
+  const user = await User.findById(req.user._id);
+
+  // Kiểm tra email mới có bị trùng không
+  const emailExists = await User.findOne({ email: newEmail });
+  if (emailExists) {
+    res.status(400);
+    throw new Error("Email này đã được sử dụng");
+  }
+
+  // Tạo OTP
+  const otp = crypto.randomInt(100000, 999999).toString();
+
+  // Lưu OTP và email chờ vào user
+  user.pendingEmail = newEmail;
+  user.changeEmailOtp = otp;
+  user.changeEmailOtpExpires = Date.now() + 10 * 60 * 1000; // 10 phút
+  await user.save();
+
+  // Gửi email
+  const message = `Mã xác thực để thay đổi email của bạn là: ${otp}. Mã này sẽ hết hạn sau 10 phút.`;
+  try {
+    await sendEmail({
+      email: newEmail,
+      subject: "Mã xác thực thay đổi Email",
+      message,
+    });
+    res
+      .status(200)
+      .json({ success: true, message: "OTP đã được gửi đến email mới." });
+  } catch (err) {
+    console.error(err);
+    user.changeEmailOtp = undefined;
+    user.changeEmailOtpExpires = undefined;
+    user.pendingEmail = undefined;
+    await user.save();
+    throw new Error("Lỗi gửi email, vui lòng thử lại.");
+  }
+});
+
+/**
+ * @desc    XÁC THỰC OTP VÀ ĐỔI EMAIL
+ * @route   POST auth/change-email/verify
+ * @access  Private
+ */
+exports.verifyEmailChange = asyncHandler(async (req, res) => {
+  const { otp } = req.body;
+  const user = await User.findById(req.user._id);
+
+  // Kiểm tra OTP
+  if (
+    !user.pendingEmail ||
+    user.changeEmailOtp !== otp ||
+    user.changeEmailOtpExpires < Date.now()
+  ) {
+    res.status(400);
+    throw new Error("Mã OTP không hợp lệ hoặc đã hết hạn.");
+  }
+
+  // Cập nhật email thành công
+  user.email = user.pendingEmail;
+  user.pendingEmail = undefined;
+  user.changeEmailOtp = undefined;
+  user.changeEmailOtpExpires = undefined;
+
+  const updatedUser = await user.save();
+
+  // Trả về user đã cập nhật để redux có thể update
   res.json({
     _id: updatedUser._id,
     fullName: updatedUser.fullName,

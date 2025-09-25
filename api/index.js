@@ -24,7 +24,12 @@ connectDB();
 
 configurePassport(passport);
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "*", // Hoặc chỉ định domain của frontend để an toàn hơn
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  })
+);
 app.use(express.json());
 app.use(
   session({

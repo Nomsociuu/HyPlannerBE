@@ -13,6 +13,9 @@ const {
   updateUserProfile,
   requestEmailChange,
   verifyEmailChange,
+  forgotPassword,
+  verifyPasswordResetOtp,
+  resetPassword,
 } = require("../controllers/authController");
 
 router.get(
@@ -43,4 +46,8 @@ router.post("/login", loginUser);
 router.put("/profile", protect, updateUserProfile);
 router.post("/change-email/request", protect, requestEmailChange);
 router.post("/change-email/verify", protect, verifyEmailChange);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyPasswordResetOtp);
+router.post("/reset-password", resetPassword);
+
 module.exports = router;

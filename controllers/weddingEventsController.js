@@ -45,7 +45,6 @@ exports.createWeddingEvent = async (req, res) => {
   }
 };
 
-
 // Get wedding events created by a specific user
 // GET http://localhost:8082/weddingEvents/getUserWeddingEvents/:userId
 exports.getUserWeddingEvents = async (req, res) => {

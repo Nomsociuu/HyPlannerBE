@@ -51,10 +51,7 @@ exports.getUserWeddingEvents = async (req, res) => {
     const { userId } = req.params;
     const events = await weddingEvent
       .findOne({
-        $or: [
-          { creatorId: userId },
-          { member: userId },
-        ],
+        $or: [{ creatorId: userId }, { member: userId }],
       })
       .populate("member", "-password");
     res.status(200).json(events);
@@ -149,5 +146,56 @@ exports.leaveWeddingEvent = async (req, res) => {
     res.status(200).json({ message: "Đã rời khỏi sự kiện cưới", event });
   } catch (error) {
     res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
+  }
+};
+
+/**
+ * @desc   Kiểm tra xem người dùng đã tham gia sự kiện cưới nào chưa
+ * @route  GET /api/wedding-events/check-user
+ * @access Private
+ */
+exports.checkUserInEvent = async (req, res) => {
+  try {
+    // Bước 1: Lấy userId từ session hoặc middleware xác thực (ví dụ: req.user.id)
+    // Giả sử middleware xác thực của bạn đã thêm thông tin user vào `req`
+    if (!req.user || !req.user.id) {
+      return res
+        .status(401)
+        .json({ message: "Không được phép, vui lòng đăng nhập lại." });
+    }
+    const userId = req.user.id;
+
+    // Bước 2: Xây dựng query để tìm kiếm
+    // Sử dụng toán tử $or để tìm trong cả hai trường hợp:
+    // 1. userId trùng với creatorId
+    // 2. userId tồn tại trong mảng `member`
+    const query = {
+      $or: [
+        { creatorId: new mongoose.Types.ObjectId(userId) },
+        { member: new mongoose.Types.ObjectId(userId) },
+      ],
+    };
+
+    // Bước 3: Thực thi query và tìm một sự kiện duy nhất
+    // findOne sẽ trả về sự kiện đầu tiên tìm thấy hoặc null
+    const weddingEvent = await weddingEvent.findOne(query);
+
+    // Bước 4: Trả response về cho frontend
+    if (weddingEvent) {
+      // Nếu tìm thấy sự kiện, trả về hasEvent: true và thông tin sự kiện
+      return res.status(200).json({
+        hasEvent: true,
+        event: weddingEvent,
+      });
+    } else {
+      // Nếu không tìm thấy, trả về hasEvent: false
+      return res.status(200).json({
+        hasEvent: false,
+        event: null,
+      });
+    }
+  } catch (error) {
+    console.error("Lỗi khi kiểm tra sự kiện cưới của người dùng:", error);
+    return res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
   }
 };

@@ -283,35 +283,50 @@ exports.loginUser = async (req, res) => {
  * @access  Private
  */
 exports.updateUserProfile = asyncHandler(async (req, res) => {
-  // `req.user` được lấy từ middleware `protect`
   const user = await User.findById(req.user._id);
 
-  if (user) {
-    user.fullName = req.body.fullName || user.fullName;
-    user.email = req.body.email || user.email;
-    user.picture = req.body.picture || user.picture;
-    // Thêm các trường khác bạn muốn cập nhật ở đây, ví dụ:
-    // user.birthDate = req.body.birthDate || user.birthDate;
-
-    if (req.body.password) {
-      if (req.body.password.length < 6) {
-        res.status(400);
-        throw new Error("Mật khẩu phải có ít nhất 6 ký tự");
-      }
-      user.password = req.body.password;
-    }
-
-    const updatedUser = await user.save();
-
-    res.json({
-      _id: updatedUser._id,
-      fullName: updatedUser.fullName,
-      email: updatedUser.email,
-      picture: updatedUser.picture,
-      // birthDate: updatedUser.birthDate,
-    });
-  } else {
+  if (!user) {
     res.status(404);
     throw new Error("Không tìm thấy người dùng");
   }
+
+  // Lấy các trường mật khẩu từ body
+  const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+  // --- LOGIC MỚI: ƯU TIÊN XỬ LÝ ĐỔI MẬT KHẨU ---
+  if (oldPassword && newPassword) {
+    // 1. Kiểm tra mật khẩu cũ có đúng không
+    const isMatch = await user.matchPassword(oldPassword);
+    if (!isMatch) {
+      res.status(401); // 401 Unauthorized
+      throw new Error("Mật khẩu cũ không chính xác.");
+    }
+
+    // 2. Kiểm tra mật khẩu mới có khớp không
+    if (newPassword !== confirmNewPassword) {
+      res.status(400); // 400 Bad Request
+      throw new Error("Mật khẩu mới không khớp.");
+    }
+
+    // 3. Cập nhật mật khẩu mới
+    user.password = newPassword;
+    await user.save(); // pre('save') hook sẽ tự động hash mật khẩu
+
+    res.status(200).json({ message: "Cập nhật mật khẩu thành công." });
+    return; // Kết thúc hàm sau khi đổi mật khẩu
+  }
+
+  // --- LOGIC CŨ: XỬ LÝ CẬP NHẬT CÁC THÔNG TIN KHÁC ---
+  user.fullName = req.body.fullName || user.fullName;
+  user.email = req.body.email || user.email; // Cẩn thận khi cho phép đổi email
+  user.picture = req.body.picture || user.picture;
+
+  const updatedUser = await user.save();
+
+  res.json({
+    _id: updatedUser._id,
+    fullName: updatedUser.fullName,
+    email: updatedUser.email,
+    picture: updatedUser.picture,
+  });
 });

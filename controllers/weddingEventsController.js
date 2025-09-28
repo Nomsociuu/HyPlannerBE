@@ -1,7 +1,14 @@
 const weddingEvent = require("../models/WeddingEvents");
 const mongoose = require("mongoose");
-const phase = require("../models/Phase");
+// const phase = require("../models/Phase");
+const Activity = require("../models/Activity");
+const GroupActivity = require("../models/GroupActivity");
+const Task = require("../models/Task");
+const Phase = require("../models/Phase");
 const Hashids = require("hashids/cjs");
+const { createSampleWeddingData } = require("../sampleData/createSampleWeddingData");
+
+
 const hashids = new Hashids(process.env.SECRET_KEY_SALT, 6);
 
 // Get all wedding events (for developer testing)
@@ -29,18 +36,119 @@ exports.createWeddingEvent = async (req, res) => {
         .status(400)
         .json({ message: "timeToMarried must be in the future" });
     }
+
+    // Tạo sample data
+    const sampleData = createSampleWeddingData(creatorId, new Date(timeToMarried));
+
+    // Tạo các activities và lưu vào database
+    const createdActivities = {
+      jewelry: [],
+      photoVideo: [],
+      costume: [],
+      engagement: [],
+      ceremony: [],
+      party: [],
+      logistics: [],
+      afterWedding: []
+    };
+
+    // Tạo activities cho từng nhóm (KHÔNG có member)
+    for (const [groupKey, activities] of Object.entries(sampleData.activities)) {
+      for (const activityData of activities) {        
+        const newActivity = new Activity(activityData);
+        const savedActivity = await newActivity.save();
+        createdActivities[groupKey].push(savedActivity._id);
+      }
+    }
+
+    // Tạo GroupActivities với activities đã tạo (KHÔNG có member)
+    const createdGroupActivities = [];
+    const groupActivityMapping = [
+      { groupName: "Trang sức & Nhẫn cưới", activities: createdActivities.jewelry },
+      { groupName: "Ảnh và video", activities: createdActivities.photoVideo },
+      { groupName: "Trang phục – Make up", activities: createdActivities.costume },
+      { groupName: "Lễ ăn hỏi / Đám ngõ", activities: createdActivities.engagement },
+      { groupName: "Lễ cưới", activities: createdActivities.ceremony },
+      { groupName: "Tiệc cưới", activities: createdActivities.party },
+      { groupName: "Hậu cần & Khác", activities: createdActivities.logistics },
+      { groupName: "Dự phòng & Sau cưới", activities: createdActivities.afterWedding }
+    ];
+
+    for (const groupData of groupActivityMapping) {      
+      const newGroupActivity = new GroupActivity(groupData);
+      const savedGroupActivity = await newGroupActivity.save();
+      createdGroupActivities.push(savedGroupActivity._id);
+    }
+
+    // Tạo Tasks cho từng phase với member
+    const createdTasks = {
+      phase1: [],
+      phase2: [],
+      phase3: [],
+      phase4: [],
+      phase5: [],
+      phase6: [],
+      phase7: [],
+      phase8: [],
+      phase9: [],
+      phase10: [],
+      afterWedding: []
+    };
+
+    for (const [phaseKey, tasks] of Object.entries(sampleData.tasks)) {
+      for (const taskData of tasks) {
+        // CHỈ có TASK mới có member
+        const taskWithMember = {
+          ...taskData,
+          member: [creatorId] // Override member với creatorId
+        };
+        
+        const newTask = new Task(taskWithMember);
+        const savedTask = await newTask.save();
+        
+        createdTasks[phaseKey].push(savedTask._id);
+      }
+    }
+
+    // Tạo Phases với tasks đã tạo (KHÔNG có member)
+    const createdPhases = [];
+    const phaseTaskMapping = [
+      { ...sampleData.phases[0], tasks: createdTasks.phase1 },
+      { ...sampleData.phases[1], tasks: createdTasks.phase2 },
+      { ...sampleData.phases[2], tasks: createdTasks.phase3 },
+      { ...sampleData.phases[3], tasks: createdTasks.phase4 },
+      { ...sampleData.phases[4], tasks: createdTasks.phase5 },
+      { ...sampleData.phases[5], tasks: createdTasks.phase6 },
+      { ...sampleData.phases[6], tasks: createdTasks.phase7 },
+      { ...sampleData.phases[7], tasks: createdTasks.phase8 },
+      { ...sampleData.phases[8], tasks: createdTasks.phase9 },
+      { ...sampleData.phases[9], tasks: createdTasks.phase10 },
+      { ...sampleData.phases[10], tasks: createdTasks.afterWedding }
+    ];
+
+    for (const phaseData of phaseTaskMapping) {      
+      const newPhase = new Phase(phaseData);
+      const savedPhase = await newPhase.save();
+      createdPhases.push(savedPhase._id);
+    }
+
+    // Tạo wedding event với sample data đã tạo
     const newWeddingEvent = new weddingEvent({
       creatorId,
       brideName,
       groomName,
       budget,
       timeToMarried,
-      member: [creatorId], // Thêm người tạo vào danh sách thành viên
-      phases: [],
-      groupActivities: [],
+      member: [creatorId],
+      phases: createdPhases,
+      groupActivities: createdGroupActivities,
     });
+
     await newWeddingEvent.save();
-    res.status(201).json({ message: "Wedding event created", newWeddingEvent });
+    res.status(201).json({ 
+      message: "Wedding event created with sample data", 
+      newWeddingEvent 
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -119,7 +227,6 @@ exports.joinWeddingEvent = async (req, res) => {
 // POST http://localhost:8082/weddingEvents/leaveWeddingEvent
 exports.leaveWeddingEvent = async (req, res) => {
   const { eventId, userId } = req.body;
-  console.log(eventId, userId);
   if (!eventId || !userId) {
     return res.status(400).json({ message: "Mã sự kiện không hợp lệ" });
   }

@@ -14,11 +14,15 @@ routes.get(
   weddingEventsController.getUserWeddingEvents
 );
 
-routes.post("/createWeddingEvent", weddingEventsController.createWeddingEvent);
+routes.post("/createWeddingEvent", weddingEventsController.createWeddingEvent, authMiddleware.protect);
 
-routes.post("/addMember", weddingEventsController.joinWeddingEvent);
+routes.post("/addMember", weddingEventsController.joinWeddingEvent, authMiddleware.protect);
 
-routes.post("/leaveWeddingEvent", weddingEventsController.leaveWeddingEvent);
+routes.post("/leaveWeddingEvent", weddingEventsController.leaveWeddingEvent, authMiddleware.protect);
+
+routes.post("/checkAndInsertTasks", weddingEventsController.checkAndInsertTasks);
+routes.post("/checkAndInsertActivities", weddingEventsController.checkAndInsertActivities);
+routes.get("/checkEventData/:eventId", weddingEventsController.checkEventData, authMiddleware.protect);
 
 routes.get(
   "/check-user",

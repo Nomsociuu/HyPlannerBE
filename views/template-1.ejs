@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trân trọng báo tin | <%= groomName %> & <%= brideName %></title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Dancing+Script&family=Quicksand&display=swap");
+      body {
+        font-family: "Quicksand", sans-serif;
+        text-align: center;
+        background-color: #fdf6e3;
+        color: #586e75;
+        margin: 0;
+        padding: 40px 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+      }
+      h1 {
+        font-family: "Dancing Script", cursive;
+        font-size: 4rem;
+        color: #cb4b16;
+        margin-bottom: 0;
+      }
+      h2 {
+        font-size: 1.5rem;
+        font-weight: normal;
+      }
+      p {
+        font-size: 1.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>
+        Trân trọng kính mời bạn đến chung vui cùng chúng tôi trong ngày trọng
+        đại
+      </h2>
+      <h1><%= groomName %></h1>
+      <p>&</p>
+      <h1><%= brideName %></h1>
+      <p>Hôn lễ được cử hành vào ngày</p>
+      <h2><%= weddingDate %></h2>
+    </div>
+  </body>
+</html>

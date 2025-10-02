@@ -12,6 +12,8 @@ const userSelectionRoutes = require("../routes/userSelectionRoutes");
 const groupActivityRoutes = require("../routes/groupActivityRoutes");
 const activityRoutes = require("../routes/activityRoutes");
 const authRoutes = require("../routes/authRoutes");
+const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
+const publicRoutes = require("./routes/publicRoutes.js");
 require("dotenv").config();
 
 const connectDB = require("../config/db");
@@ -53,6 +55,9 @@ app.use("/wedding-costume", weddingCostumeRoutes);
 app.use("/user", userSelectionRoutes);
 app.use("/groupActivities", groupActivityRoutes);
 app.use("/activities", activityRoutes);
+const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
+app.use("/invitation", invitationLetterRoutes);
+app.use("/w", publicRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port http://localhost:${process.env.PORT}`);

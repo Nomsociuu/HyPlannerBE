@@ -3,47 +3,249 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trân trọng báo tin | <%= groomName %> & <%= brideName %></title>
+    <title>
+      Trăm Năm Hạnh Phúc | <%= weddingData.groom.firstName %> & <%=
+      weddingData.bride.firstName %>
+    </title>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Dancing+Script&family=Quicksand&display=swap");
+      /* CSS không đổi so với lần trước */
+      @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400&display=swap");
       body {
-        font-family: "Quicksand", sans-serif;
-        text-align: center;
-        background-color: #fdf6e3;
-        color: #586e75;
+        font-family: "Lato", sans-serif;
+        color: #333;
         margin: 0;
-        padding: 40px 20px;
+        background: #fdfaf6;
       }
       .container {
-        max-width: 600px;
+        max-width: 900px;
         margin: auto;
       }
-      h1 {
-        font-family: "Dancing Script", cursive;
-        font-size: 4rem;
-        color: #cb4b16;
-        margin-bottom: 0;
+      .section {
+        padding: 60px 20px;
+        text-align: center;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Playfair Display", serif;
       }
       h2 {
-        font-size: 1.5rem;
-        font-weight: normal;
+        font-size: 2.5rem;
+        color: #8a6d46;
+        margin-bottom: 10px;
       }
-      p {
-        font-size: 1.2rem;
+      .hero {
+        background: url("<%= weddingData.coupleImage %>") no-repeat center
+          center/cover;
+        color: white;
+        padding: 150px 20px;
+      }
+      .hero h1 {
+        font-size: 4rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .couple-intro {
+        display: flex;
+        gap: 40px;
+        text-align: left;
+        justify-content: center;
+      }
+      .couple-intro .person {
+        flex: 1;
+        max-width: 350px;
+      }
+      .couple-intro img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .story-timeline {
+        border-left: 2px solid #ddd;
+        padding-left: 30px;
+        margin-left: 50%;
+        transform: translateX(-1px);
+        text-align: left;
+      }
+      .story-item {
+        position: relative;
+        margin-bottom: 40px;
+      }
+      .story-item::before {
+        content: "";
+        width: 12px;
+        height: 12px;
+        background: #8a6d46;
+        border-radius: 50%;
+        position: absolute;
+        left: -37px;
+        top: 5px;
+      }
+      .story-item img {
+        width: 100%;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      .album-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+      }
+      .album-grid img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 5px;
+      }
+      .event-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+      }
+      .event-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px 8px 0 0;
+      }
+      .event-info {
+        padding: 20px;
+      }
+      .guestbook-form input,
+      .guestbook-form textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      .guestbook-message {
+        background: #fff;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        text-align: left;
       }
     </style>
   </head>
   <body>
+    <div class="hero">
+      <h1>
+        <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %>
+      </h1>
+      <h3><%= weddingData.weddingDate %></h3>
+    </div>
+
     <div class="container">
-      <h2>
-        Trân trọng kính mời bạn đến chung vui cùng chúng tôi trong ngày trọng
-        đại
-      </h2>
-      <h1><%= groomName %></h1>
-      <p>&</p>
-      <h1><%= brideName %></h1>
-      <p>Hôn lễ được cử hành vào ngày</p>
-      <h2><%= weddingDate %></h2>
+      <%# Kiểm tra xem có thông tin giới thiệu của cô dâu hoặc chú rể không %>
+      <% if (weddingData.groom.introduction || weddingData.bride.introduction) {
+      %>
+      <div class="section">
+        <h2>Cô Dâu & Chú Rể</h2>
+        <div class="couple-intro">
+          <% if (weddingData.groom.introduction) { %>
+          <div class="person">
+            <img src="<%= weddingData.groom.image %>" alt="Chú rể" />
+            <h3><%= weddingData.groom.fullName %></h3>
+            <p><%= weddingData.groom.introduction %></p>
+          </div>
+          <% } %> <% if (weddingData.bride.introduction) { %>
+          <div class="person">
+            <img src="<%= weddingData.bride.image %>" alt="Cô dâu" />
+            <h3><%= weddingData.bride.fullName %></h3>
+            <p><%= weddingData.bride.introduction %></p>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <% } %> <%# Kiểm tra xem có link Youtube không %> <% if
+      (weddingData.youtubeUrl) { %>
+      <div class="section">
+        <iframe
+          width="100%"
+          height="450"
+          src="<%= weddingData.youtubeUrl %>"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <% } %> <%# Kiểm tra xem có câu chuyện tình yêu nào không %> <% if
+      (weddingData.loveStory && weddingData.loveStory.length > 0) { %>
+      <div class="section">
+        <h2>Chuyện Tình Yêu</h2>
+        <div class="story-timeline">
+          <% weddingData.loveStory.forEach(story => { %>
+          <div class="story-item">
+            <h4><%= story.time %> - <%= story.title %></h4>
+            <p><%= story.content %></p>
+            <% if (story.image) { %>
+            <img src="<%= story.image %>" />
+            <% } %>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %> <%# Kiểm tra xem có ảnh trong album không %> <% if
+      (weddingData.album && weddingData.album.length > 0) { %>
+      <div class="section">
+        <h2>Album Hình Cưới</h2>
+        <div class="album-grid">
+          <% weddingData.album.forEach(image => { %>
+          <img src="<%= image %>" alt="Ảnh cưới" />
+          <% }) %>
+        </div>
+      </div>
+      <% } %> <%# Kiểm tra xem có sự kiện cưới nào không %> <% if
+      (weddingData.events && weddingData.events.length > 0) { %>
+      <div class="section">
+        <h2>Sự Kiện Cưới</h2>
+        <% weddingData.events.forEach(event => { %>
+        <div class="event-card">
+          <img src="<%= event.image %>" alt="<%= event.name %>" />
+          <div class="event-info">
+            <h3><%= event.name %></h3>
+            <p><%= event.time %></p>
+            <p><strong><%= event.venue %></strong></p>
+            <p><%= event.address %></p>
+            <a href="<%= event.mapLink %>" target="_blank">Xem bản đồ</a>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <div class="section">
+        <h2>Sổ Lưu Bút</h2>
+        <form
+          class="guestbook-form"
+          method="POST"
+          action="/w/<%= weddingData.slug %>/guestbook"
+        >
+          <input type="text" name="name" placeholder="Tên của bạn" required />
+          <textarea
+            rows="4"
+            name="message"
+            placeholder="Gửi lời chúc tới cặp đôi..."
+            required
+          ></textarea>
+          <button type="submit">Gửi Lời Chúc</button>
+        </form>
+        <%# Kiểm tra xem có lời chúc nào không %> <% if
+        (weddingData.guestbookMessages && weddingData.guestbookMessages.length >
+        0) { %>
+        <div style="margin-top: 30px">
+          <% weddingData.guestbookMessages.forEach(msg => { %>
+          <div class="guestbook-message">
+            <strong><%= msg.name %></strong>
+            <p><%= msg.message %></p>
+          </div>
+          <% }) %>
+        </div>
+        <% } %>
+      </div>
     </div>
   </body>
 </html>

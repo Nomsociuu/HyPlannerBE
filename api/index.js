@@ -56,7 +56,7 @@ app.use("/user", userSelectionRoutes);
 app.use("/groupActivities", groupActivityRoutes);
 app.use("/activities", activityRoutes);
 app.use("/invitation", invitationLetterRoutes);
-app.use("/w", publicRoutes);
+app.use("/inviletter", publicRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port http://localhost:${process.env.PORT}`);

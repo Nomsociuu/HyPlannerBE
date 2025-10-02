@@ -47,7 +47,7 @@ const createInvitationLetter = async (req, res) => {
     const savedInvitation = await invitation.save();
 
     // Tạo URL đầy đủ để trả về cho client
-    const fullUrl = `${req.protocol}://${req.get("host")}/invitation/${
+    const fullUrl = `${req.protocol}://${req.get("host")}/inviletter/${
       savedInvitation.slug
     }`;
 

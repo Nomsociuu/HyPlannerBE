@@ -21,6 +21,8 @@ const configurePassport = require("../config/passport");
 
 const app = express();
 
+app.set("view engine", "ejs");
+
 // --- CẤU HÌNH MIDDLEWARES VÀ ROUTES ---
 connectDB();
 

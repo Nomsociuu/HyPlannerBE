@@ -13,7 +13,7 @@ const groupActivityRoutes = require("../routes/groupActivityRoutes");
 const activityRoutes = require("../routes/activityRoutes");
 const authRoutes = require("../routes/authRoutes");
 const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
-const publicRoutes = require("./routes/publicRoutes.js");
+const publicRoutes = require("../routes/publicRoutes");
 require("dotenv").config();
 
 const connectDB = require("../config/db");

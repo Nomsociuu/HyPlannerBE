@@ -35,8 +35,8 @@ const createPaymentLink = async (req, res) => {
       amount: price,
       description: description,
       orderCode: orderCode,
-      returnUrl: `${APP_SCHEME}://payment-success`,
-      cancelUrl: `${APP_SCHEME}://payment-cancelled`,
+      returnUrl: `${APP_SCHEME}://upgrade-account?status=success&orderCode=${orderCode}`,
+      cancelUrl: `${APP_SCHEME}://upgrade-account?status=cancelled`,
       buyerName: req.user.fullName,
       buyerEmail: req.user.email,
     };

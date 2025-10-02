@@ -1,6 +1,7 @@
 const payOs = require("../config/payos");
 const Order = require("../models/Order");
 const User = require("../models/User");
+const { APIError } = require("@payos/node");
 
 const YOUR_DOMAIN =
   process.env.YOUR_DOMAIN || "https://your-frontend-app-or-website.com";
@@ -20,10 +21,9 @@ const createPaymentLink = async (req, res) => {
       .json({ message: "Vui lòng cung cấp đủ thông tin thanh toán." });
   }
 
-  const orderCode = Date.now(); // Dùng timestamp làm mã đơn hàng duy nhất
+  const orderCode = Date.now();
 
   try {
-    // Bước 1: Tạo đơn hàng trong DB của bạn với trạng thái PENDING
     const newOrder = new Order({
       userId,
       packageType,
@@ -32,7 +32,6 @@ const createPaymentLink = async (req, res) => {
     });
     await newOrder.save();
 
-    // Bước 2: Tạo link thanh toán PayOS
     const payosOrder = {
       amount: price,
       description: description,
@@ -43,7 +42,9 @@ const createPaymentLink = async (req, res) => {
       buyerEmail: req.user.email,
     };
 
-    const paymentLinkResponse = await payOs.createPaymentLink(payosOrder);
+    // ----- SỬA LẠI PHƯƠNG THỨC GỌI Ở ĐÂY -----
+    const paymentLinkResponse = await payOs.paymentRequests.create(payosOrder);
+    // ------------------------------------------
 
     res.status(200).json({
       message: "Tạo link thanh toán thành công",
@@ -51,6 +52,12 @@ const createPaymentLink = async (req, res) => {
     });
   } catch (error) {
     console.error("Lỗi khi tạo link thanh toán:", error);
+
+    // Bắt lỗi cụ thể từ PayOS để log chi tiết hơn
+    if (error instanceof APIError) {
+      console.error("Lỗi từ PayOS:", error.error);
+    }
+
     res.status(500).json({ message: "Không thể tạo link thanh toán." });
   }
 };

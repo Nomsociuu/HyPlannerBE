@@ -2,12 +2,18 @@ const express = require("express");
 const router = express.Router();
 const {
   createInvitationLetter,
+  getUserInvitation,
+  deleteUserInvitation,
 } = require("../controllers/invitationLetterController");
 const { protect } = require("../middleware/authMiddleware");
 
-// Khi có một request POST đến '/api/invitation-letters'
-// 1. Nó sẽ chạy qua middleware 'protect' để xác thực token.
-// 2. Nếu token hợp lệ, nó sẽ chạy tiếp vào controller 'createInvitationLetter'.
+// Route tạo website mới
 router.post("/invitation-letters", protect, createInvitationLetter);
+
+// Route lấy thông tin website của user
+router.get("/my-invitation", protect, getUserInvitation);
+
+// Route xóa website của user
+router.delete("/my-invitation", protect, deleteUserInvitation);
 
 module.exports = router;

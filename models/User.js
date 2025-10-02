@@ -26,6 +26,14 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  accountType: {
+    type: String,
+    enum: ["FREE", "VIP", "SUPER"], // Chỉ chấp nhận các giá trị này
+    default: "FREE",
+  },
+  accountExpires: {
+    type: Date, // Sẽ lưu ngày hết hạn cho gói VIP
+  },
 });
 
 // Mã hóa mật khẩu trước khi lưu

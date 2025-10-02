@@ -3,6 +3,7 @@
 const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
+const path = require("path");
 const session = require("express-session");
 const phaseRoutes = require("../routes/phaseRoutes");
 const taskRoutes = require("../routes/taskRoutes");
@@ -21,6 +22,7 @@ const configurePassport = require("../config/passport");
 
 const app = express();
 
+app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "ejs");
 
 // --- CẤU HÌNH MIDDLEWARES VÀ ROUTES ---

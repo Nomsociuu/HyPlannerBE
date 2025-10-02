@@ -51,7 +51,7 @@ const createInvitationLetter = async (req, res) => {
 
     const savedInvitation = await invitation.save();
 
-    const fullUrl = `${req.protocol}://${req.get("host")}/w/${
+    const fullUrl = `${req.protocol}://${req.get("host")}/inviletter/${
       savedInvitation.slug
     }`;
 

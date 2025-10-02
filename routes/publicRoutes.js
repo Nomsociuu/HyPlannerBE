@@ -41,30 +41,50 @@ const sampleWeddingData = {
 router.get("/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
+    const invitationLetter = await InvitationLetter.findOne({ slug });
 
-    // 1. Tìm thông tin website trong database bằng slug từ URL
-    const invitation = await InvitationLetter.findOne({ slug });
-
-    // 2. Nếu không tìm thấy, render trang 404
-    if (!invitation) {
+    if (!invitationLetter) {
       return res.status(404).render("404");
     }
 
-    // 3. Xác định tên file template cần dùng dựa vào templateId
-    const templateName = `template-${invitation.templateId}`; // Ví dụ: 'template-1'
+    // BƯỚC 1: TÁI CẤU TRÚC DỮ LIỆU TỪ DB CHO ĐÚNG FORMAT MÀ EJS CẦN
+    // Lưu ý: Các trường như `introduction`, `image` cần tồn tại trong Schema của bạn
+    const weddingDataForRender = {
+      groom: {
+        fullName: invitationLetter.groomName,
+        firstName: invitationLetter.groomName.split(" ")[0], // Lấy tên đầu tiên
+        introduction: invitationLetter.groomIntroduction || "", // Thêm các trường này vào Schema nếu cần
+        image:
+          invitationLetter.groomImage || "https://i.pravatar.cc/300?u=groom",
+      },
+      bride: {
+        fullName: invitationLetter.brideName,
+        firstName: invitationLetter.brideName.split(" ")[0],
+        introduction: invitationLetter.brideIntroduction || "",
+        image:
+          invitationLetter.brideImage || "https://i.pravatar.cc/300?u=bride",
+      },
+      coupleImage:
+        invitationLetter.coupleImage ||
+        "https://images.unsplash.com/photo-1529340473341-a3f2cc245b0a?q=80&w=2070",
+      weddingDate: invitationLetter.weddingDate,
+      youtubeUrl: invitationLetter.youtubeUrl, // Cần có trường này trong Schema
+      loveStory: invitationLetter.loveStory || [], // Dùng mảng rỗng nếu không có dữ liệu
+      album: invitationLetter.album || [],
+      events: invitationLetter.events || [],
+      guestbookMessages: invitationLetter.guestbookMessages || [],
+      slug: invitationLetter.slug,
+    };
 
-    // 4. Render file template đó và truyền dữ liệu vào
-    res.render(templateName, {
-      groomName: invitation.groomName,
-      brideName: invitation.brideName,
-      weddingDate: invitation.weddingDate,
-    });
+    const templateName = `template-${invitationLetter.templateId}`;
+
+    // BƯỚC 2: TRUYỀN VÀO TEMPLATE DƯỚI DẠNG OBJECT `weddingData`
+    res.render(templateName, { weddingData: weddingDataForRender });
   } catch (error) {
     console.error(error);
     res.status(500).send("Lỗi máy chủ nội bộ");
   }
 });
-
 // @desc    Hiển thị trang preview cho một template
 // @route   GET /preview/:templateId
 router.get("/preview/:templateId", (req, res) => {

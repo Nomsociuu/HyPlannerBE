@@ -55,7 +55,6 @@ app.use("/wedding-costume", weddingCostumeRoutes);
 app.use("/user", userSelectionRoutes);
 app.use("/groupActivities", groupActivityRoutes);
 app.use("/activities", activityRoutes);
-const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
 app.use("/invitation", invitationLetterRoutes);
 app.use("/w", publicRoutes);
 

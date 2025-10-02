@@ -16,6 +16,7 @@ const authRoutes = require("../routes/authRoutes");
 const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
 const publicRoutes = require("../routes/publicRoutes");
 const templateRoutes = require("../routes/templateRoutes");
+const paymentRoutes = require("../routes/paymentRoutes");
 require("dotenv").config();
 
 const connectDB = require("../config/db");
@@ -63,6 +64,7 @@ app.use("/activities", activityRoutes);
 app.use("/invitation", invitationLetterRoutes);
 app.use("/inviletter", publicRoutes);
 app.use("/templates", templateRoutes);
+app.use("/payments", paymentRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port http://localhost:${process.env.PORT}`);

@@ -3,8 +3,7 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const { APIError } = require("@payos/node");
 
-const YOUR_DOMAIN =
-  process.env.YOUR_DOMAIN || "https://your-frontend-app-or-website.com";
+const APP_SCHEME = process.env.EXPO_PUBLIC_SCHEME;
 
 /**
  * @desc    Tạo link thanh toán PayOS
@@ -36,8 +35,8 @@ const createPaymentLink = async (req, res) => {
       amount: price,
       description: description,
       orderCode: orderCode,
-      returnUrl: `${YOUR_DOMAIN}/payment-success`,
-      cancelUrl: `${YOUR_DOMAIN}/payment-cancelled`,
+      returnUrl: `${APP_SCHEME}://payment-success`,
+      cancelUrl: `${APP_SCHEME}://payment-cancelled`,
       buyerName: req.user.fullName,
       buyerEmail: req.user.email,
     };

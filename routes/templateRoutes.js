@@ -9,28 +9,28 @@ const templates = [
     name: "Classic Elegance",
     type: "VIP",
     image:
-      "https://images.unsplash.com/photo-1597158223639-9b9b5f93c72b?q=80&w=1964",
+      "https://images.pexels.com/photos/1801263/pexels-photo-1801263.jpeg?_gl=1*set4wg*_ga*NTA0MTc2NDYuMTc1OTQzNzY2MQ..*_ga_8JE65Q40S6*czE3NTk0Mzc2NjAkbzEkZzEkdDE3NTk0Mzc2NjckajUzJGwwJGgw",
   },
   {
     id: 2,
     name: "Rustic Charm",
     type: "Miễn phí",
     image:
-      "https://images.unsplash.com/photo-1523438882358-a61513473215?q=80&w=1974",
+      "https://images.pexels.com/photos/2219276/pexels-photo-2219276.jpeg?_gl=1*1jvtq01*_ga*NTA0MTc2NDYuMTc1OTQzNzY2MQ..*_ga_8JE65Q40S6*czE3NTk0Mzc2NjAkbzEkZzEkdDE3NTk0Mzc3MjckajU5JGwwJGgw",
   },
   {
     id: 3,
     name: "Modern Minimal",
     type: "Miễn phí",
     image:
-      "https://images.unsplash.com/photo-1606595861444-700898528a49?q=80&w=1974",
+      "https://as1.ftcdn.net/v2/jpg/01/75/22/66/1000_F_175226614_P4iBRGUzBPXoXR7x1AnMqXqp2gUL0tJG.jpg",
   },
   {
     id: 4,
     name: "Romantic Dream",
     type: "VIP",
     image:
-      "https://images.unsplash.com/photo-1595393566105-a50d27809228?q=80&w=1974",
+      "https://assets.minted.com/image/upload/v1735792462/Minted_Onsite_Assets/2025/SEO%20Content%20Articles/wedding-processional-01.jpg",
   },
 ];
 

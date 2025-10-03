@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="<%= weddingData.language || 'vi' %>">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Save the Date | <% if (locals.weddingData) { %><%=
+      weddingData.groom.firstName %> & <%= weddingData.bride.firstName %><% } %>
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --font-heading: "Great Vibes", cursive;
+        --font-body: "Montserrat", sans-serif;
+        --color-primary: #e7adbc;
+        --color-secondary: #a1667a;
+        --color-background-rgba: rgba(255, 249, 250, 0.92);
+        --color-background-alt-rgba: rgba(254, 246, 247, 0.92);
+        --color-text: #4a4044;
+        --color-white: #ffffff;
+        --shadow: 0 10px 30px rgba(180, 142, 156, 0.15);
+      }
+
+      body {
+        font-family: var(--font-body);
+        color: var(--color-text);
+        margin: 0;
+        line-height: 1.7;
+        font-weight: 300;
+        background-size: cover;
+        background-position: center center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      .section {
+        padding: 80px 0;
+        text-align: center;
+        overflow: hidden;
+      }
+
+      main .section {
+        background-color: var(--color-background-rgba);
+      }
+      main .section:nth-of-type(even) {
+        background-color: var(--color-background-alt-rgba);
+      }
+
+      .section-title {
+        font-family: var(--font-heading);
+        font-size: 4rem;
+        color: var(--color-primary);
+        margin: 0 0 10px 0;
+        font-weight: normal;
+      }
+
+      .section-subtitle {
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-size: 0.9rem;
+        color: var(--color-secondary);
+        margin-bottom: 50px;
+      }
+
+      /* --- Hero Section --- */
+      .hero {
+        position: relative;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: var(--color-white);
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+      }
+      .hero-content {
+        position: relative;
+        z-index: 1;
+      }
+      .hero-content h1 {
+        font-family: var(--font-heading);
+        font-size: 7rem;
+        margin: 0;
+        font-weight: normal;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+      }
+      .hero-content p {
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* --- Couple Section --- */
+      .couple-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 50px;
+        flex-wrap: wrap;
+      }
+      .person-card {
+        flex: 1;
+        max-width: 400px;
+        text-align: center;
+      }
+      .person-card img {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid var(--color-white);
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+      }
+      .person-card h3 {
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 1.5rem;
+        color: var(--color-secondary);
+        margin: 10px 0;
+      }
+
+      /* --- Love Story Section (Infinity Scroll) --- */
+      .horizontal-timeline-wrapper {
+        overflow: hidden; /* Ẩn thanh cuộn mặc định */
+        position: relative;
+        padding: 10px 0;
+      }
+      
+      /* Thêm hiệu ứng mờ dần ở 2 cạnh để scroll trông mượt hơn */
+      .horizontal-timeline-wrapper::before,
+      .horizontal-timeline-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100px;
+        z-index: 2;
+        pointer-events: none; /* Cho phép click xuyên qua */
+      }
+      .horizontal-timeline-wrapper::before {
+        left: 0;
+        background: linear-gradient(to right, var(--color-background-alt-rgba), transparent);
+      }
+      .horizontal-timeline-wrapper::after {
+        right: 0;
+        background: linear-gradient(to left, var(--color-background-alt-rgba), transparent);
+      }
+
+      .horizontal-timeline {
+        display: flex;
+        min-width: fit-content;
+        gap: 40px;
+        /* Áp dụng animation */
+        animation: scroll 30s linear infinite;
+      }
+
+      /* Định nghĩa chuyển động scroll */
+      @keyframes scroll {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          /* Di chuyển sang trái bằng 50% chiều rộng của nó (chiều rộng của bộ items gốc) */
+          transform: translateX(-50%);
+        }
+      }
+
+      /* Tạm dừng animation khi di chuột vào */
+      .horizontal-timeline-wrapper:hover .horizontal-timeline {
+        animation-play-state: paused;
+      }
+
+      .timeline-item-card {
+        flex-shrink: 0;
+        width: 300px;
+        background-color: var(--color-white);
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        padding: 25px;
+        text-align: left;
+        position: relative;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .timeline-item-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(180, 142, 156, 0.2);
+      }
+
+      .timeline-item-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .timeline-item-card h4 {
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: var(--color-primary);
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .timeline-item-card .time {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--color-secondary);
+        margin-bottom: 15px;
+        display: block;
+      }
+      .timeline-item-card p {
+        font-size: 0.95rem;
+        margin-bottom: 0;
+      }
+
+      /* --- Events Section --- */
+      .events-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+      }
+      .event-card {
+        background: var(--color-white);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        text-align: left;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(180, 142, 156, 0.2);
+      }
+      .event-card img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 8px 8px 0 0;
+      }
+      .event-info {
+        padding: 25px;
+      }
+      .event-info h3 {
+        font-family: var(--font-heading);
+        font-size: 2.5rem;
+        color: var(--color-primary);
+        margin: 0 0 10px 0;
+      }
+      .event-info p {
+        margin: 5px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .event-info i {
+        color: var(--color-primary);
+        width: 16px;
+        text-align: center;
+      }
+      .map-link {
+        display: inline-block;
+        margin-top: 15px;
+        background: var(--color-primary);
+        color: var(--color-white);
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background 0.3s ease;
+      }
+      .map-link:hover {
+        background: var(--color-secondary);
+      }
+
+      /* --- Album Section --- */
+      .album-grid {
+        columns: 4 250px;
+        column-gap: 15px;
+      }
+      .album-grid img {
+        width: 100%;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+      .album-grid img:hover {
+        transform: scale(1.03);
+        opacity: 0.8;
+      }
+
+      /* --- Guestbook Section --- */
+      .guestbook-form {
+        max-width: 600px;
+        margin: 0 auto 50px auto;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      .guestbook-form input,
+      .guestbook-form textarea {
+        font-family: var(--font-body);
+        width: 100%;
+        padding: 15px;
+        border: 1px solid #fceef2;
+        border-radius: 5px;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+      }
+      .guestbook-form input:focus,
+      .guestbook-form textarea:focus {
+        border-color: var(--color-primary);
+        outline: none;
+      }
+      .btn-submit {
+        background: var(--color-primary);
+        color: var(--color-white);
+        border: none;
+        padding: 15px 30px;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        font-family: var(--font-body);
+        font-weight: 600;
+      }
+      .btn-submit:hover {
+        background: var(--color-secondary);
+      }
+
+      .guestbook-messages {
+        max-width: 700px;
+        margin: 0 auto;
+        text-align: left;
+      }
+      .guestbook-message {
+        background: var(--color-white);
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 4px solid var(--color-primary);
+      }
+      .guestbook-message strong {
+        font-weight: 600;
+        color: var(--color-secondary);
+      }
+
+      /* --- Responsive --- */
+      @media (max-width: 768px) {
+        .section-title {
+          font-size: 3rem;
+        }
+        .hero-content h1 {
+          font-size: 4rem;
+        }
+        .album-grid {
+          columns: 2 150px;
+        }
+      }
+    </style>
+  </head>
+  <body style="background-image: url('<%= weddingData.coupleImage %>');">
+    <% if (locals.weddingData) { %>
+    <header class="hero">
+      <div class="hero-content">
+        <p>We're Getting Married</p>
+        <h1>
+          <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName
+          %>
+        </h1>
+        <p><%= weddingData.weddingDate %></p>
+      </div>
+    </header>
+
+    <main>
+      <% if (weddingData.groom.introduction || weddingData.bride.introduction) {
+      %>
+      <section class="section">
+        <div class="container">
+          <h2 class="section-title">The Happy Couple</h2>
+          <p class="section-subtitle">Cô dâu & Chú rể</p>
+          <div class="couple-container">
+            <% if (weddingData.groom.introduction) { %>
+            <div class="person-card">
+              <img src="<%= weddingData.groom.image %>" alt="Chú rể" />
+              <h3><%= weddingData.groom.fullName %></h3>
+              <p><%= weddingData.groom.introduction %></p>
+            </div>
+            <% } %> <% if (weddingData.bride.introduction) { %>
+            <div class="person-card">
+              <img src="<%= weddingData.bride.image %>" alt="Cô dâu" />
+              <h3><%= weddingData.bride.fullName %></h3>
+              <p><%= weddingData.bride.introduction %></p>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (weddingData.youtubeUrl) { %>
+      <section class="section">
+        <div class="container">
+          <h2 class="section-title">Our Moment</h2>
+          <p class="section-subtitle">Khoảnh khắc của chúng tôi</p>
+          <div style="max-width: 900px; margin: auto; box-shadow: var(--shadow)">
+            <iframe
+              width="100%"
+              height="500"
+              src="<%= weddingData.youtubeUrl %>"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              style="border-radius: 8px; display: block"
+            ></iframe>
+          </div>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (weddingData.loveStory && weddingData.loveStory.length > 0) { %>
+      <section class="section">
+        <div class="container">
+          <h2 class="section-title">Our Love Story</h2>
+          <p class="section-subtitle">Chuyện tình yêu</p>
+          <div class="horizontal-timeline-wrapper">
+            <div class="horizontal-timeline">
+              <% weddingData.loveStory.forEach(story => { %>
+              <div class="timeline-item-card">
+                <% if (story.image) { %>
+                <img src="<%= story.image %>" alt="<%= story.title %>" />
+                <% } %>
+                <span class="time"><%= story.time %></span>
+                <h4><%= story.title %></h4>
+                <p><%= story.content %></p>
+              </div>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (weddingData.events && weddingData.events.length > 0) { %>
+      <section class="section">
+        <div class="container">
+          <h2 class="section-title">Wedding Events</h2>
+          <p class="section-subtitle">Sự kiện cưới</p>
+          <div class="events-grid">
+            <% weddingData.events.forEach(event => { %>
+            <div class="event-card">
+              <img src="<%= event.image %>" alt="<%= event.name %>" />
+              <div class="event-info">
+                <h3><%= event.name %></h3>
+                <p><i class="fas fa-clock"></i> <%= event.time %></p>
+                <p><i class="fas fa-building"></i> <%= event.venue %></p>
+                <p><i class="fas fa-map-marker-alt"></i> <%= event.address %></p>
+                <a href="<%= event.mapLink %>" target="_blank" class="map-link"
+                  >Xem bản đồ <i class="fas fa-arrow-right"></i
+                ></a>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (weddingData.album && weddingData.album.length > 0) { %>
+      <section class="section">
+        <div class="container">
+          <h2 class="section-title">Photo Album</h2>
+          <p class="section-subtitle">Album hình cưới</p>
+          <div class="album-grid">
+            <% weddingData.album.forEach(image => { %>
+            <a href="<%= image %>" data-lightbox="wedding-album">
+              <img src="<%= image %>" alt="Ảnh cưới" loading="lazy" />
+            </a>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+      <% } %>
+
+      <section class="section">
+        <div class="container">
+          <h2 class="section-title">Guestbook</h2>
+          <p class="section-subtitle">Sổ lưu bút</p>
+          <form
+            class="guestbook-form"
+            method="POST"
+            action="/w/<%= weddingData.slug %>/guestbook"
+          >
+            <input type="text" name="name" placeholder="Tên của bạn" required />
+            <textarea
+              rows="5"
+              name="message"
+              placeholder="Gửi lời chúc tới cặp đôi..."
+              required
+            ></textarea>
+            <button type="submit" class="btn-submit">Gửi Lời Chúc</button>
+          </form>
+
+          <% if (weddingData.guestbookMessages &&
+          weddingData.guestbookMessages.length > 0) { %>
+          <div class="guestbook-messages">
+            <% weddingData.guestbookMessages.forEach(msg => { %>
+            <div class="guestbook-message">
+              <strong><%= msg.name %></strong>
+              <p style="margin: 5px 0 0 0"><%= msg.message %></p>
+            </div>
+            <% }) %>
+          </div>
+          <% } %>
+        </div>
+      </section>
+    </main>
+    <% } else { %>
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-size: 1.2rem;
+      "
+    >
+      <p>Lỗi: Không tìm thấy dữ liệu đám cưới để hiển thị trang web.</p>
+    </div>
+    <% } %>
+
+    <script>
+      // Đợi cho toàn bộ trang được tải xong
+      window.addEventListener('load', () => {
+        const timeline = document.querySelector('.horizontal-timeline');
+        
+        // Chỉ chạy script nếu timeline tồn tại
+        if (timeline) {
+          const items = timeline.querySelectorAll('.timeline-item-card');
+          const originalItemCount = items.length;
+
+          // Nếu có ít mục quá thì không cần chạy scroll
+          if (originalItemCount <= 2) {
+            return;
+          }
+
+          // Nhân đôi các mục để tạo hiệu ứng lặp lại liền mạch
+          items.forEach(item => {
+            timeline.appendChild(item.cloneNode(true));
+          });
+          
+          // Tính toán thời gian animation để tốc độ cuộn nhất quán
+          // Giả sử tốc độ mong muốn là 80 pixels mỗi giây
+          const scrollSpeed = 80; // pixels/second
+          
+          // Lấy chiều rộng của một item (bao gồm cả margin/gap)
+          const firstItem = items[0];
+          const itemStyle = window.getComputedStyle(firstItem);
+          const itemWidth = firstItem.offsetWidth + parseInt(itemStyle.marginRight) + parseInt(itemStyle.marginLeft);
+          
+          // Lấy gap từ container
+          const timelineStyle = window.getComputedStyle(timeline);
+          const gap = parseInt(timelineStyle.gap) || 40; // 40 là giá trị mặc định trong CSS
+
+          // Tổng chiều rộng của các mục gốc
+          const totalWidth = originalItemCount * (firstItem.offsetWidth + gap);
+          
+          // Thời gian = Quãng đường / Tốc độ
+          const duration = totalWidth / scrollSpeed;
+          
+          // Gán thời gian animation vào cho timeline
+          timeline.style.animationDuration = `${duration}s`;
+        }
+      });
+    </script>
+  </body>
+</html>

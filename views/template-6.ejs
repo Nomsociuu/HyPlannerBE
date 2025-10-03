@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="<%= weddingData.language || 'vi' %>">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        Trăm Năm Hạnh Phúc | <% if (locals.weddingData) { %>
+            <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %>
+                    <% } %>
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <style>
+        :root {
+            --font-heading: "Great Vibes", cursive;
+            --font-body: "Montserrat", sans-serif;
+            --color-primary: #e7adbc;
+            --color-secondary: #a1667a;
+            --color-text: #4a4044;
+            --color-white: #ffffff;
+            --shadow: 0 10px 40px rgba(180, 142, 156, 0.15);
+            --border-color: #fceef2;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            margin: 0;
+            line-height: 1.7;
+            font-weight: 300;
+            background-color: #fff9fa;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23E7ADBC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%E3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* --- CSS MỚI: Container cho hiệu ứng trái tim --- */
+        #floating-hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Quan trọng: Cho phép click xuyên qua lớp này */
+            z-index: 1;
+            /* Nằm dưới nội dung chính */
+        }
+
+        .heart {
+            position: absolute;
+            bottom: -50px;
+            /* Bắt đầu từ bên dưới màn hình */
+            font-size: 20px;
+            color: #c81444;
+            /* Áp dụng animation */
+            animation: floatUp 10s linear forwards;
+        }
+
+        /* Định nghĩa chuyển động bay lên */
+        @keyframes floatUp {
+            from {
+                transform: translateY(0) translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-100vh) translateX(50px);
+                /* Bay lên và hơi lệch sang phải */
+                opacity: 0;
+            }
+        }
+
+        /* Khung nội dung chính */
+        .main-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background-color: var(--color-white);
+            box-shadow: var(--shadow);
+            position: relative;
+            /* Thêm position */
+            z-index: 10;
+            /* Đảm bảo nội dung chính luôn nằm trên lớp hiệu ứng */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            padding: 80px 0;
+            text-align: center;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 4rem;
+            color: var(--color-primary);
+            margin: 0 0 10px 0;
+            font-weight: normal;
+        }
+
+        .floral-divider {
+            display: block;
+            width: 120px;
+            height: 25px;
+            margin: 15px auto 40px auto;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20'%3E%3Cpath d='M99,10 C90,0 75,0 70,5 C65,10 60,10 55,5 C50,0 40,0 30,10 C20,20 10,20 1,10' fill='none' stroke='%23E7ADBC' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            position: relative;
+            height: 90vh;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--color-white);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            width: 550px;
+            max-width: 90%;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20% 10%;
+            box-sizing: border-box;
+            text-align: center;
+
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(217, 43, 87, 0.8)' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+
+            animation: pulse 2.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.04);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .hero-content h1 {
+            font-family: var(--font-heading);
+            font-size: 4.5rem;
+            margin: 0;
+            line-height: 1.1;
+            font-weight: normal;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        /* --- Styles còn lại giữ nguyên --- */
+        .couple-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .person-card {
+            max-width: 350px;
+            text-align: center;
+        }
+
+        .person-card img {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid var(--border-color);
+            padding: 5px;
+            background-color: var(--color-white);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .person-card h3 {
+            font-family: var(--font-heading);
+            font-size: 2.8rem;
+            color: var(--color-secondary);
+            margin: 10px 0;
+        }
+
+        .love-story-timeline {
+            position: relative;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        .love-story-timeline::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background-color: var(--border-color);
+        }
+
+        .story-card {
+            position: relative;
+            width: 50%;
+            padding: 10px 30px;
+            box-sizing: border-box;
+            margin-bottom: 30px;
+        }
+
+        .story-card:nth-child(odd) {
+            float: left;
+            text-align: right;
+            clear: both;
+        }
+
+        .story-card:nth-child(even) {
+            float: right;
+            text-align: left;
+            clear: both;
+        }
+
+        .story-card-content {
+            background-color: #fff9fa;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .story-card img {
+            width: 100%;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .story-card .time {
+            font-weight: 600;
+            color: var(--color-secondary);
+        }
+
+        .story-card h4 {
+            margin: 5px 0 10px 0;
+            color: var(--color-primary);
+            font-size: 1.2rem;
+        }
+
+        .story-card::after {
+            content: "♥";
+            font-size: 1.2rem;
+            position: absolute;
+            top: 20px;
+            color: var(--color-primary);
+            background: var(--color-white);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            line-height: 28px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .story-card:nth-child(odd)::after {
+            right: 12px;
+        }
+
+        .story-card:nth-child(even)::after {
+            left: 12px;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .event-card {
+            background: #fff9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .event-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .event-info {
+            padding: 25px;
+        }
+
+        .event-info h3 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--color-primary);
+            margin: 0 0 10px 0;
+        }
+
+        .map-link {
+            display: inline-block;
+            margin-top: 15px;
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .album-grid {
+            columns: 3 250px;
+            column-gap: 15px;
+        }
+
+        .album-grid img {
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            padding: 5px;
+            background-color: var(--color-white);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .album-grid img:hover {
+            transform: scale(1.05);
+        }
+
+        .guestbook-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .guestbook-form input,
+        .guestbook-form textarea {
+            font-family: var(--font-body);
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .guestbook-form input:focus,
+        .guestbook-form textarea:focus {
+            border-color: var(--color-primary);
+            outline: none;
+        }
+
+        .btn-submit {
+            background: var(--color-primary);
+            color: var(--color-white);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .guestbook-messages {
+            height: 450px;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        .guestbook-message {
+            background: #fff9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--color-primary);
+        }
+
+        .guestbook-message strong {
+            font-weight: 600;
+            color: var(--color-secondary);
+        }
+
+        @media (max-width: 900px) {
+            .guestbook-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .guestbook-messages {
+                height: auto;
+                max-height: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 3.5rem;
+            }
+
+            .album-grid {
+                columns: 2 150px;
+            }
+
+            .love-story-timeline::before {
+                left: 15px;
+            }
+
+            .story-card,
+            .story-card:nth-child(odd),
+            .story-card:nth-child(even) {
+                width: 100%;
+                float: none;
+                text-align: left;
+                padding-left: 50px;
+                padding-right: 10px;
+            }
+
+            .story-card::after,
+            .story-card:nth-child(odd)::after,
+            .story-card:nth-child(even)::after {
+                left: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="floating-hearts-container"></div>
+
+    <% if (locals.weddingData) { %>
+        <header class="hero" style="background-image: url('<%= weddingData.coupleImage %>');">
+            <div class="hero-content">
+                <h1>
+                    <%= weddingData.groom.firstName %>
+                </h1>
+                <h1 style="padding: 0; margin: 0;">&</h1>
+                <h1>
+                    <%= weddingData.bride.firstName %>
+                </h1>
+                <p>
+                    <%= weddingData.weddingDate %>
+                </p>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <main>
+                <% if (weddingData.groom.introduction || weddingData.bride.introduction) { %>
+                    <section class="section">
+                        <div class="container">
+                            <h2 class="section-title">The Happy Couple</h2>
+                            <span class="floral-divider"></span>
+                            <div class="couple-container">
+                                <% if (weddingData.groom.introduction) { %>
+                                    <div class="person-card">
+                                        <img src="<%= weddingData.groom.image %>" alt="Chú rể" />
+                                        <h3>
+                                            <%= weddingData.groom.fullName %>
+                                        </h3>
+                                        <p>
+                                            <%= weddingData.groom.introduction %>
+                                        </p>
+                                    </div>
+                                    <% } %>
+                                        <% if (weddingData.bride.introduction) { %>
+                                            <div class="person-card">
+                                                <img src="<%= weddingData.bride.image %>" alt="Cô dâu" />
+                                                <h3>
+                                                    <%= weddingData.bride.fullName %>
+                                                </h3>
+                                                <p>
+                                                    <%= weddingData.bride.introduction %>
+                                                </p>
+                                            </div>
+                                            <% } %>
+                            </div>
+                        </div>
+                    </section>
+                    <% } %>
+
+                        <% if (weddingData.youtubeUrl) { %>
+                            <section class="section">
+                                <div class="container">
+                                    <h2 class="section-title">Our Moment</h2>
+                                    <span class="floral-divider"></span>
+                                    <div style="
+                max-width: 900px;
+                margin: auto;
+                box-shadow: var(--shadow);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+              ">
+                                        <iframe width="100%" height="500" src="<%= weddingData.youtubeUrl %>"
+                                            frameborder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen style="border-radius: 8px; display: block"></iframe>
+                                    </div>
+                                </div>
+                            </section>
+                            <% } %>
+
+                                <% if (weddingData.loveStory && weddingData.loveStory.length> 0) { %>
+                                    <section class="section">
+                                        <div class="container">
+                                            <h2 class="section-title">Our Love Story</h2>
+                                            <span class="floral-divider"></span>
+                                            <div class="love-story-timeline">
+                                                <% weddingData.loveStory.forEach(story=> { %>
+                                                    <div class="story-card">
+                                                        <div class="story-card-content">
+                                                            <span class="time">
+                                                                <%= story.time %>
+                                                            </span>
+                                                            <h4>
+                                                                <%= story.title %>
+                                                            </h4>
+                                                            <p>
+                                                                <%= story.content %>
+                                                            </p>
+                                                            <% if (story.image) { %>
+                                                                <img src="<%= story.image %>"
+                                                                    alt="<%= story.title %>" />
+                                                                <% } %>
+                                                        </div>
+                                                    </div>
+                                                    <% }) %>
+                                                        <div style="clear: both"></div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <% } %>
+
+                                        <% if (weddingData.events && weddingData.events.length> 0) { %>
+                                            <section class="section">
+                                                <div class="container">
+                                                    <h2 class="section-title">Wedding Events</h2>
+                                                    <span class="floral-divider"></span>
+                                                    <div class="events-grid">
+                                                        <% weddingData.events.forEach(event=> { %>
+                                                            <div class="event-card">
+                                                                <img src="<%= event.image %>" alt="<%= event.name %>" />
+                                                                <div class="event-info">
+                                                                    <h3>
+                                                                        <%= event.name %>
+                                                                    </h3>
+                                                                    <p>
+                                                                        <i class="fas fa-clock"></i>&nbsp; <%=
+                                                                            event.time %>
+                                                                    </p>
+                                                                    <p>
+                                                                        <i class="fas fa-building"></i>&nbsp; <%=
+                                                                            event.venue %>
+                                                                    </p>
+                                                                    <p>
+                                                                        <i class="fas fa-map-marker-alt"></i>&nbsp; <%=
+                                                                            event.address %>
+                                                                    </p>
+                                                                    <a href="<%= event.mapLink %>" target="_blank"
+                                                                        class="map-link">Xem bản đồ</a>
+                                                                </div>
+                                                            </div>
+                                                            <% }) %>
+                                                    </div>
+                                                </div>
+                                            </section>
+                                            <% } %>
+
+                                                <% if (weddingData.album && weddingData.album.length> 0) { %>
+                                                    <section class="section">
+                                                        <div class="container">
+                                                            <h2 class="section-title">Photo Album</h2>
+                                                            <span class="floral-divider"></span>
+                                                            <div class="album-grid">
+                                                                <% weddingData.album.forEach(image=> { %>
+                                                                    <a href="<%= image %>"
+                                                                        data-lightbox="wedding-album">
+                                                                        <img src="<%= image %>" alt="Ảnh cưới"
+                                                                            loading="lazy" />
+                                                                    </a>
+                                                                    <% }) %>
+                                                            </div>
+                                                        </div>
+                                                    </section>
+                                                    <% } %>
+
+                                                        <section class="section">
+                                                            <div class="container">
+                                                                <h2 class="section-title">Guestbook</h2>
+                                                                <span class="floral-divider"></span>
+                                                                <div class="guestbook-layout">
+                                                                    <div class="guestbook-form">
+                                                                        <h3>Gửi lời chúc</h3>
+                                                                        <p>Hãy chia sẻ lời chúc phúc của bạn đến với
+                                                                            chúng tôi nhé!</p>
+                                                                        <form method="POST"
+                                                                            action="/w/<%= weddingData.slug %>/guestbook">
+                                                                            <input type="text" name="name"
+                                                                                placeholder="Tên của bạn" required />
+                                                                            <textarea rows="5" name="message"
+                                                                                placeholder="Lời chúc của bạn..."
+                                                                                required></textarea>
+                                                                            <button type="submit" class="btn-submit">
+                                                                                Gửi Lời Chúc
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+
+                                                                    <div class="guestbook-messages">
+                                                                        <% if (weddingData.guestbookMessages &&
+                                                                            weddingData.guestbookMessages.length> 0) {
+                                                                            %> <%
+                                                                                weddingData.guestbookMessages.forEach(msg=>
+                                                                                { %>
+                                                                                <div class="guestbook-message">
+                                                                                    <strong>
+                                                                                        <%= msg.name %>
+                                                                                    </strong>
+                                                                                    <p style="margin: 5px 0 0 0">
+                                                                                        <%= msg.message %>
+                                                                                    </p>
+                                                                                </div>
+                                                                                <% }) %>
+                                                                                    <% } else { %>
+                                                                                        <p>Chưa có lời chúc nào. Hãy là
+                                                                                            người đầu tiên nhé!</p>
+                                                                                        <% } %>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </section>
+            </main>
+        </div>
+        <% } else { %>
+            <div style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-size: 1.2rem;
+      ">
+                <p>Lỗi: Không tìm thấy dữ liệu đám cưới để hiển thị trang web.</p>
+            </div>
+            <% } %>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const heartsContainer = document.getElementById('floating-hearts-container');
+
+                        if (heartsContainer) {
+                            setInterval(createHeart, 300); // Tạo một trái tim mỗi 300ms
+                        }
+
+                        function createHeart() {
+                            const heart = document.createElement('div');
+                            heart.classList.add('heart');
+                            heart.innerHTML = '♥'; // Ký tự trái tim
+
+                            // Tạo vị trí và thuộc tính ngẫu nhiên
+                            const side = Math.random() < 0.5 ? 'left' : 'right';
+                            if (side === 'left') {
+                                heart.style.left = Math.random() * 15 + 'vw';
+                            } else {
+                                heart.style.left = (Math.random() * 15 + 85) + 'vw';
+                            }
+
+                            heart.style.fontSize = (Math.random() * 55 + 30) + 'px'; // Kích thước ngẫu nhiên
+                            heart.style.animationDuration = (Math.random() * 5 + 7) + 's'; // Tốc độ ngẫu nhiên (7-12s)
+                            heart.style.opacity = Math.random();
+
+                            heartsContainer.appendChild(heart);
+
+                            // Xóa trái tim khỏi DOM sau khi animation kết thúc để tránh lag
+                            setTimeout(() => {
+                                heart.remove();
+                            }, 12000); // 12 giây
+                        }
+                    });
+                </script>
+
+</body>
+
+</html>

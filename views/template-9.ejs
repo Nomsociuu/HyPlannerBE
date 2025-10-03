@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="<%= weddingData.language || 'vi' %>">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        Our Wedding | <% if (locals.weddingData) { %>
+            <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %>
+                    <% } %>
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <style>
+        :root {
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Poppins', sans-serif;
+            --color-bg: #FFFFFF;
+            --color-light-bg: #FDFBF8;
+            --color-coral: #FF6B6B;
+            --color-mint: #A8D8C9;
+            --color-dark: #333333;
+            --color-text: #555555;
+            --shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            margin: 0;
+            line-height: 1.7;
+            font-weight: 300;
+            background-color: var(--color-bg);
+            overflow-x: hidden;
+        }
+
+        /* --- MỚI: Hiệu ứng cánh hoa rơi --- */
+        #petal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .petal {
+            position: absolute;
+            top: -20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 20px;
+            height: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="%23FFB6C1" d="M85.7,4.3C71.5-5.7,40.3,2.3,26.1,20.3S-5.7,71.5,4.3,85.7s48-18,62.2-36S100,14.3,85.7,4.3z"/></svg>');
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(105vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .section {
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .section-light {
+            background-color: var(--color-light-bg);
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 3.5rem;
+            color: var(--color-dark);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        /* --- MỚI: Họa tiết trang trí --- */
+        .floral-divider {
+            display: block;
+            width: 80px;
+            height: 40px;
+            margin: 0 auto 60px auto;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><path d="M50,45 C40,30 20,30 10,45" fill="none" stroke="%23A8D8C9" stroke-width="2"/><path d="M50,45 C60,30 80,30 90,45" fill="none" stroke="%23A8D8C9" stroke-width="2"/><path d="M50,45 C45,20 30,20 25,45" fill="none" stroke="%23A8D8C9" stroke-width="2"/><path d="M50,45 C55,20 70,20 75,45" fill="none" stroke="%23A8D8C9" stroke-width="2"/><circle cx="50" cy="15" r="5" fill="%23FF6B6B"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            align-items: center;
+        }
+
+        .hero-text {
+            text-align: left;
+            padding-left: 10%;
+        }
+
+        .hero-text h1 {
+            font-family: var(--font-heading);
+            font-size: 6rem;
+            color: var(--color-dark);
+            margin: 0;
+            line-height: 1.1;
+            font-style: italic;
+        }
+
+        .hero-text p {
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-coral);
+            margin-top: 10px;
+        }
+
+        .hero-image {
+            background-size: cover;
+            background-position: center;
+            height: 100%;
+        }
+
+        /* --- Couple Section --- */
+        .couple-bio {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .person-photo img {
+            width: 100%;
+            display: block;
+        }
+
+        .person-text {
+            text-align: left;
+        }
+
+        .person-text h3 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--color-dark);
+        }
+
+        /* --- Events Section --- */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .event-card {
+            background-color: white;
+            box-shadow: var(--shadow);
+            text-align: left;
+        }
+
+        .event-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .event-info {
+            padding: 30px;
+        }
+
+        .event-info h3 {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: var(--color-dark);
+        }
+
+        .map-link {
+            color: var(--color-coral);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        /* --- Love Story Section --- */
+        .story-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        .polaroid-card {
+            background: white;
+            padding: 15px 15px 25px 15px;
+            box-shadow: var(--shadow);
+            width: 280px;
+        }
+
+        .polaroid-card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        .polaroid-card .time {
+            font-weight: 600;
+            color: var(--color-coral);
+        }
+
+        .polaroid-card h4 {
+            margin: 5px 0 0 0;
+            font-size: 1.2rem;
+        }
+
+        /* --- Album Section --- */
+        .album-grid {
+            columns: 3 250px;
+            column-gap: 20px;
+        }
+
+        .album-grid img {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* --- Guestbook Section (Đã cập nhật) --- */
+        .guestbook-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            text-align: left;
+            background: white;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            max-width: 900px;
+            margin: auto;
+            position: relative;
+            /* Viền hoa văn mới */
+            border-style: solid;
+            border-width: 25px;
+            border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23A8D8C9' stroke-width='2.5'%3E%3Cpath d='M25 10 C10 20 10 80 25 90'/%3E%3Cpath d='M75 10 C90 20 90 80 75 90'/%3E%3Cpath d='M10 25 C20 10 80 10 90 25'/%3E%3Cpath d='M10 75 C20 90 80 90 90 75'/%3E%3C/g%3E%3C/svg%3E");
+            border-image-slice: 40;
+            border-image-repeat: round;
+        }
+
+        .guestbook-form h3 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--color-dark);
+            margin: 0 0 20px 0;
+            position: relative;
+            display: inline-block;
+        }
+
+        .guestbook-form h3::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50%;
+            height: 3px;
+            background-color: var(--color-mint);
+        }
+
+        .guestbook-form input,
+        .guestbook-form textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-family: var(--font-body);
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .guestbook-form input:focus,
+        .guestbook-form textarea:focus {
+            outline: none;
+            border-color: var(--color-coral);
+        }
+
+        .btn-submit {
+            background: var(--color-coral);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #e65c5c;
+            transform: translateY(-2px);
+        }
+
+        .guestbook-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--color-light-bg);
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .guestbook-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .guestbook-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .guestbook-messages::-webkit-scrollbar-thumb {
+            background: var(--color-mint);
+            border-radius: 6px;
+        }
+
+        .guestbook-message {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            border-left: 4px solid var(--color-coral);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            font-style: italic;
+        }
+
+        .guestbook-message strong {
+            font-weight: 700;
+            color: var(--color-dark);
+            font-style: normal;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+                height: 80vh;
+            }
+
+            .hero-image {
+                display: none;
+            }
+
+            .hero-text {
+                text-align: center;
+                padding: 0 20px;
+            }
+
+            .hero-text h1 {
+                font-size: 4.5rem;
+            }
+
+            .couple-bio,
+            .guestbook-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .album-grid {
+                columns: 2;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="petal-container"></div>
+    <div class="main-content">
+        <% if (locals.weddingData) { %>
+            <header class="hero">
+                <div class="hero-text">
+                    <p>
+                        <%= weddingData.weddingDate %>
+                    </p>
+                    <h1>
+                        <%= weddingData.groom.firstName %> <br>& <%= weddingData.bride.firstName %>
+                    </h1>
+                </div>
+                <div class="hero-image" style="background-image: url('<%= weddingData.coupleImage %>');"></div>
+            </header>
+
+            <main>
+
+                <!-- SỰ KIỆN CƯỚI -->
+                <section class="section">
+                    <div class="container">
+                        <h2 class="section-title">Wedding Events</h2>
+                        <span class="floral-divider"></span>
+                        <div class="events-grid">
+                            <% weddingData.events.forEach(event=> { %>
+                                <div class="event-card">
+                                    <img src="<%= event.image %>" alt="<%= event.name %>" />
+                                    <div class="event-info">
+                                        <h3>
+                                            <%= event.name %>
+                                        </h3>
+                                        <p><i class="fas fa-clock"></i>&nbsp; <%= event.time %>
+                                        </p>
+                                        <p><i class="fas fa-map-marker-alt"></i>&nbsp; <%= event.venue %>, <%=
+                                                    event.address %>
+                                        </p>
+                                        <a href="<%= event.mapLink %>" target="_blank" class="map-link">View Map</a>
+                                    </div>
+                                </div>
+                                <% }) %>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CHUYỆN TÌNH YÊU -->
+                <% if (weddingData.loveStory && weddingData.loveStory.length> 0) { %>
+                    <section class="section section-light">
+                        <div class="container">
+                            <h2 class="section-title">Our Story</h2>
+                            <span class="floral-divider"></span>
+                            <div class="story-container">
+                                <% weddingData.loveStory.forEach(story=> { %>
+                                    <div class="polaroid-card">
+                                        <% if (story.image) { %> <img src="<%= story.image %>"
+                                                alt="<%= story.title %>" />
+                                            <% } %>
+                                                <p class="time">
+                                                    <%= story.time %>
+                                                </p>
+                                                <h4>
+                                                    <%= story.title %>
+                                                </h4>
+                                    </div>
+                                    <% }) %>
+                            </div>
+                        </div>
+                    </section>
+                    <% } %>
+
+                        <!-- ALBUM & VIDEO -->
+                        <section class="section">
+                            <div class="container">
+                                <% if (weddingData.album && weddingData.album.length> 0) { %>
+                                    <h2 class="section-title">Gallery</h2>
+                                    <span class="floral-divider"></span>
+                                    <div class="album-grid">
+                                        <% weddingData.album.forEach((image)=> { %>
+                                            <img src="<%= image %>" alt="Ảnh cưới" loading="lazy" />
+                                            <% }) %>
+                                    </div>
+                                    <% } %>
+
+                                        <% if (weddingData.youtubeUrl) { %>
+                                            <div style="margin-top: 80px;">
+                                                <h2 class="section-title">Our Film</h2>
+                                                <span class="floral-divider"></span>
+                                                <iframe width="100%" height="500" src="<%= weddingData.youtubeUrl %>"
+                                                    frameborder="0" allowfullscreen></iframe>
+                                            </div>
+                                            <% } %>
+                            </div>
+                        </section>
+
+                        <!-- SỔ LƯU BÚT -->
+                        <section class="section section-light">
+                            <div class="container">
+                                <h2 class="section-title">Guestbook</h2>
+                                <span class="floral-divider"></span>
+                                <div class="guestbook-layout">
+                                    <div class="guestbook-form">
+                                        <h3>Leave a Note</h3>
+                                        <form method="POST" action="/w/<%= weddingData.slug %>/guestbook">
+                                            <input type="text" name="name" placeholder="Your Name" required />
+                                            <textarea rows="5" name="message" placeholder="Your Message..."
+                                                required></textarea>
+                                            <button type="submit" class="btn-submit">Submit</button>
+                                        </form>
+                                    </div>
+                                    <div class="guestbook-messages">
+                                        <% if (weddingData.guestbookMessages && weddingData.guestbookMessages.length> 0)
+                                            { %>
+                                            <% weddingData.guestbookMessages.forEach(msg=> { %>
+                                                <div class="guestbook-message">
+                                                    <strong>
+                                                        <%= msg.name %>
+                                                    </strong>
+                                                    <p style="margin: 5px 0 0 0;">
+                                                        <%= msg.message %>
+                                                    </p>
+                                                </div>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <p>Be the first to leave a message!</p>
+                                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+            </main>
+            <% } else { %>
+                <div style="height: 100vh; display: flex; align-items: center; justify-content: center;">
+                    <p>Error: Wedding data not found.</p>
+                </div>
+                <% } %>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.getElementById('petal-container');
+            if (container) {
+                const petalCount = 30;
+                for (let i = 0; i < petalCount; i++) {
+                    let petal = document.createElement('div');
+                    petal.className = 'petal';
+                    container.appendChild(petal);
+
+                    petal.style.left = Math.random() * 100 + 'vw';
+                    petal.style.animationDuration = Math.random() * 5 + 5 + 's';
+                    petal.style.animationDelay = Math.random() * 5 + 's';
+                    petal.style.opacity = Math.random();
+                    petal.style.transform = `scale(${Math.random() * 0.5 + 0.5}) rotate(${Math.random() * 360}deg)`;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

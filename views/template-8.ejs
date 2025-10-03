@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="<%= weddingData.language || 'vi' %>">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        Our Love Story | <% if (locals.weddingData) { %>
+            <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %>
+        <% } %>
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Allura&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <style>
+        :root {
+            --font-heading: 'Allura', cursive;
+            --font-body: 'Merriweather', serif;
+            --color-sepia-bg: #f4f0e8;
+            --color-dark-brown: #3d2c21;
+            --color-text: #5a4b41;
+            --color-accent: #a87b62;
+            --shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            margin: 0;
+            line-height: 1.8;
+            font-weight: 300;
+            background-color: var(--color-sepia-bg);
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXVAAAAacXAacm8AbHEAbHIng29nf2IJa2APbG8jc28AbtEAe28AeVcAb3AAdnQAbFEAcm8Acm8Acm8AbreKAAAANElEQVR42u2UywEAIABEAUQXxVbbe/z/RXYEsHeJoDuQdeDddRBL2Fh6SML2cn3D+wPN8VudjWHfCgAAAABJRU5ErkJggg==');
+            padding: 0 40px; /* Tạo khoảng trống cho dải phim */
+        }
+        
+        /* --- MỚI: Dải phim dọc hai bên --- */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background-color: var(--color-dark-brown);
+            z-index: 999;
+            /* Lỗ trên dải phim */
+            background-image: repeating-linear-gradient(
+                var(--color-sepia-bg),
+                var(--color-sepia-bg) 8px,
+                transparent 8px,
+                transparent 16px
+            );
+            background-size: 8px 24px;
+            background-position: 5px center;
+            background-repeat: repeat-y;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        body::before { left: 0; }
+        body::after { right: 0; }
+
+        .film-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            background: linear-gradient(rgba(0,0,0,0.05) 50%, rgba(0,0,0,0) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.02), rgba(0,0,255,0.03));
+            background-size: 100% 2px, 3px 100%;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.3; }
+        }
+
+        .main-content {
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            padding: 80px 0;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 4.5rem;
+            color: var(--color-dark-brown);
+            margin: 0 0 40px 0;
+            font-weight: normal;
+        }
+        
+        /* --- MỚI: Dải phân cách hình cuộn phim --- */
+        .film-divider {
+            display: block;
+            width: 60px;
+            height: 60px;
+            margin: 20px auto 40px auto;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233d2c21'%3E%3Cpath d='M12,2A10,10 0 1,0 22,12,10 10 0 0,0 12,2Z M10,6H11V7H10V6Z M13,6H14V7H13V6Z M7,8H8V9H7V8Z M16,8H17V9H16V8Z M5,10H6V11H5V10Z M18,10H19V11H18V10Z M5,13H6V14H5V13Z M18,13H19V14H18V13Z M7,15H8V16H7V15Z M16,15H17V16H16V15Z M10,17H11V18H10V17Z M13,17H14V18H13V17Z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+        }
+
+
+        /* --- Hero Section --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.5);
+            animation: kenburns 30s infinite;
+        }
+
+        @keyframes kenburns {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(61, 44, 33, 0.4);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            color: white;
+            padding: 30px;
+            border: 2px solid rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.3);
+        }
+        .hero-content h1 {
+            font-family: var(--font-heading);
+            font-size: 6rem;
+            margin: 0 0 10px 0;
+            font-weight: normal;
+        }
+        .hero-content p {
+            font-family: var(--font-body);
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* --- Couple Section --- */
+        .couple-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        .person-card {
+            background: #fff;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            transform: rotate(-2deg);
+            transition: transform 0.3s ease;
+        }
+        .person-card:nth-child(even) {
+            transform: rotate(2deg);
+        }
+        .person-card:hover {
+            transform: rotate(0) scale(1.05);
+        }
+        .person-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            filter: sepia(0.3);
+        }
+        .person-card h3 {
+            font-family: var(--font-heading);
+            font-size: 2.8rem;
+            color: var(--color-dark-brown);
+            margin: 10px 0;
+        }
+
+        /* --- Love Story: Film Strip --- */
+        .film-strip-timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+        .film-strip-timeline::before,
+        .film-strip-timeline::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            height: 10px;
+            background-image: repeating-linear-gradient(-45deg, var(--color-dark-brown), var(--color-dark-brown) 1px, transparent 1px, transparent 5px);
+            z-index: 1;
+        }
+        .film-strip-timeline::before { top: 0; }
+        .film-strip-timeline::after { bottom: 0; }
+        
+        .story-frame {
+            position: relative;
+            max-width: 450px;
+            margin: 30px auto;
+            background: black;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .story-frame img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        .story-caption {
+            color: white;
+            text-align: left;
+            padding-top: 15px;
+        }
+        .story-caption h4 {
+            font-family: var(--font-body);
+            font-weight: 700;
+            margin: 0 0 5px 0;
+        }
+        .story-caption p { margin: 0; }
+
+        /* --- Events: Movie Tickets --- */
+        .events-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        .event-ticket {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            box-shadow: var(--shadow);
+            border: 1px solid #ddd;
+        }
+        .event-ticket-main {
+            padding: 20px;
+            text-align: left;
+            flex-grow: 1;
+        }
+        .event-ticket-main h3 { font-family: var(--font-heading); font-size: 2.5rem; margin: 0 0 10px 0; color: var(--color-dark-brown); }
+        
+        .event-ticket-stub {
+            flex-shrink: 0;
+            width: 150px;
+            border-left: 2px dashed #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            background: #fdfaf6;
+            transition: background 0.3s;
+        }
+        .event-ticket-stub:hover { background: #f4f0e8; }
+        .event-ticket-stub span {
+            display: block;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--color-accent);
+        }
+        .event-ticket-stub i { font-size: 2rem; color: var(--color-accent); margin-bottom: 10px; }
+
+        /* --- Album: Lightbox Table --- */
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .album-slide {
+            background: black;
+            padding: 10px 10px 25px 10px;
+            border: 1px solid #444;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, z-index 0s 0.3s;
+            cursor: pointer;
+        }
+        .album-slide:hover {
+            transform: scale(1.1);
+            z-index: 20;
+        }
+        .album-slide img { width: 100%; display: block; }
+        .album-slide span { display: block; color: white; margin-top: 5px; font-size: 0.8rem; }
+
+        /* --- Guestbook: Director's Notebook --- */
+        .guestbook-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            text-align: left;
+            background: #fffdf9;
+            padding: 40px;
+            border: 1px solid #eee;
+        }
+        .guestbook-form h3 { 
+            font-family: var(--font-heading); 
+            font-size: 2.5rem; 
+            color: var(--color-dark-brown);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .guestbook-form input, .guestbook-form textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #ddd;
+            color: var(--color-text);
+            padding: 10px 0;
+            margin-bottom: 15px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .btn-submit {
+            background: var(--color-accent);
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 10px 25px;
+            cursor: pointer;
+        }
+        .guestbook-messages { height: 400px; overflow-y: auto; }
+        .guestbook-message { padding: 10px; border-bottom: 1px dashed #ddd; }
+        .guestbook-message strong { font-family: var(--font-heading); font-size: 1.5rem; color: var(--color-dark-brown); }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            body { padding: 0 10px; } /* Giảm padding trên di động */
+            body::before, body::after { width: 10px; } /* Thu nhỏ dải phim */
+            .hero-content h1 { font-size: 4rem; }
+            .couple-container, .guestbook-layout { grid-template-columns: 1fr; }
+            .person-card, .person-card:nth-child(even) { transform: rotate(0); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="film-overlay"></div>
+    
+    <div class="main-content">
+        <% if (locals.weddingData) { %>
+            <header class="hero" style="background-image: url('<%= weddingData.coupleImage %>');">
+                <div class="hero-content">
+                    <h1><%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %></h1>
+                    <p><%= weddingData.weddingDate %></p>
+                </div>
+            </header>
+
+            <main>
+                <% if (weddingData.groom.introduction || weddingData.bride.introduction) { %>
+                    <section class="section">
+                        <div class="container">
+                            <h2 class="section-title">The Main Characters</h2>
+                            <div class="couple-container">
+                                <% if (weddingData.groom.introduction) { %>
+                                <div class="person-card">
+                                    <img src="<%= weddingData.groom.image %>" alt="Chú rể" />
+                                    <h3><%= weddingData.groom.fullName %></h3>
+                                    <p><%= weddingData.groom.introduction %></p>
+                                </div>
+                                <% } %>
+                                <% if (weddingData.bride.introduction) { %>
+                                <div class="person-card">
+                                    <img src="<%= weddingData.bride.image %>" alt="Cô dâu" />
+                                    <h3><%= weddingData.bride.fullName %></h3>
+                                    <p><%= weddingData.bride.introduction %></p>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </section>
+                <% } %>
+                
+                <% if (weddingData.youtubeUrl) { %>
+                    <section class="section" style="background: #e9e4d8;">
+                         <div class="container">
+                            <h2 class="section-title">Our Feature Film</h2>
+                            <span class="film-divider"></span>
+                             <div style="box-shadow: var(--shadow); border: 15px solid white;">
+                                <iframe width="100%" height="450" src="<%= weddingData.youtubeUrl %>" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    </section>
+                <% } %>
+
+                <% if (weddingData.loveStory && weddingData.loveStory.length > 0) { %>
+                <section class="section">
+                    <div class="container">
+                        <h2 class="section-title">Scenes of Our Story</h2>
+                        <span class="film-divider"></span>
+                        <div class="film-strip-timeline">
+                            <% weddingData.loveStory.forEach(story => { %>
+                                <div class="story-frame">
+                                    <% if (story.image) { %> <img src="<%= story.image %>" alt="<%= story.title %>" /> <% } %>
+                                    <div class="story-caption">
+                                        <h4><%= story.time %> - <%= story.title %></h4>
+                                        <p><%= story.content %></p>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </section>
+                <% } %>
+                
+                <% if (weddingData.events && weddingData.events.length > 0) { %>
+                <section class="section" style="background: #e9e4d8;">
+                    <div class="container">
+                        <h2 class="section-title">Event Screenings</h2>
+                        <span class="film-divider"></span>
+                        <div class="events-container">
+                        <% weddingData.events.forEach(event => { %>
+                            <div class="event-ticket">
+                                <div class="event-ticket-main">
+                                    <h3><%= event.name %></h3>
+                                    <p><i class="fas fa-clock"></i>&nbsp; <%= event.time %></p>
+                                    <p><i class="fas fa-building"></i>&nbsp; <%= event.venue %></p>
+                                    <p><i class="fas fa-map-marker-alt"></i>&nbsp; <%= event.address %></p>
+                                </div>
+                                <a href="<%= event.mapLink %>" target="_blank" class="event-ticket-stub">
+                                    <i class="fas fa-map-location-dot"></i>
+                                    <span>Xem bản đồ</span>
+                                </a>
+                            </div>
+                        <% }) %>
+                        </div>
+                    </div>
+                </section>
+                <% } %>
+
+                <% if (weddingData.album && weddingData.album.length > 0) { %>
+                <section class="section">
+                    <div class="container">
+                        <h2 class="section-title">Photo Gallery</h2>
+                        <span class="film-divider"></span>
+                        <div class="album-grid">
+                            <% weddingData.album.forEach((image, index) => { %>
+                                <div class="album-slide">
+                                    <img src="<%= image %>" alt="Ảnh cưới <%= index + 1 %>" loading="lazy" />
+                                    <span>Frame <%= index + 1 %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </section>
+                <% } %>
+
+                <section class="section" style="background: #e9e4d8;">
+                    <div class="container">
+                        <h2 class="section-title">Director's Notes</h2>
+                        <span class="film-divider"></span>
+                        <div class="guestbook-layout">
+                            <div class="guestbook-form">
+                                <h3><i class="fas fa-clapperboard"></i> Gửi Lời Nhắn</h3>
+                                <form method="POST" action="/w/<%= weddingData.slug %>/guestbook">
+                                    <input type="text" name="name" placeholder="Tên của bạn" required />
+                                    <textarea rows="5" name="message" placeholder="Lời chúc của bạn..." required></textarea>
+                                    <button type="submit" class="btn-submit">Gửi</button>
+                                </form>
+                            </div>
+                            <div class="guestbook-messages">
+                            <% if (weddingData.guestbookMessages && weddingData.guestbookMessages.length > 0) { %>
+                                <% weddingData.guestbookMessages.forEach(msg => { %>
+                                <div class="guestbook-message">
+                                    <strong><%= msg.name %></strong>
+                                    <p style="margin: 5px 0 0 0;"><%= msg.message %></p>
+                                </div>
+                                <% }) %>
+                            <% } else { %>
+                                <p>Hãy là người đầu tiên để lại lời nhắn!</p>
+                            <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        <% } else { %>
+            <div style="height: 100vh; display: flex; align-items: center; justify-content: center;">
+                <p>Lỗi: Không tìm thấy dữ liệu đám cưới.</p>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>
+

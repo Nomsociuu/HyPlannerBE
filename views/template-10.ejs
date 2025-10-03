@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="<%= weddingData.language || 'vi' %>">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        Trăm Năm Hạnh Phúc | <% if (locals.weddingData) { %>
+            <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %>
+                    <% } %>
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&family=Pinyon+Script&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/lightgallery/css/lightgallery.css">
+
+
+    <style>
+        :root {
+            --font-heading: 'Pinyon Script', cursive;
+            --font-body: 'Quicksand', sans-serif;
+            --color-primary: #D37E90;
+            /* Hồng đậm hơn */
+            --color-secondary: #F0D3D9;
+            /* Hồng nhạt */
+            --color-text: #5C474D;
+            /* Nâu hồng */
+            --color-white: #FFFFFF;
+            --color-bg: #FCF8F8;
+            --shadow: 0 8px 30px rgba(211, 126, 144, 0.1);
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            margin: 0;
+            background-color: var(--color-bg);
+            font-size: 16px;
+            line-height: 1.7;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .section {
+            padding: 80px 0;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .section-light {
+            background-color: var(--color-white);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        p {
+            margin: 0 0 1em 0;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 4rem;
+            color: var(--color-primary);
+            font-weight: normal;
+            margin-bottom: 10px;
+        }
+
+        .sub-title {
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 0.9rem;
+            color: var(--color-primary);
+            margin-bottom: 40px;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            position: relative;
+            height: 100vh;
+            /* display: flex; */
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--color-white);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content h1 {
+            font-family: var(--font-heading);
+            font-size: 7rem;
+            font-weight: normal;
+            line-height: 1;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            margin: 15px 0 25px 0;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--color-white);
+            color: var(--color-primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Couple Section --- */
+        .couple-layout {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 60px;
+            margin-top: 50px;
+        }
+
+        .person-card {
+            flex: 1;
+            max-width: 350px;
+        }
+
+        .person-card img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 4px solid var(--color-white);
+            box-shadow: var(--shadow);
+        }
+
+        .person-card h3 {
+            font-size: 1.8rem;
+            color: var(--color-text);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* --- Story Section --- */
+        .story-timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 50px auto 0 auto;
+        }
+
+        .story-item {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 50px;
+            position: relative;
+            padding: 30px;
+            border-radius: 30px;
+            background-color: #cf3d8448;
+        }
+
+        .story-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .story-image,
+        .story-content {
+            flex: 1;
+            text-align: left;
+        }
+
+        .story-image img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .story-content {
+            padding-top: 10px;
+        }
+
+        .story-content .time {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .story-content h4 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* --- Album Section --- */
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 50px;
+        }
+
+        .album-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .album-item img:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow);
+        }
+
+        /* --- Events Section --- */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .event-card {
+            background: var(--color-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            text-align: left;
+            overflow: hidden;
+        }
+
+        .event-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .event-info {
+            padding: 30px;
+        }
+
+        .event-info h3 {
+            font-size: 2rem;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+        }
+
+        .event-info p {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        /* === CSS CHO ICON === */
+        .event-info p i {
+            color: var(--color-primary);
+            margin-right: 12px;
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+            padding-top: 4px;
+        }
+
+        .event-info strong {
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .event-info a.btn {
+            margin-top: 15px;
+            display: inline-block;
+            font-size: 0.9rem;
+            padding: 10px 25px;
+        }
+
+        /* --- Guestbook Section --- */
+        .guestbook-layout {
+            max-width: 600px;
+            margin: 50px auto 0 auto;
+            text-align: left;
+        }
+
+        .guestbook-form input,
+        .guestbook-form textarea {
+            font-family: var(--font-body);
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--color-secondary);
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .guestbook-form input:focus,
+        .guestbook-form textarea:focus {
+            border-color: var(--color-primary);
+            outline: none;
+        }
+
+        .btn-submit {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--color-text);
+        }
+
+        .guestbook-messages {
+            margin-top: 40px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .guestbook-message {
+            background-color: var(--color-white);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--color-secondary);
+        }
+
+        .guestbook-message strong {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        /* --- Footer --- */
+        .footer {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer p {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: var(--color-primary);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 992px) {
+            .hero-content h1 {
+                font-size: 5rem;
+            }
+
+            .section-title {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .couple-layout {
+                flex-direction: column;
+                align-items: center;
+                gap: 40px;
+            }
+
+            .story-item,
+            .story-item:nth-child(even) {
+                flex-direction: column;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h1 {
+                font-size: 3.5rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Hiệu ứng tim động hai bên */
+        #flying-hearts-left,
+        #flying-hearts-right {
+            position: fixed;
+            top: 0;
+            width: 80px;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        #flying-hearts-left {
+            left: 40px;
+        }
+
+        #flying-hearts-right {
+            right: 40px;
+        }
+
+        .flying-heart-anim {
+            position: absolute;
+            font-size: 1.8rem;
+            color: #D37E90;
+            opacity: 0.85;
+            animation: flyHeart 2.5s linear forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes flyHeart {
+            0% {
+                opacity: 0.85;
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: translateY(-60vh) scale(1.3) rotate(20deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) scale(0.8) rotate(-20deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="flying-hearts-left"></div>
+    <div id="flying-hearts-right"></div>
+    <% if (locals.weddingData) { %>
+        <header class="hero" style="background-image: url('<%= weddingData.coupleImage %>');">
+            <img src="https://i.pinimg.com/originals/2d/d4/25/2dd425aa46cd66b422734f08089d7478.png" style="width: 30%;margin-top: 50px; height: auto;" alt="">
+            <div class="hero-content">
+                <h1>
+                    <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %>
+                </h1>
+                <p>
+                    <%= weddingData.weddingDate %>
+                </p>
+                <a href="#events" class="btn">Save the Date</a>
+            </div>
+        </header>
+
+
+        <main>
+            <% if (weddingData.groom.introduction || weddingData.bride.introduction) { %>
+                <section class="section">
+                    <div class="container">
+                        <h2 class="section-title">Cô Dâu & Chú Rể</h2>
+                        <p class="sub-title">The Happy Couple</p>
+                        <div class="couple-layout">
+                            <% if (weddingData.groom.introduction) { %>
+                                <div class="person-card">
+                                    <img src="<%= weddingData.groom.image %>" alt="Chú rể" />
+                                    <h3>
+                                        <%= weddingData.groom.fullName %>
+                                    </h3>
+                                    <p>
+                                        <%= weddingData.groom.introduction %>
+                                    </p>
+                                </div>
+                                <% } %>
+                                    <% if (weddingData.bride.introduction) { %>
+                                        <div class="person-card">
+                                            <img src="<%= weddingData.bride.image %>" alt="Cô dâu" />
+                                            <h3>
+                                                <%= weddingData.bride.fullName %>
+                                            </h3>
+                                            <p>
+                                                <%= weddingData.bride.introduction %>
+                                            </p>
+                                        </div>
+                                        <% } %>
+                        </div>
+                    </div>
+                </section>
+                <% } %>
+
+                    <% if (weddingData.loveStory && weddingData.loveStory.length> 0) { %>
+                        <section class="section section-light">
+                            <div class="container">
+                                <h2 class="section-title">Chuyện Tình Yêu</h2>
+                                <p class="sub-title">Our Love Story</p>
+                                <div class="story-timeline">
+                                    <% weddingData.loveStory.forEach(story=> { %>
+                                        <div class="story-item">
+                                            <div class="story-image">
+                                                <% if (story.image) { %><img src="<%= story.image %>"
+                                                        alt="<%= story.title %>" />
+                                                    <% } %>
+                                            </div>
+                                            <div class="story-content">
+                                                <span class="time">
+                                                    <%= story.time %>
+                                                </span>
+                                                <h4>
+                                                    <%= story.title %>
+                                                </h4>
+                                                <p>
+                                                    <%= story.content %>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                                </div>
+                            </div>
+                        </section>
+                        <% } %>
+
+                            <% if (weddingData.album && weddingData.album.length> 0) { %>
+                                <section class="section">
+                                    <div class="container">
+                                        <h2 class="section-title">Album Hình Cưới</h2>
+                                        <p class="sub-title">Our Wedding Album</p>
+                                        <div class="album-grid" id="lightgallery">
+                                            <% weddingData.album.forEach(image=> { %>
+                                                <a href="<%= image %>" class="album-item">
+                                                    <img src="<%= image %>" alt="Ảnh cưới" />
+                                                </a>
+                                                <% }) %>
+                                        </div>
+                                    </div>
+                                </section>
+                                <% } %>
+
+                                    <% if (weddingData.events && weddingData.events.length> 0) { %>
+                                        <section id="events" class="section section-light">
+                                            <div class="container">
+                                                <h2 class="section-title">Sự Kiện Cưới</h2>
+                                                <p class="sub-title">Wedding Events</p>
+                                                <div class="events-grid">
+                                                    <% weddingData.events.forEach(event=> { %>
+                                                        <div class="event-card">
+                                                            <img src="<%= event.image %>" alt="<%= event.name %>" />
+                                                            <div class="event-info">
+                                                                <h3>
+                                                                    <%= event.name %>
+                                                                </h3>
+                                                                <p><i class="fa-solid fa-clock"></i><span><strong>Thời
+                                                                            gian:</strong>
+                                                                        <%= event.time %>
+                                                                    </span></p>
+                                                                <p><i class="fa-solid fa-building"></i><span><strong>Tại:</strong>
+                                                                        <%= event.venue %>
+                                                                    </span></p>
+                                                                <p><i class="fa-solid fa-location-dot"></i><span><strong>Địa
+                                                                            chỉ:</strong>
+                                                                        <%= event.address %>
+                                                                    </span></p>
+                                                                <a href="<%= event.mapLink %>" target="_blank"
+                                                                    class="btn">Xem bản đồ</a>
+                                                            </div>
+                                                        </div>
+                                                        <% }) %>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <% } %>
+
+                                            <section class="section">
+                                                <div class="container">
+                                                    <h2 class="section-title">Sổ Lưu Bút</h2>
+                                                    <p class="sub-title">Leave a message for us</p>
+                                                    <div class="guestbook-layout">
+                                                        <div class="guestbook-form">
+                                                            <form method="POST"
+                                                                action="/w/<%= weddingData.slug %>/guestbook">
+                                                                <input type="text" name="name" placeholder="Tên của bạn"
+                                                                    required />
+                                                                <textarea rows="5" name="message"
+                                                                    placeholder="Gửi lời chúc tới cặp đôi..."
+                                                                    required></textarea>
+                                                                <button type="submit" class="btn-submit">Gửi Lời
+                                                                    Chúc</button>
+                                                            </form>
+                                                        </div>
+
+                                                        <% if (weddingData.guestbookMessages &&
+                                                            weddingData.guestbookMessages.length> 0) { %>
+                                                            <div class="guestbook-messages">
+                                                                <% weddingData.guestbookMessages.forEach(msg=> { %>
+                                                                    <div class="guestbook-message">
+                                                                        <strong>
+                                                                            <%= msg.name %>
+                                                                        </strong>
+                                                                        <p>
+                                                                            <%= msg.message %>
+                                                                        </p>
+                                                                    </div>
+                                                                    <% }) %>
+                                                            </div>
+                                                            <% } %>
+                                                    </div>
+                                                </div>
+                                            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="container">
+                <p>Thank You!</p>
+            </div>
+        </footer>
+
+        <% } else { %>
+            <p style="text-align:center; padding-top: 50px;">Lỗi: Không có dữ liệu để hiển thị trang web.</p>
+            <% } %>
+                <script>
+                    function spawnFlyingHeart(side) {
+                        const container = document.getElementById(side === 'left' ? 'flying-hearts-left' : 'flying-hearts-right');
+                        if (!container) return;
+                        // Random chọn icon: 80% tim, 20% like
+                        const isHeart = Math.random() < 0.5;
+                        const icon = document.createElement('i');
+                        if (isHeart) {
+                            icon.className = 'fa-solid fa-heart flying-heart-anim';
+                            icon.style.color = Math.random() > 0.7 ? '#FFD1DC' : '#D37E90';
+                        } else {
+                            icon.className = 'fa-solid fa-thumbs-up flying-heart-anim';
+                            icon.style.color = '#3b82f6';
+                        }
+                        icon.style.left = (10 + Math.random() * 10) + 'px';
+                        icon.style.bottom = '0px';
+                        icon.style.fontSize = (1.2 + Math.random() * 1.5) + 'rem';
+                        container.appendChild(icon);
+                        setTimeout(() => { icon.remove(); }, 2600);
+                    }
+
+                    setInterval(() => { spawnFlyingHeart('left'); }, 1000);
+                    setInterval(() => { spawnFlyingHeart('right'); }, 800);
+                </script>
+                <script src="https://unpkg.com/lightgallery/lightgallery.min.js"></script>
+                <script>
+                    lightGallery(document.getElementById('lightgallery'));
+                </script>
+
+</body>
+
+</html>

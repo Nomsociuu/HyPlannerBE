@@ -15,7 +15,7 @@ exports.getAllPhases = async (req, res) => {
           path: "member",
           select: "-password",
         },
-      }, 
+      },
     });
 
     if (!event) {
@@ -75,69 +75,119 @@ exports.createPhase = async (req, res) => {
 };
 
 // chưa sử dụng hiện tại nhưng sẽ sử dụng trong tương lai
-// exports.addTaskToPhase = async (req, res) => {
-//   const { phaseId } = req.params;
-//   const { taskName, taskNote, member } = req.body;
+//Tìm phase cần xóa
+// Xóa tất cả tasks thuộc phase đó
+// Xóa phase
+// Cập nhật wedding event (xóa phaseId khỏi array phases)
+// Trả về kết quả
+exports.deletePhase = async (req, res) => {
+  const { phaseId } = req.params;
 
-//   try {
-//     const newTask = new task({
-//       taskName,
-//       taskNote,
-//       member,
-//     });
+  try {
+    // Tìm phase trước khi xóa để lấy thông tin
+    const phaseToDelete = await phase.findById(phaseId);
 
-//     const savedTask = await newTask.save();
+    if (!phaseToDelete) {
+      return res.status(404).json({ message: "Phase not found" });
+    }
 
-//     const updatedPhase = await phase.findByIdAndUpdate(
-//       phaseId,
-//       { $push: { tasks: savedTask._id } },
-//       { new: true }
-//     ).populate("tasks");
+    // Xóa tất cả các task liên quan đến phase
+    if (phaseToDelete.tasks && phaseToDelete.tasks.length > 0) {
+      await task.deleteMany({ _id: { $in: phaseToDelete.tasks } });
+    }
 
-//     if (!updatedPhase) {
-//       return res.status(404).json({ message: "Phase not found" });
-//     }
+    // Xóa phase
+    const deletedPhase = await phase.findByIdAndDelete(phaseId);
 
-//     res.status(200).json(updatedPhase);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error adding task to phase" });
-//   }
-// };
-// exports.deletePhase = async (req, res) => {
-//   const { phaseId } = req.params;
+    // Cập nhật wedding event - xóa phaseId khỏi array phases
+    await weddingEvent.updateMany(
+      { phases: phaseId },
+      { $pull: { phases: phaseId } }
+    );
 
-//   try {
-//     const deletedPhase = await phase.findByIdAndDelete(phaseId);
+    res.status(200).json({
+      message: "Phase and related tasks deleted successfully",
+      deletedPhase: deletedPhase,
+      deletedTasksCount: phaseToDelete.tasks ? phaseToDelete.tasks.length : 0,
+    });
+  } catch (error) {
+    console.error("Error deleting phase:", error);
+    res
+      .status(500)
+      .json({ message: "Error deleting phase", error: error.message });
+  }
+};
 
-//     if (!deletedPhase) {
-//       return res.status(404).json({ message: "Phase not found" });
-//     }
 
-//     // Xóa tất cả các task liên quan đến phase
-//     await task.deleteMany({ _id: { $in: deletedPhase.tasks } });
+exports.updatePhase = async (req, res) => {
+  const { phaseId } = req.params;
+  const { phaseTimeStart, phaseTimeEnd } = req.body;
 
-//     res.status(200).json({ message: "Phase and related tasks deleted" });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error deleting phase" });
-//   }
-// };
-// exports.updatePhase = async (req, res) => {
-//   const { phaseId } = req.params;
-//   const { phaseName, phaseTimeStart, phaseTimeEnd } = req.body;
+  // Validation
+  if (!phaseTimeStart && !phaseTimeEnd) {
+    return res.status(400).json({ 
+      message: "At least one field (phaseTimeStart or phaseTimeEnd) is required for update" 
+    });
+  }
 
-//   try {
-//     const updatedPhase = await phase.findByIdAndUpdate(
-//       phaseId,
-//       { phaseName, phaseTimeStart, phaseTimeEnd },
-//       { new: true }
-//     );
+  // Validate dates nếu cả hai đều được cung cấp
+  // if (phaseTimeStart && phaseTimeEnd) {
+  //   if (new Date(phaseTimeEnd) <= new Date(phaseTimeStart)) {
+  //     return res.status(400).json({ 
+  //       message: "phaseTimeEnd must be greater than phaseTimeStart" 
+  //     });
+  //   }
+  // }
 
-//     if (!updatedPhase) {
-//       return res.status(404).json({ message: "Phase not found" });
-//     }
+  try {
+    // Tìm phase hiện tại để kiểm tra
+    const currentPhase = await phase.findById(phaseId);
+    if (!currentPhase) {
+      return res.status(404).json({ message: "Phase not found" });
+    }
 
-//     res.status(200).json(updatedPhase);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error updating phase" });
-//   }
-// };
+    // Tạo object update chỉ với các fields được cung cấp
+    const updateData = {};
+    if (phaseTimeStart) updateData.phaseTimeStart = phaseTimeStart;
+    if (phaseTimeEnd) updateData.phaseTimeEnd = phaseTimeEnd;
+
+    // Validate dates với dữ liệu hiện tại
+    const newStartTime = phaseTimeStart ? new Date(phaseTimeStart) : currentPhase.phaseTimeStart;
+    const newEndTime = phaseTimeEnd ? new Date(phaseTimeEnd) : currentPhase.phaseTimeEnd;
+    
+    if (newEndTime <= newStartTime) {
+      return res.status(400).json({ 
+        message: "phaseTimeEnd must be greater than phaseTimeStart" 
+      });
+    }
+
+    // Update phase
+    const updatedPhase = await phase.findByIdAndUpdate(
+      phaseId,
+      updateData,
+      { new: true, runValidators: true }
+    ).populate('tasks');
+
+    res.status(200).json({
+      message: "Phase updated successfully",
+      updatedPhase: updatedPhase
+    });
+
+  } catch (error) {
+    console.error("Error updating phase:", error);
+    
+    // Handle validation errors
+    // if (error.name === 'ValidationError') {
+    //   const validationErrors = Object.values(error.errors).map(err => err.message);
+    //   return res.status(400).json({ 
+    //     message: "Validation error", 
+    //     errors: validationErrors 
+    //   });
+    // }
+    
+    res.status(500).json({ 
+      message: "Error updating phase", 
+      error: error.message 
+    });
+  }
+};

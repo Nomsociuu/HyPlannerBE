@@ -13,12 +13,12 @@ const { protect } = require('../middleware/authMiddleware');
 router.use(protect);
 
 // User Selection routes
-router.post('/selections', createSelection);     // Create new selection
-router.delete('/selections', deleteSelection);   // Remove pinned selection
-router.get('/selections', getUserSelections);    // Get all selections
+router.post('/', createSelection);     // Create new selection
+router.delete('/', deleteSelection);   // Remove pinned selection
+router.get('/', getUserSelections);    // Get all selections
 
 // Album routes
-router.post('/album', createAlbum);
+router.post('/albums', createAlbum);
 router.get('/albums', getUserAlbums);
 
 module.exports = router;

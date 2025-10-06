@@ -58,7 +58,7 @@ app.use("/phases", phaseRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/weddingEvents", weddingEventRoutes);
 app.use("/wedding-costume", weddingCostumeRoutes);
-app.use("/user", userSelectionRoutes);
+app.use("/user-selections", userSelectionRoutes);
 app.use("/groupActivities", groupActivityRoutes);
 app.use("/activities", activityRoutes);
 app.use("/invitation", invitationLetterRoutes);

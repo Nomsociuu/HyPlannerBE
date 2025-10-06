@@ -7,6 +7,12 @@ const UserSelectionSchema = new Schema({
     ref: 'User',
     required: true 
   },
+  type: {
+    type: String,
+    enum: ['wedding-dress', 'vest', 'bride-engage', 'groom-engage', 'tone-color', 'wedding-venue', 'wedding-theme'],
+    required: true
+  },
+  // Wedding Dress fields (chỉ sử dụng khi type = 'wedding-dress')
   styles: [{ 
     type: Schema.Types.ObjectId, 
     ref: 'Style'
@@ -44,6 +50,77 @@ const UserSelectionSchema = new Schema({
   flowers: [{ 
     type: Schema.Types.ObjectId, 
     ref: 'WeddingFlower'
+  }],
+  // Vest fields (chỉ sử dụng khi type = 'vest')
+  vestStyles: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'VestStyle'
+  }],
+  vestColors: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'VestColor'
+  }],
+  vestMaterials: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'VestMaterial'
+  }],
+  vestLapels: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'VestLapel'
+  }],
+  vestPockets: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'VestPocket'
+  }],
+  vestDecorations: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'VestDecoration'
+  }],
+  // Bride Engage fields (chỉ sử dụng khi type = 'bride-engage')
+  brideEngageStyles: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'BrideEngageStyle'
+  }],
+  brideEngageMaterials: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'BrideEngageMaterial'
+  }],
+  brideEngagePatterns: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'BrideEngagePattern'
+  }],
+  brideEngageHeadwears: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'BrideEngageHeadwear'
+  }],
+  // Groom Engage fields (chỉ sử dụng khi type = 'groom-engage')
+  groomEngageOutfits: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'GroomEngageOutfit'
+  }],
+  groomEngageAccessories: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'GroomEngageAccessory'
+  }],
+  // Tone Color fields (sử dụng khi type = 'tone-color')
+  // Chứa mix của WeddingToneColor và EngageToneColor IDs
+  weddingToneColors: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'WeddingToneColor'
+  }],
+  engageToneColors: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'EngageToneColor'
+  }],
+  // Wedding Venue fields (sử dụng khi type = 'wedding-venue')
+  weddingVenues: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'WeddingVenue'
+  }],
+  // Wedding Theme fields (sử dụng khi type = 'wedding-theme')
+  weddingThemes: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'WeddingTheme'
   }],
   isPinned: {
     type: Boolean,

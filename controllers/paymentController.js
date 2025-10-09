@@ -23,48 +23,73 @@ const createPaymentLink = async (req, res) => {
   try {
     let order;
 
-    // --- LOGIC MỚI: KIỂM TRA ĐƠN HÀNG "PENDING" TỒN TẠI ---
     const existingPendingOrder = await Order.findOne({
       userId,
       status: "PENDING",
-      packageType, // Thêm điều kiện kiểm tra loại gói để chính xác hơn
+      packageType,
     });
 
     if (existingPendingOrder) {
-      // Nếu đã có, dùng lại đơn hàng đó
       order = existingPendingOrder;
+      console.log(
+        `Đơn hàng PENDING đã tồn tại: ${order.orderCode}. Sẽ hủy link cũ trước khi tạo link mới.`
+      );
+
+      // --- LOGIC MỚI: HỦY LINK THANH TOÁN CŨ TRÊN PAYOS ---
+      try {
+        // Yêu cầu PayOS hủy phiên thanh toán cũ của orderCode này
+        await payOs.paymentRequests.cancel(order.orderCode);
+        console.log(
+          `Hủy link thanh toán cũ cho orderCode ${order.orderCode} thành công.`
+        );
+      } catch (cancelError) {
+        // Nếu PayOS báo lỗi "Không tìm thấy" (thường là mã 204 hoặc lỗi có code 'NOT_FOUND'),
+        // nghĩa là link cũ đã hết hạn hoặc đã bị hủy. Chúng ta có thể bỏ qua lỗi này và tiếp tục.
+        if (
+          cancelError.code === 204 ||
+          cancelError.error?.code === "NOT_FOUND"
+        ) {
+          console.log(`Không tìm thấy link thanh toán cũ để hủy (bỏ qua).`);
+        } else {
+          // Nếu là một lỗi khác, thì báo lỗi và dừng lại.
+          console.error(
+            "Lỗi khi hủy link thanh toán cũ trên PayOS:",
+            cancelError
+          );
+          // Ném lỗi ra ngoài để khối catch bên ngoài bắt được
+          throw new Error("Không thể hủy phiên thanh toán cũ trên PayOS.");
+        }
+      }
+      // ----------------------------------------------------
+
       // Cập nhật lại số tiền nếu có thay đổi
       if (order.amount !== price) {
         order.amount = price;
         await order.save();
       }
-      console.log(`Sử dụng lại đơn hàng PENDING đã có: ${order.orderCode}`);
     } else {
-      // Nếu không có, tạo đơn hàng mới
       const newOrderCode = Date.now();
       order = new Order({
         userId,
         packageType,
         amount: price,
         orderCode: newOrderCode,
-        // Status mặc định là PENDING
       });
       await order.save();
       console.log(`Tạo đơn hàng PENDING mới: ${order.orderCode}`);
     }
-    // ---------------------------------------------------------
 
     const payosOrder = {
       amount: order.amount,
       description: description,
       orderCode: order.orderCode,
       returnUrl: `${APP_SCHEME}://upgrade-account?status=success&orderCode=${order.orderCode}`,
-      // Cập nhật cancelUrl để chứa orderCode
       cancelUrl: `${APP_SCHEME}://upgrade-account?status=cancelled&orderCode=${order.orderCode}`,
       buyerName: req.user.fullName,
       buyerEmail: req.user.email,
     };
 
+    // Bây giờ việc tạo link mới sẽ luôn thành công
     const paymentLinkResponse = await payOs.paymentRequests.create(payosOrder);
 
     res.status(200).json({

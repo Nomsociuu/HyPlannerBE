@@ -67,10 +67,10 @@ const createPaymentLink = async (req, res) => {
  * @access  Public
  */
 const handlePayOsWebhook = async (req, res) => {
-  const webhookData = req.body;
+  const webhookData = JSON.parse(req.body);
   try {
     // Xác thực webhook
-    const verifiedData = payOs.verifyPaymentWebhook(webhookData);
+    const verifiedData = await payOs.webhooks.verify(webhookData);
 
     // Chỉ xử lý khi thanh toán thành công
     if (verifiedData.code === "00" && verifiedData.desc === "Success") {

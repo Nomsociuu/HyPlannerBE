@@ -1,4 +1,25 @@
+// models/InvitationLetter.js
+
 const mongoose = require("mongoose");
+
+// --- BẮT ĐẦU PHẦN CẬP NHẬT MODEL ---
+
+// Định nghĩa schema cho các mục con để code sạch hơn
+const LoveStorySchema = new mongoose.Schema({
+  title: String,
+  time: String,
+  content: String,
+  image: String,
+});
+
+const EventSchema = new mongoose.Schema({
+  name: String,
+  time: String,
+  venue: String,
+  address: String,
+  mapLink: String,
+  image: String,
+});
 
 const invitationLetterSchema = new mongoose.Schema(
   {
@@ -28,11 +49,36 @@ const invitationLetterSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+
+    // --- Thêm các trường mới ở đây ---
+    aboutCouple: {
+      type: String,
+      default: "", // Lời giới thiệu về cặp đôi
+    },
+    youtubeUrl: {
+      type: String,
+      default: null,
+    },
+    loveStory: {
+      type: [LoveStorySchema],
+      default: [],
+    },
+    album: {
+      type: [String], // Mảng chứa các URL của ảnh
+      default: [],
+    },
+    events: {
+      type: [EventSchema],
+      default: [],
+    },
+    // Bạn có thể thêm các trường khác ở đây trong tương lai
   },
   {
     timestamps: true,
   }
 );
+
+// --- KẾT THÚC PHẦN CẬP NHẬT MODEL ---
 
 const InvitationLetter = mongoose.model(
   "InvitationLetter",

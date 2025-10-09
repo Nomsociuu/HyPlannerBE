@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      Trang Cưới Của <%= weddingData.groom.fullName %> & <%=
-      weddingData.bride.fullName %>
+      Trang Cưới Của <% if (weddingData && weddingData.groomName) { %> <%=
+      weddingData.groomName %> <% } %> & <% if (weddingData &&
+      weddingData.brideName) { %> <%= weddingData.brideName %> <% } %>
     </title>
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;500&display=swap"
@@ -227,6 +228,18 @@
         color: #666;
       }
 
+      /* --- BẮT ĐẦU PHẦN CSS MỚI --- */
+      .placeholder {
+        text-align: center;
+        padding: 50px 20px;
+        background-color: #fcfcfc;
+        border: 2px dashed #e0e0e0;
+        border-radius: 8px;
+        color: #888;
+        font-style: italic;
+      }
+      /* --- KẾT THÚC PHẦN CSS MỚI --- */
+
       footer {
         text-align: center;
         padding: 30px;
@@ -353,13 +366,11 @@
   </head>
   <body>
     <header>
-      <h1>
-        <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %>
-      </h1>
+      <h1><%= weddingData.groomName %> & <%= weddingData.brideName %></h1>
       <div class="couple-names">
-        <span><%= weddingData.groom.fullName %></span>
+        <span><%= weddingData.groomName %></span>
         <span class="and">&</span>
-        <span><%= weddingData.bride.fullName %></span>
+        <span><%= weddingData.brideName %></span>
       </div>
       <p><%= weddingData.weddingDate %></p>
     </header>
@@ -376,6 +387,7 @@
 
       <section id="video">
         <h3>Video Kỷ Niệm</h3>
+        <% if (weddingData.youtubeUrl) { %>
         <div class="video-container">
           <iframe
             src="https://www.youtube.com/embed/<%= weddingData.youtubeUrl.split('v=')[1] %>"
@@ -386,10 +398,18 @@
           >
           </iframe>
         </div>
+        <% } else { %>
+        <div class="placeholder">
+          <p>
+            Vui lòng bổ sung "Video Kỷ Niệm" trong màn hình quản lý website.
+          </p>
+        </div>
+        <% } %>
       </section>
 
       <section id="love-story">
         <h3>Câu Chuyện Tình Yêu</h3>
+        <% if (weddingData.loveStory && weddingData.loveStory.length > 0) { %>
         <% weddingData.loveStory.forEach(function(story) { %>
         <div class="love-story-item">
           <img src="<%= story.image %>" alt="<%= story.title %>" />
@@ -399,21 +419,37 @@
             <p class="content"><%= story.content %></p>
           </div>
         </div>
-        <% }); %>
+        <% }); %> <% } else { %>
+        <div class="placeholder">
+          <p>
+            Vui lòng bổ sung "Câu Chuyện Tình Yêu" trong màn hình quản lý
+            website.
+          </p>
+        </div>
+        <% } %>
       </section>
 
       <section id="album">
         <h3>Album Ảnh Cưới</h3>
+        <% if (weddingData.album && weddingData.album.length > 0) { %>
         <div class="album-grid">
           <% weddingData.album.forEach(function(image) { %>
           <img src="<%= image %>" alt="Ảnh cưới" />
           <% }); %>
         </div>
+        <% } else { %>
+        <div class="placeholder">
+          <p>
+            Vui lòng bổ sung "Album Ảnh Cưới" trong màn hình quản lý website.
+          </p>
+        </div>
+        <% } %>
       </section>
 
       <section id="events">
         <h3>Chương Trình Cưới</h3>
-        <% weddingData.events.forEach(function(event) { %>
+        <% if (weddingData.events && weddingData.events.length > 0) { %> <%
+        weddingData.events.forEach(function(event) { %>
         <div class="event-item">
           <img src="<%= event.image %>" alt="<%= event.name %>" />
           <div class="event-details">
@@ -422,15 +458,25 @@
             <p><strong>Địa điểm:</strong> <%= event.venue %></p>
             <p><strong>Địa chỉ:</strong> <%= event.address %></p>
             <% if (event.mapLink) { %>
-            <p><a href="<%= event.mapLink %>" target="_blank">Xem bản đồ</a></p>
+            <p>
+              <a href="<%= event.mapLink %>" target="_blank">Xem bản đồ</a>
+            </p>
             <% } %>
           </div>
         </div>
-        <% }); %>
+        <% }); %> <% } else { %>
+        <div class="placeholder">
+          <p>
+            Vui lòng bổ sung "Chương Trình Cưới" trong màn hình quản lý website.
+          </p>
+        </div>
+        <% } %>
       </section>
 
       <section id="guestbook">
         <h3>Sổ Lưu Bút</h3>
+        <% if (weddingData.guestbookMessages &&
+        weddingData.guestbookMessages.length > 0) { %>
         <div class="guestbook-messages">
           <% weddingData.guestbookMessages.forEach(function(message) { %>
           <div class="guestbook-card">
@@ -439,7 +485,13 @@
           </div>
           <% }); %>
         </div>
+        <% } else { %>
+        <p style="text-align: center; color: #777">
+          Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc nhé!
+        </p>
+        <% } %>
       </section>
+
       <div class="guestbook-form-container">
         <h4>Gửi Lời Chúc Của Bạn</h4>
         <form>
@@ -470,8 +522,8 @@
 
     <footer>
       <p>
-        Chúc mừng hạnh phúc của <%= weddingData.groom.fullName %> và <%=
-        weddingData.bride.fullName %>
+        Chúc mừng hạnh phúc của <%= weddingData.groomName %> và <%=
+        weddingData.brideName %>
       </p>
       <p>&copy; 2025. All Rights Reserved.</p>
     </footer>

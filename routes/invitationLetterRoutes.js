@@ -4,6 +4,7 @@ const {
   createInvitationLetter,
   getUserInvitation,
   deleteUserInvitation,
+  updateUserInvitation,
 } = require("../controllers/invitationLetterController");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -15,5 +16,8 @@ router.get("/my-invitation", protect, getUserInvitation);
 
 // Route xóa website của user
 router.delete("/my-invitation", protect, deleteUserInvitation);
+
+// --- THÊM ROUTE MỚI ĐỂ CẬP NHẬT ---
+router.put("/my-invitation", protect, updateUserInvitation);
 
 module.exports = router;

@@ -114,8 +114,51 @@ const deleteUserInvitation = async (req, res) => {
   }
 };
 
+// @desc    Cập nhật website của người dùng hiện tại
+// @route   PUT /invitation/my-invitation
+// @access  Private
+const updateUserInvitation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const invitation = await InvitationLetter.findOne({ userId });
+
+    if (!invitation) {
+      return res.status(404).json({ message: "Không tìm thấy website." });
+    }
+
+    // Lấy các trường có thể cập nhật từ req.body
+    const {
+      groomName,
+      brideName,
+      weddingDate,
+      aboutCouple,
+      youtubeUrl,
+      loveStory,
+      album,
+      events,
+    } = req.body;
+
+    // Cập nhật các trường nếu chúng tồn tại trong request
+    if (groomName) invitation.groomName = groomName;
+    if (brideName) invitation.brideName = brideName;
+    if (weddingDate) invitation.weddingDate = weddingDate;
+    if (aboutCouple !== undefined) invitation.aboutCouple = aboutCouple;
+    if (youtubeUrl !== undefined) invitation.youtubeUrl = youtubeUrl;
+    if (loveStory) invitation.loveStory = loveStory;
+    if (album) invitation.album = album;
+    if (events) invitation.events = events;
+
+    const updatedInvitation = await invitation.save();
+    res.status(200).json(updatedInvitation);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+  }
+};
+
 module.exports = {
   createInvitationLetter,
   getUserInvitation,
   deleteUserInvitation,
+  updateUserInvitation,
 };

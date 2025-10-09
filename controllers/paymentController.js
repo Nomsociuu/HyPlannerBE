@@ -73,22 +73,49 @@ const createPaymentLink = async (req, res) => {
  * @access  Public
  */
 const handlePayOsWebhook = async (req, res) => {
-  // Lưu ý: Đảm bảo bạn đã cấu hình express.raw() cho route này trong index.js
   const webhookData = JSON.parse(req.body);
   try {
+    console.log("--- Bắt đầu xử lý Webhook ---");
     const verifiedData = await payOs.webhooks.verify(webhookData);
 
-    if (verifiedData.code === "00" && verifiedData.desc === "Success") {
+    // FIX: Chuyển 'desc' về chữ thường trước khi so sánh
+    if (
+      verifiedData.code === "00" &&
+      verifiedData.desc.toLowerCase() === "success"
+    ) {
       console.log(
         `Webhook xác thực thành công cho đơn hàng: ${verifiedData.data.orderCode}`
       );
       const orderCode = verifiedData.data.orderCode;
-      const order = await Order.findOne({ orderCode });
 
-      if (order && order.status === "PENDING") {
+      // Tìm đơn hàng trong DB của bạn
+      const order = await Order.findOne({ orderCode: Number(orderCode) });
+
+      // THÊM LOG: Ghi lại kết quả tìm kiếm đơn hàng
+      if (!order) {
+        console.error(
+          `LỖI WEBHOOK: Không tìm thấy đơn hàng với orderCode ${orderCode} trong DB.`
+        );
+        // Vẫn trả về 200 để PayOS không gửi lại
+        return res
+          .status(200)
+          .json({ message: "Webhook received, but order not found." });
+      }
+
+      console.log(
+        `Tìm thấy đơn hàng: ${order._id}, Trạng thái hiện tại: ${order.status}`
+      );
+
+      // Kiểm tra xem đơn hàng có tồn tại và đang ở trạng thái PENDING không
+      if (order.status === "PENDING") {
+        // Cập nhật trạng thái đơn hàng thành COMPLETED
         order.status = "COMPLETED";
         await order.save();
+        console.log(
+          `ĐÃ CẬP NHẬT đơn hàng ${orderCode} sang trạng thái COMPLETED.`
+        );
 
+        // === LOGIC NÂNG CẤP TÀI KHOẢN NGƯỜI DÙNG ===
         const user = await User.findById(order.userId);
         if (user) {
           if (order.packageType === "VIP") {
@@ -102,14 +129,30 @@ const handlePayOsWebhook = async (req, res) => {
           }
           await user.save();
           console.log(
-            `Đã nâng cấp tài khoản cho User ID: ${user._id} thành ${user.accountType}`
+            `ĐÃ NÂNG CẤP tài khoản cho User ID: ${user._id} thành ${user.accountType}`
+          );
+        } else {
+          console.error(
+            `LỖI WEBHOOK: Không tìm thấy user với ID ${order.userId} để nâng cấp.`
           );
         }
+      } else {
+        // THÊM LOG: Ghi lại lý do tại sao không cập nhật
+        console.log(
+          `Bỏ qua cập nhật cho đơn hàng ${orderCode} vì trạng thái đang là '${order.status}', không phải 'PENDING'.`
+        );
       }
+    } else {
+      console.log(
+        `Bỏ qua webhook vì code không phải "00" hoặc desc không phải "success". Code: ${verifiedData.code}, Desc: ${verifiedData.desc}`
+      );
     }
+
+    // Luôn phản hồi 200 cho PayOS để tránh bị gọi lại webhook
+    console.log("--- Xử lý Webhook hoàn tất ---");
     return res.status(200).json({ message: "Webhook received" });
   } catch (error) {
-    console.error("Lỗi xác thực webhook:", error.message);
+    console.error("Lỗi nghiêm trọng khi xử lý webhook:", error.message);
     return res.status(400).json({ message: "Webhook verification failed" });
   }
 };

@@ -35,10 +35,20 @@ const sampleWeddingData = {
     {
       name: "Lễ Thành Hôn",
       time: "18:00, Ngày 03.06.2036",
+      venue: "Nhà Thờ Đức Bà Sài Gòn",
+      address: "Số 1 Công xã Paris, Bến Nghé, Quận 1, TP.HCM",
+      mapLink: "https://maps.app.goo.gl/your-map-link",
+      image:
+        "https://lh3.googleusercontent.com/gps-cs-s/AC9h4noFR1NQuJQ8wPp7bcQYxU1KpkZ2GLAO-_b01GPSGF-3VVasWu3tm93by7YMLzKzKtmTsy6HLWW0payy_EN99VrscFpPwQdG47BMAoDgN3Kxxb3-wO-8D6pZ0AU2CsiI9aPcYfxz=w243-h174-n-k-no-nu",
     },
     {
       name: "Tiệc Cưới",
       time: "19:00, Ngày 03.06.2036",
+      venue: "GEM Center",
+      address: "Số 8 Nguyễn Bỉnh Khiêm, Đa Kao, Quận 1, TP.HCM",
+      mapLink: "https://maps.app.goo.gl/your-map-link-2",
+      image:
+        "https://lh3.googleusercontent.com/gps-cs-s/AC9h4noye45fPKw6sFv0AYjNhNJ5jld4KvDhBgQhVcCEW-_ox1j1nab8d-U9svNGtSjd-Utb6TMdZQ7fR8h8xl_MeQDzVfx9UDD5hYXeK02TtN2t_l1ExhUaOZdSEUWNfVcZKpy706-f=w243-h174-n-k-no-nu",
     },
   ],
   guestbookMessages: [
@@ -47,6 +57,8 @@ const sampleWeddingData = {
     { name: "Khách mời 3", message: "Chúc hai bạn trăm năm hạnh phúc!" },
     { name: "Khách mời 4", message: "Chúc hai bạn sớm có em bé!" },
   ],
+  backgroundPicture:
+    "https://vcdn1-ngoisao.vnecdn.net/2020/11/10/Copy-of-IMG-3266-7581-1604978306.jpg?w=1020&h=0&q=100&dpr=1&fit=crop&s=zcLhuW8yo_eVLGVjkXj5ZQ",
   slug: "sample-slug",
 };
 

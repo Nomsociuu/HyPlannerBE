@@ -516,7 +516,7 @@
           submitButton.innerText = "Đang gửi...";
 
           try {
-            const response = await fetch(`/inviletter/${slug}/add-wish`, {
+            const response = await fetch(`/invitation/${slug}/add-wish`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

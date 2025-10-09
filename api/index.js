@@ -17,6 +17,7 @@ const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
 const publicRoutes = require("../routes/publicRoutes");
 const templateRoutes = require("../routes/templateRoutes");
 const paymentRoutes = require("../routes/paymentRoutes");
+const { handlePayOsWebhook } = require("../controllers/paymentController");
 require("dotenv").config();
 
 const connectDB = require("../config/db");
@@ -31,6 +32,12 @@ app.set("view engine", "ejs");
 connectDB();
 
 configurePassport(passport);
+
+app.post(
+  "/payments/webhook",
+  express.raw({ type: "application/json" }),
+  handlePayOsWebhook
+);
 
 app.use(
   cors({

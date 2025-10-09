@@ -21,6 +21,22 @@ const EventSchema = new mongoose.Schema({
   image: String,
 });
 
+const GuestbookMessageSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    message: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true, // Tự động thêm createdAt và updatedAt
+  }
+);
+
 const invitationLetterSchema = new mongoose.Schema(
   {
     userId: {
@@ -69,6 +85,10 @@ const invitationLetterSchema = new mongoose.Schema(
     },
     events: {
       type: [EventSchema],
+      default: [],
+    },
+    guestbookMessages: {
+      type: [GuestbookMessageSchema],
       default: [],
     },
     // Bạn có thể thêm các trường khác ở đây trong tương lai

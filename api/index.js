@@ -30,7 +30,7 @@ app.set("view engine", "ejs");
 // --- CẤU HÌNH MIDDLEWARES VÀ ROUTES ---
 connectDB();
 
-// configurePassport(passport);
+configurePassport(passport);
 
 app.use(
   cors({

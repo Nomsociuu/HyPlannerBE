@@ -47,13 +47,6 @@ const templates = [
       "https://images.pexels.com/photos/2253833/pexels-photo-2253833.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
   },
   {
-    id: 6,
-    name: "Enchanted Garden",
-    type: "VIP",
-    image:
-      "https://images.pexels.com/photos/2253833/pexels-photo-2253833.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  },
-  {
     id: 7,
     name: "Vintage Vows",
     type: "Miễn phí",

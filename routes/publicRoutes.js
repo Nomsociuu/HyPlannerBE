@@ -6,34 +6,48 @@ const sampleWeddingData = {
   groom: { firstName: "Chú Rể", fullName: "Nguyễn Văn Mẫu" },
   bride: { firstName: "Cô Dâu", fullName: "Trần Thị Mẫu" },
   coupleImage:
-    "https://images.unsplash.com/photo-1529340473341-a3f2cc245b0a?q=80&w=2070",
-  weddingDate: "Ngày 01 Tháng 01, 2026",
-  youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "https://i1-ngoisao.vnecdn.net/2020/11/10/Copy-of-IMG-3275-3124-1604978305.jpg?w=1020&h=0&q=100&dpr=1&fit=crop&s=4shNiv1Inpg1OF7D3bnpwQ",
+  weddingDate: "Ngày 03 Tháng 06, 2036",
+  youtubeUrl: "https://www.youtube.com/watch?v=cpGxn9SmxTc", // Cần có trường này trong Schema
   loveStory: [
     {
       time: "Ngày đầu",
       title: "Gặp gỡ",
       content: "Đây là nội dung mẫu cho câu chuyện tình yêu.",
       image:
-        "https://images.unsplash.com/photo-1511993221079-537a6f809c0d?q=80&w=1974",
+        "https://i1-ngoisao.vnecdn.net/2020/11/10/Copy-of-IMG-3266-7581-1604978306.jpg?w=1020&h=0&q=100&dpr=1&fit=crop&s=zcLhuW8yo_eVLGVjkXj5ZQ",
+    },
+    {
+      time: "6 Tháng Sau",
+      title: "Yêu nhau",
+      content: "Đây là nội dung mẫu cho câu chuyện tình yêu.",
+      image:
+        "https://cdn.24h.com.vn/upload/2-2022/images/2022-06-09/xoainon1-1654737948-510-width660height824.jpg",
     },
   ],
   album: [
-    "https://images.unsplash.com/photo-1597158223639-9b9b5f93c72b?q=80&w=1964",
-    "https://images.unsplash.com/photo-1523438882358-a61513473215?q=80&w=1974",
+    "https://kenh14cdn.com/203336854389633024/2024/6/2/photo-7-1717318282976804803415.jpg",
+    "https://s1.media.ngoisao.vn/resize_580/news/2023/02/11/xoai-non-va-xemesis-tung-bo-anh-valentine-dau-tien-ngot-nhu-mia-lui-1-ngoisaovn-w600-h901.jpeg",
+    "https://media.yeah1.com/files/ngoctran/2023/05/19/347849210_1358945998287696_3397780704448075213_n-084529.jpg",
+    "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2020/11/16/854786/8-160484653489020906.jpg",
   ],
   events: [
     {
+      name: "Lễ Thành Hôn",
+      time: "18:00, Ngày 03.06.2036",
+    },
+    {
       name: "Tiệc Cưới",
-      time: "18:00, Ngày 01.01.2026",
-      venue: "Trung Tâm Hội Nghị Mẫu",
-      address: "123 Đường Mẫu, TP. Mẫu",
-      mapLink: "#",
+      time: "19:00, Ngày 03.06.2036",
     },
   ],
   guestbookMessages: [
     { name: "Khách mời mẫu", message: "Chúc hai bạn hạnh phúc!" },
+    { name: "Khách mời 2", message: "Chúc mừng hạnh phúc!" },
+    { name: "Khách mời 3", message: "Chúc hai bạn trăm năm hạnh phúc!" },
+    { name: "Khách mời 4", message: "Chúc hai bạn sớm có em bé!" },
   ],
+  slug: "sample-slug",
 };
 
 // LƯU Ý: Đường dẫn ở đây là '/' vì tiền tố '/invitation' sẽ được định nghĩa trong server.js

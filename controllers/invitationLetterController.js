@@ -156,9 +156,51 @@ const updateUserInvitation = async (req, res) => {
   }
 };
 
+// @desc    Thêm một lời chúc mới vào website
+// @route   POST /inviletter/:slug/add-wish
+// @access  Public
+const addGuestbookMessage = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { name, message } = req.body;
+
+    // Validation đơn giản
+    if (!name || !message) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ tên và lời chúc." });
+    }
+
+    const invitation = await InvitationLetter.findOne({ slug });
+
+    if (!invitation) {
+      return res.status(404).json({ message: "Không tìm thấy website." });
+    }
+
+    // Thêm lời chúc mới vào mảng
+    invitation.guestbookMessages.push({ name, message });
+
+    // Sắp xếp lại để lời chúc mới nhất luôn ở trên cùng
+    invitation.guestbookMessages.sort((a, b) => b.createdAt - a.createdAt);
+
+    await invitation.save();
+
+    res
+      .status(201)
+      .json({
+        message: "Gửi lời chúc thành công!",
+        data: invitation.guestbookMessages[0],
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
+  }
+};
+
 module.exports = {
   createInvitationLetter,
   getUserInvitation,
   deleteUserInvitation,
+  addGuestbookMessage,
   updateUserInvitation,
 };

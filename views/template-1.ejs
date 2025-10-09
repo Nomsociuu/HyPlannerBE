@@ -23,7 +23,8 @@
       }
       header {
         background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-          no-repeat center center/cover;
+          url("<%= weddingData.album && weddingData.album.length > 0 ? weddingData.album[0] : 'https://images.pexels.com/photos/169198/pexels-photo-169198.jpeg' %>")
+            no-repeat center center/cover;
         color: white;
         text-align: center;
         padding: 100px 20px;
@@ -83,20 +84,20 @@
         gap: 15px;
       }
       .couple-names span {
-        color: #a0522d;
+        color: #fff;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
       }
       .couple-names .and {
         font-size: 0.8em;
         color: white;
       }
-
-      /* YouTube Video */
       .video-container {
         position: relative;
-        padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        padding-bottom: 56.25%;
         height: 0;
         overflow: hidden;
         margin-top: 30px;
+        border-radius: 8px;
       }
       .video-container iframe {
         position: absolute;
@@ -105,10 +106,7 @@
         width: 100%;
         height: 100%;
         border: 0;
-        border-radius: 8px;
       }
-
-      /* Love Story */
       .love-story-item {
         display: flex;
         align-items: center;
@@ -148,8 +146,6 @@
         font-size: 1em;
         color: #555;
       }
-
-      /* Album */
       .album-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -157,7 +153,7 @@
       }
       .album-grid img {
         width: 100%;
-        height: 200px; /* Fixed height for consistency */
+        height: 200px;
         object-fit: cover;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -166,8 +162,6 @@
       .album-grid img:hover {
         transform: scale(1.03);
       }
-
-      /* Events */
       .event-item {
         display: flex;
         gap: 20px;
@@ -204,8 +198,6 @@
       .event-details a:hover {
         text-decoration: underline;
       }
-
-      /* Guestbook */
       .guestbook-messages {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -227,8 +219,6 @@
         font-style: italic;
         color: #666;
       }
-
-      /* --- BẮT ĐẦU PHẦN CSS MỚI --- */
       .placeholder {
         text-align: center;
         padding: 50px 20px;
@@ -238,8 +228,6 @@
         color: #888;
         font-style: italic;
       }
-      /* --- KẾT THÚC PHẦN CSS MỚI --- */
-
       footer {
         text-align: center;
         padding: 30px;
@@ -250,13 +238,11 @@
       footer p {
         margin: 0;
       }
-
       .guestbook-form-container {
         margin-top: 50px;
         padding-top: 30px;
         border-top: 1px solid #eee;
       }
-
       .guestbook-form-container h4 {
         font-family: "Playfair Display", serif;
         color: #a0522d;
@@ -264,18 +250,15 @@
         text-align: center;
         margin-bottom: 30px;
       }
-
       .form-group {
         margin-bottom: 20px;
       }
-
       .form-group label {
         display: block;
         margin-bottom: 8px;
         font-weight: 500;
         color: #444;
       }
-
       .form-group input,
       .form-group textarea {
         width: 100%;
@@ -284,17 +267,15 @@
         border-radius: 8px;
         font-family: "Montserrat", sans-serif;
         font-size: 1em;
-        box-sizing: border-box; /* Quan trọng để padding không làm tăng width */
+        box-sizing: border-box;
         transition: border-color 0.3s;
       }
-
       .form-group input:focus,
       .form-group textarea:focus {
         outline: none;
         border-color: #a0522d;
         box-shadow: 0 0 5px rgba(160, 82, 45, 0.2);
       }
-
       .submit-btn {
         display: block;
         width: 100%;
@@ -309,12 +290,13 @@
         cursor: pointer;
         transition: background-color 0.3s;
       }
-
       .submit-btn:hover {
-        background-color: #8c462f; /* Màu sẫm hơn khi di chuột qua */
+        background-color: #8c462f;
       }
-
-      /* Responsive adjustments */
+      .submit-btn:disabled {
+        background-color: #c8a18a;
+        cursor: not-allowed;
+      }
       @media (max-width: 768px) {
         header {
           padding: 70px 20px;
@@ -325,12 +307,10 @@
         header h2 {
           font-size: 1.5em;
         }
-        .love-story-item {
-          flex-direction: column;
-          text-align: center;
-        }
+        .love-story-item,
         .love-story-item:nth-child(even) {
           flex-direction: column;
+          text-align: center;
         }
         .love-story-item img {
           width: 80%;
@@ -378,19 +358,25 @@
     <div class="container">
       <section id="welcome">
         <h3>Chào mừng đến với ngày trọng đại của chúng tôi!</h3>
+        <% if (weddingData.aboutCouple) { %>
+        <p style="text-align: center; font-size: 1.1em; color: #555">
+          <%= weddingData.aboutCouple %>
+        </p>
+        <% } else { %>
         <p style="text-align: center; font-size: 1.1em; color: #555">
           Chúng tôi rất vui mừng được chia sẻ khoảnh khắc đặc biệt này với tất
           cả mọi người. Cảm ơn bạn đã là một phần trong câu chuyện tình yêu của
           chúng tôi.
         </p>
+        <% } %>
       </section>
 
+      <% if (weddingData.youtubeUrl) { %>
       <section id="video">
         <h3>Video Kỷ Niệm</h3>
-        <% if (weddingData.youtubeUrl) { %>
         <div class="video-container">
           <iframe
-            src="https://www.youtube.com/embed/<%= weddingData.youtubeUrl.split('v=')[1] %>"
+            src="https://www.youtube.com/embed/<%= weddingData.youtubeUrl.split('v=')[1].split('&')[0] %>"
             title="YouTube video player"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -398,18 +384,11 @@
           >
           </iframe>
         </div>
-        <% } else { %>
-        <div class="placeholder">
-          <p>
-            Vui lòng bổ sung "Video Kỷ Niệm" trong màn hình quản lý website.
-          </p>
-        </div>
-        <% } %>
       </section>
-
+      <% } %> <% if (weddingData.loveStory && weddingData.loveStory.length > 0)
+      { %>
       <section id="love-story">
         <h3>Câu Chuyện Tình Yêu</h3>
-        <% if (weddingData.loveStory && weddingData.loveStory.length > 0) { %>
         <% weddingData.loveStory.forEach(function(story) { %>
         <div class="love-story-item">
           <img src="<%= story.image %>" alt="<%= story.title %>" />
@@ -419,37 +398,21 @@
             <p class="content"><%= story.content %></p>
           </div>
         </div>
-        <% }); %> <% } else { %>
-        <div class="placeholder">
-          <p>
-            Vui lòng bổ sung "Câu Chuyện Tình Yêu" trong màn hình quản lý
-            website.
-          </p>
-        </div>
-        <% } %>
+        <% }); %>
       </section>
-
+      <% } %> <% if (weddingData.album && weddingData.album.length > 0) { %>
       <section id="album">
         <h3>Album Ảnh Cưới</h3>
-        <% if (weddingData.album && weddingData.album.length > 0) { %>
         <div class="album-grid">
           <% weddingData.album.forEach(function(image) { %>
           <img src="<%= image %>" alt="Ảnh cưới" />
           <% }); %>
         </div>
-        <% } else { %>
-        <div class="placeholder">
-          <p>
-            Vui lòng bổ sung "Album Ảnh Cưới" trong màn hình quản lý website.
-          </p>
-        </div>
-        <% } %>
       </section>
-
+      <% } %> <% if (weddingData.events && weddingData.events.length > 0) { %>
       <section id="events">
         <h3>Chương Trình Cưới</h3>
-        <% if (weddingData.events && weddingData.events.length > 0) { %> <%
-        weddingData.events.forEach(function(event) { %>
+        <% weddingData.events.forEach(function(event) { %>
         <div class="event-item">
           <img src="<%= event.image %>" alt="<%= event.name %>" />
           <div class="event-details">
@@ -464,37 +427,34 @@
             <% } %>
           </div>
         </div>
-        <% }); %> <% } else { %>
-        <div class="placeholder">
-          <p>
-            Vui lòng bổ sung "Chương Trình Cưới" trong màn hình quản lý website.
-          </p>
-        </div>
-        <% } %>
+        <% }); %>
       </section>
+      <% } %>
 
       <section id="guestbook">
         <h3>Sổ Lưu Bút</h3>
-        <% if (weddingData.guestbookMessages &&
-        weddingData.guestbookMessages.length > 0) { %>
-        <div class="guestbook-messages">
-          <% weddingData.guestbookMessages.forEach(function(message) { %>
+        <div class="guestbook-messages" id="guestbook-messages-container">
+          <% if (weddingData.guestbookMessages &&
+          weddingData.guestbookMessages.length > 0) { %> <%
+          weddingData.guestbookMessages.forEach(function(message) { %>
           <div class="guestbook-card">
             <p class="name"><%= message.name %></p>
             <p class="message">"<%= message.message %>"</p>
           </div>
-          <% }); %>
+          <% }); %> <% } else { %>
+          <p
+            id="no-messages-yet"
+            style="text-align: center; color: #777; grid-column: 1 / -1"
+          >
+            Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc nhé!
+          </p>
+          <% } %>
         </div>
-        <% } else { %>
-        <p style="text-align: center; color: #777">
-          Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc nhé!
-        </p>
-        <% } %>
       </section>
 
       <div class="guestbook-form-container">
         <h4>Gửi Lời Chúc Của Bạn</h4>
-        <form>
+        <form id="guestbook-form">
           <div class="form-group">
             <label for="guestName">Tên của bạn</label>
             <input
@@ -515,7 +475,9 @@
               required
             ></textarea>
           </div>
-          <button type="submit" class="submit-btn">Gửi Lời Chúc</button>
+          <button type="submit" class="submit-btn" id="submit-wish-btn">
+            Gửi Lời Chúc
+          </button>
         </form>
       </div>
     </div>
@@ -527,5 +489,74 @@
       </p>
       <p>&copy; 2025. All Rights Reserved.</p>
     </footer>
+
+    <script>
+      const guestbookForm = document.getElementById("guestbook-form");
+      const guestNameInput = document.getElementById("guestName");
+      const guestMessageInput = document.getElementById("guestMessage");
+      const submitButton = document.getElementById("submit-wish-btn");
+      const messagesContainer = document.getElementById(
+        "guestbook-messages-container"
+      );
+
+      if (guestbookForm) {
+        guestbookForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const name = guestNameInput.value.trim();
+          const message = guestMessageInput.value.trim();
+          const slug = "<%= weddingData.slug %>";
+
+          if (!name || !message) {
+            alert("Vui lòng không để trống tên hoặc lời chúc!");
+            return;
+          }
+
+          submitButton.disabled = true;
+          submitButton.innerText = "Đang gửi...";
+
+          try {
+            const response = await fetch(`/inviletter/${slug}/add-wish`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ name, message }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              throw new Error(result.message || "Có lỗi xảy ra.");
+            }
+
+            alert("Gửi lời chúc thành công! Cảm ơn bạn rất nhiều.");
+
+            const noMessagesEl = document.getElementById("no-messages-yet");
+            if (noMessagesEl) {
+              noMessagesEl.remove();
+            }
+
+            const newMessageCard = document.createElement("div");
+            newMessageCard.className = "guestbook-card";
+            newMessageCard.innerHTML = `
+                        <p class="name">${name}</p>
+                        <p class="message">"${message}"</p>
+                    `;
+
+            messagesContainer.prepend(newMessageCard);
+
+            guestNameInput.value = "";
+            guestMessageInput.value = "";
+          } catch (error) {
+            console.error("Lỗi khi gửi lời chúc:", error);
+            alert(error.message);
+          } finally {
+            submitButton.disabled = false;
+            submitButton.innerText = "Gửi Lời Chúc";
+          }
+        });
+      }
+    </script>
   </body>
 </html>

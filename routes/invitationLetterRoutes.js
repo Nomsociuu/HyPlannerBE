@@ -5,6 +5,7 @@ const {
   getUserInvitation,
   deleteUserInvitation,
   updateUserInvitation,
+  addGuestbookMessage,
 } = require("../controllers/invitationLetterController");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -19,5 +20,8 @@ router.delete("/my-invitation", protect, deleteUserInvitation);
 
 // --- THÊM ROUTE MỚI ĐỂ CẬP NHẬT ---
 router.put("/my-invitation", protect, updateUserInvitation);
+
+// --- THÊM ROUTE MỚI ĐỂ NHẬN LỜI CHÚC ---
+router.post("/:slug/add-wish", addGuestbookMessage);
 
 module.exports = router;

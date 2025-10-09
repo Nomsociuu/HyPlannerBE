@@ -51,5 +51,6 @@ router.post("/change-email/verify", protect, verifyEmailChange);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyPasswordResetOtp);
 router.post("/reset-password", resetPassword);
+router.get("/status", protect, getUserAccountStatus);
 
 module.exports = router;

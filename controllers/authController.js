@@ -558,3 +558,24 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     .status(200)
     .json({ success: true, message: "Mật khẩu đã được đặt lại thành công." });
 });
+
+/**
+ * @desc    Lấy trạng thái tài khoản của người dùng hiện tại
+ * @route   GET /api/users/status
+ * @access  Private
+ */
+exports.getUserAccountStatus = async (req, res) => {
+  try {
+    // req.user.id được lấy từ middleware "protect"
+    const user = await User.findById(req.user.id).select("accountType");
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng." });
+    }
+
+    res.status(200).json({ accountType: user.accountType });
+  } catch (error) {
+    console.error("Lỗi khi lấy trạng thái tài khoản:", error);
+    res.status(500).json({ message: "Lỗi máy chủ." });
+  }
+};

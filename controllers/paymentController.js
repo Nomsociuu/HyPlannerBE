@@ -6,7 +6,7 @@ const { APIError } = require("@payos/node");
 const APP_SCHEME = process.env.EXPO_PUBLIC_SCHEME;
 
 /**
- * @desc    Tạo link thanh toán PayOS
+ * @desc    Tạo link thanh toán PayOS (Logic đã cập nhật)
  * @route   POST /api/payments/create-link
  * @access  Private
  */
@@ -20,30 +20,52 @@ const createPaymentLink = async (req, res) => {
       .json({ message: "Vui lòng cung cấp đủ thông tin thanh toán." });
   }
 
-  const orderCode = Date.now();
-
   try {
-    const newOrder = new Order({
+    let order;
+
+    // --- LOGIC MỚI: KIỂM TRA ĐƠN HÀNG "PENDING" TỒN TẠI ---
+    const existingPendingOrder = await Order.findOne({
       userId,
-      packageType,
-      amount: price,
-      orderCode,
+      status: "PENDING",
+      packageType, // Thêm điều kiện kiểm tra loại gói để chính xác hơn
     });
-    await newOrder.save();
+
+    if (existingPendingOrder) {
+      // Nếu đã có, dùng lại đơn hàng đó
+      order = existingPendingOrder;
+      // Cập nhật lại số tiền nếu có thay đổi
+      if (order.amount !== price) {
+        order.amount = price;
+        await order.save();
+      }
+      console.log(`Sử dụng lại đơn hàng PENDING đã có: ${order.orderCode}`);
+    } else {
+      // Nếu không có, tạo đơn hàng mới
+      const newOrderCode = Date.now();
+      order = new Order({
+        userId,
+        packageType,
+        amount: price,
+        orderCode: newOrderCode,
+        // Status mặc định là PENDING
+      });
+      await order.save();
+      console.log(`Tạo đơn hàng PENDING mới: ${order.orderCode}`);
+    }
+    // ---------------------------------------------------------
 
     const payosOrder = {
-      amount: price,
+      amount: order.amount,
       description: description,
-      orderCode: orderCode,
-      returnUrl: `${APP_SCHEME}://upgrade-account?status=success&orderCode=${orderCode}`,
-      cancelUrl: `${APP_SCHEME}://upgrade-account?status=cancelled`,
+      orderCode: order.orderCode,
+      returnUrl: `${APP_SCHEME}://upgrade-account?status=success&orderCode=${order.orderCode}`,
+      // Cập nhật cancelUrl để chứa orderCode
+      cancelUrl: `${APP_SCHEME}://upgrade-account?status=cancelled&orderCode=${order.orderCode}`,
       buyerName: req.user.fullName,
       buyerEmail: req.user.email,
     };
 
-    // ----- SỬA LẠI PHƯƠNG THỨC GỌI Ở ĐÂY -----
     const paymentLinkResponse = await payOs.paymentRequests.create(payosOrder);
-    // ------------------------------------------
 
     res.status(200).json({
       message: "Tạo link thanh toán thành công",
@@ -51,12 +73,9 @@ const createPaymentLink = async (req, res) => {
     });
   } catch (error) {
     console.error("Lỗi khi tạo link thanh toán:", error);
-
-    // Bắt lỗi cụ thể từ PayOS để log chi tiết hơn
     if (error instanceof APIError) {
       console.error("Lỗi từ PayOS:", error.error);
     }
-
     res.status(500).json({ message: "Không thể tạo link thanh toán." });
   }
 };
@@ -67,39 +86,32 @@ const createPaymentLink = async (req, res) => {
  * @access  Public
  */
 const handlePayOsWebhook = async (req, res) => {
+  // Lưu ý: Đảm bảo bạn đã cấu hình express.raw() cho route này trong index.js
   const webhookData = JSON.parse(req.body);
   try {
-    // Xác thực webhook
     const verifiedData = await payOs.webhooks.verify(webhookData);
 
-    // Chỉ xử lý khi thanh toán thành công
     if (verifiedData.code === "00" && verifiedData.desc === "Success") {
       console.log(
         `Webhook xác thực thành công cho đơn hàng: ${verifiedData.data.orderCode}`
       );
       const orderCode = verifiedData.data.orderCode;
-
-      // Tìm đơn hàng trong DB của bạn
       const order = await Order.findOne({ orderCode });
 
-      // Kiểm tra xem đơn hàng có tồn tại và đang ở trạng thái PENDING không
       if (order && order.status === "PENDING") {
-        // Cập nhật trạng thái đơn hàng thành COMPLETED
         order.status = "COMPLETED";
         await order.save();
 
-        // === LOGIC NÂNG CẤP TÀI KHOẢN NGƯỜI DÙNG ===
         const user = await User.findById(order.userId);
         if (user) {
           if (order.packageType === "VIP") {
             user.accountType = "VIP";
-            // Set ngày hết hạn là 1 năm kể từ hôm nay
             const expiryDate = new Date();
             expiryDate.setFullYear(expiryDate.getFullYear() + 1);
             user.accountExpires = expiryDate;
           } else if (order.packageType === "SUPER") {
             user.accountType = "SUPER";
-            user.accountExpires = null; // Hoặc một ngày rất xa trong tương lai
+            user.accountExpires = null;
           }
           await user.save();
           console.log(
@@ -108,8 +120,6 @@ const handlePayOsWebhook = async (req, res) => {
         }
       }
     }
-
-    // Luôn phản hồi 200 cho PayOS để tránh bị gọi lại webhook
     return res.status(200).json({ message: "Webhook received" });
   } catch (error) {
     console.error("Lỗi xác thực webhook:", error.message);
@@ -117,7 +127,49 @@ const handlePayOsWebhook = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Xử lý khi người dùng hủy đơn hàng
+ * @route   POST /api/payments/cancel-order
+ * @access  Private
+ */
+const handleCancelOrder = async (req, res) => {
+  const { orderCode } = req.body;
+  const userId = req.user.id;
+
+  if (!orderCode) {
+    return res.status(400).json({ message: "Thiếu mã đơn hàng." });
+  }
+
+  try {
+    const order = await Order.findOne({
+      orderCode: Number(orderCode),
+      userId, // Đảm bảo người dùng chỉ có thể hủy đơn hàng của chính mình
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
+
+    // Chỉ cập nhật nếu đơn hàng đang ở trạng thái PENDING
+    if (order.status === "PENDING") {
+      order.status = "CANCELLED";
+      await order.save();
+      console.log(`Đã hủy đơn hàng: ${orderCode}`);
+      return res.status(200).json({ message: "Đã hủy đơn hàng thành công." });
+    } else {
+      // Nếu đơn hàng đã ở trạng thái khác (COMPLETED, CANCELLED) thì không làm gì
+      return res
+        .status(200)
+        .json({ message: `Đơn hàng đã ở trạng thái ${order.status}.` });
+    }
+  } catch (error) {
+    console.error("Lỗi khi hủy đơn hàng:", error);
+    res.status(500).json({ message: "Lỗi máy chủ khi hủy đơn hàng." });
+  }
+};
+
 module.exports = {
   createPaymentLink,
   handlePayOsWebhook,
+  handleCancelOrder, // Export hàm mới
 };

@@ -6,7 +6,7 @@ const { APIError } = require("@payos/node");
 const APP_SCHEME = process.env.EXPO_PUBLIC_SCHEME;
 
 /**
- * @desc    Tạo link thanh toán PayOS (Logic đã cập nhật)
+ * @desc    Tạo link thanh toán PayOS (Logic cuối cùng: Luôn tạo đơn mới và hủy các đơn PENDING cũ)
  * @route   POST /api/payments/create-link
  * @access  Private
  */
@@ -21,75 +21,37 @@ const createPaymentLink = async (req, res) => {
   }
 
   try {
-    let order;
+    // --- LOGIC MỚI: HỦY CÁC ĐƠN PENDING CŨ TRONG DB ---
+    // Tìm và cập nhật tất cả các đơn hàng PENDING cũ của user này thành CANCELLED
+    await Order.updateMany(
+      { userId, status: "PENDING", packageType },
+      { $set: { status: "CANCELLED" } }
+    );
+    console.log(`Đã hủy các đơn hàng PENDING cũ của user: ${userId}`);
+    // ----------------------------------------------------
 
-    const existingPendingOrder = await Order.findOne({
+    // --- LUÔN TẠO MỘT ĐƠN HÀNG MỚI ---
+    const newOrderCode = Date.now();
+    const order = new Order({
       userId,
-      status: "PENDING",
       packageType,
+      amount: price,
+      orderCode: newOrderCode,
     });
-
-    if (existingPendingOrder) {
-      order = existingPendingOrder;
-      console.log(
-        `Đơn hàng PENDING đã tồn tại: ${order.orderCode}. Sẽ hủy link cũ trước khi tạo link mới.`
-      );
-
-      // --- LOGIC MỚI: HỦY LINK THANH TOÁN CŨ TRÊN PAYOS ---
-      try {
-        // Yêu cầu PayOS hủy phiên thanh toán cũ của orderCode này
-        await payOs.paymentRequests.cancel(order.orderCode);
-        console.log(
-          `Hủy link thanh toán cũ cho orderCode ${order.orderCode} thành công.`
-        );
-      } catch (cancelError) {
-        // Nếu PayOS báo lỗi "Không tìm thấy" (thường là mã 204 hoặc lỗi có code 'NOT_FOUND'),
-        // nghĩa là link cũ đã hết hạn hoặc đã bị hủy. Chúng ta có thể bỏ qua lỗi này và tiếp tục.
-        if (
-          cancelError.code === 204 ||
-          cancelError.error?.code === "NOT_FOUND"
-        ) {
-          console.log(`Không tìm thấy link thanh toán cũ để hủy (bỏ qua).`);
-        } else {
-          // Nếu là một lỗi khác, thì báo lỗi và dừng lại.
-          console.error(
-            "Lỗi khi hủy link thanh toán cũ trên PayOS:",
-            cancelError
-          );
-          // Ném lỗi ra ngoài để khối catch bên ngoài bắt được
-          throw new Error("Không thể hủy phiên thanh toán cũ trên PayOS.");
-        }
-      }
-      // ----------------------------------------------------
-
-      // Cập nhật lại số tiền nếu có thay đổi
-      if (order.amount !== price) {
-        order.amount = price;
-        await order.save();
-      }
-    } else {
-      const newOrderCode = Date.now();
-      order = new Order({
-        userId,
-        packageType,
-        amount: price,
-        orderCode: newOrderCode,
-      });
-      await order.save();
-      console.log(`Tạo đơn hàng PENDING mới: ${order.orderCode}`);
-    }
+    await order.save();
+    console.log(`Tạo đơn hàng PENDING hoàn toàn mới: ${order.orderCode}`);
+    // ------------------------------------
 
     const payosOrder = {
       amount: order.amount,
       description: description,
-      orderCode: order.orderCode,
+      orderCode: order.orderCode, // Luôn là orderCode mới
       returnUrl: `${APP_SCHEME}://upgrade-account?status=success&orderCode=${order.orderCode}`,
       cancelUrl: `${APP_SCHEME}://upgrade-account?status=cancelled&orderCode=${order.orderCode}`,
       buyerName: req.user.fullName,
       buyerEmail: req.user.email,
     };
 
-    // Bây giờ việc tạo link mới sẽ luôn thành công
     const paymentLinkResponse = await payOs.paymentRequests.create(payosOrder);
 
     res.status(200).json({

@@ -76,27 +76,24 @@ const handlePayOsWebhook = async (req, res) => {
   const webhookData = JSON.parse(req.body);
   try {
     console.log("--- Bắt đầu xử lý Webhook ---");
+    // Khi thành công, verifiedData chính là object "data" từ webhook
     const verifiedData = await payOs.webhooks.verify(webhookData);
 
-    // FIX: Chuyển 'desc' về chữ thường trước khi so sánh
+    // FIX: Bây giờ chúng ta kiểm tra `code` và `desc` ngay trong `verifiedData`
     if (
       verifiedData.code === "00" &&
       verifiedData.desc.toLowerCase() === "success"
     ) {
-      console.log(
-        `Webhook xác thực thành công cho đơn hàng: ${verifiedData.data.orderCode}`
-      );
-      const orderCode = verifiedData.data.orderCode;
+      // FIX: Truy cập orderCode trực tiếp từ verifiedData
+      const orderCode = verifiedData.orderCode;
+      console.log(`Webhook xác thực thành công cho đơn hàng: ${orderCode}`);
 
-      // Tìm đơn hàng trong DB của bạn
       const order = await Order.findOne({ orderCode: Number(orderCode) });
 
-      // THÊM LOG: Ghi lại kết quả tìm kiếm đơn hàng
       if (!order) {
         console.error(
           `LỖI WEBHOOK: Không tìm thấy đơn hàng với orderCode ${orderCode} trong DB.`
         );
-        // Vẫn trả về 200 để PayOS không gửi lại
         return res
           .status(200)
           .json({ message: "Webhook received, but order not found." });
@@ -106,16 +103,13 @@ const handlePayOsWebhook = async (req, res) => {
         `Tìm thấy đơn hàng: ${order._id}, Trạng thái hiện tại: ${order.status}`
       );
 
-      // Kiểm tra xem đơn hàng có tồn tại và đang ở trạng thái PENDING không
       if (order.status === "PENDING") {
-        // Cập nhật trạng thái đơn hàng thành COMPLETED
         order.status = "COMPLETED";
         await order.save();
         console.log(
           `ĐÃ CẬP NHẬT đơn hàng ${orderCode} sang trạng thái COMPLETED.`
         );
 
-        // === LOGIC NÂNG CẤP TÀI KHOẢN NGƯỜI DÙNG ===
         const user = await User.findById(order.userId);
         if (user) {
           if (order.packageType === "VIP") {
@@ -137,22 +131,24 @@ const handlePayOsWebhook = async (req, res) => {
           );
         }
       } else {
-        // THÊM LOG: Ghi lại lý do tại sao không cập nhật
         console.log(
           `Bỏ qua cập nhật cho đơn hàng ${orderCode} vì trạng thái đang là '${order.status}', không phải 'PENDING'.`
         );
       }
     } else {
       console.log(
-        `Bỏ qua webhook vì code không phải "00" hoặc desc không phải "success". Code: ${verifiedData.code}, Desc: ${verifiedData.desc}`
+        `Bỏ qua webhook vì giao dịch không thành công. Code: ${verifiedData.code}, Desc: ${verifiedData.desc}`
       );
     }
 
-    // Luôn phản hồi 200 cho PayOS để tránh bị gọi lại webhook
     console.log("--- Xử lý Webhook hoàn tất ---");
     return res.status(200).json({ message: "Webhook received" });
   } catch (error) {
-    console.error("Lỗi nghiêm trọng khi xử lý webhook:", error.message);
+    // Lỗi này giờ đây chủ yếu sẽ là lỗi signature không hợp lệ
+    console.error(
+      "Lỗi nghiêm trọng khi xử lý webhook (ví dụ: sai signature):",
+      error.message
+    );
     return res.status(400).json({ message: "Webhook verification failed" });
   }
 };

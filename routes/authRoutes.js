@@ -17,6 +17,7 @@ const {
   verifyPasswordResetOtp,
   resetPassword,
   verifyEmail,
+  getUserAccountStatus,
 } = require("../controllers/authController");
 
 router.get(

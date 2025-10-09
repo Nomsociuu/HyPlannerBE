@@ -561,7 +561,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 
 /**
  * @desc    Lấy trạng thái tài khoản của người dùng hiện tại
- * @route   GET /api/users/status
+ * @route   GET /auth/status
  * @access  Private
  */
 exports.getUserAccountStatus = async (req, res) => {

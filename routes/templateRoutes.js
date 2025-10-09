@@ -32,6 +32,55 @@ const templates = [
     image:
       "https://assets.minted.com/image/upload/v1735792462/Minted_Onsite_Assets/2025/SEO%20Content%20Articles/wedding-processional-01.jpg",
   },
+  {
+    id: 5,
+    name: "Seaside Serenity",
+    type: "Miễn phí",
+    image:
+      "https://images.pexels.com/photos/169198/pexels-photo-169198.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  },
+  {
+    id: 6,
+    name: "Enchanted Garden",
+    type: "VIP",
+    image:
+      "https://images.pexels.com/photos/2253833/pexels-photo-2253833.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  },
+  {
+    id: 6,
+    name: "Enchanted Garden",
+    type: "VIP",
+    image:
+      "https://images.pexels.com/photos/2253833/pexels-photo-2253833.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  },
+  {
+    id: 7,
+    name: "Vintage Vows",
+    type: "Miễn phí",
+    image:
+      "https://images.pexels.com/photos/2291593/pexels-photo-2291593.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  },
+  {
+    id: 8,
+    name: "Urban Chic",
+    type: "VIP",
+    image:
+      "https://images.pexels.com/photos/3779693/pexels-photo-3779693.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  },
+  {
+    id: 9,
+    name: "Bohemian Dream",
+    type: "Miễn phí",
+    image:
+      "https://images.pexels.com/photos/4114755/pexels-photo-4114755.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  },
+  {
+    id: 10,
+    name: "Gilded Glamour",
+    type: "VIP",
+    image:
+      "https://images.pexels.com/photos/157757/weddings-planners-places-location-157757.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  },
 ];
 
 // @desc    Lấy danh sách tất cả template

@@ -6,6 +6,7 @@ const {
   deleteUserInvitation,
   updateUserInvitation,
   addGuestbookMessage,
+  incrementRsvpCount,
 } = require("../controllers/invitationLetterController");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -23,5 +24,8 @@ router.put("/my-invitation", protect, updateUserInvitation);
 
 // --- THÊM ROUTE MỚI ĐỂ NHẬN LỜI CHÚC ---
 router.post("/:slug/add-wish", addGuestbookMessage);
+
+// --- 2. THÊM ROUTE MỚI CHO RSVP ---
+router.post("/:slug/rsvp", incrementRsvpCount);
 
 module.exports = router;

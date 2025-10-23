@@ -1,5 +1,31 @@
 const InvitationLetter = require("../models/InvitationLetter");
 
+// Hàm helper để trích xuất src từ iframe
+function extractSrcFromIframe(htmlString) {
+  console.log("Extracting src from iframe HTML:", htmlString);
+  if (!htmlString || typeof htmlString !== "string") {
+    return "";
+  }
+
+  const srcStartIndex = htmlString.indexOf('src="');
+  if (srcStartIndex === -1) {
+    return "";
+  }
+
+  const openingQuoteIndex = srcStartIndex + 5;
+
+  const closingQuoteIndex = htmlString.indexOf('"', openingQuoteIndex);
+  if (closingQuoteIndex === -1) {
+    return "";
+  }
+
+  const extractedUrl = htmlString.substring(
+    openingQuoteIndex,
+    closingQuoteIndex
+  );
+
+  return extractedUrl;
+}
 // @desc    Tạo một thiệp mời đám cưới mới
 // @route   POST /invitation/invitation-letters
 // @access  Private (cần đăng nhập)
@@ -126,7 +152,6 @@ const updateUserInvitation = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy website." });
     }
 
-    // Lấy các trường có thể cập nhật từ req.body
     const {
       groomName,
       brideName,
@@ -136,27 +161,46 @@ const updateUserInvitation = async (req, res) => {
       loveStory,
       album,
       events,
-      bankAccount,
+      bankAccount, // <--- events ở đây
     } = req.body;
 
-    // Cập nhật các trường nếu chúng tồn tại trong request
+    console.log("Received events data:", events.embedMapUrl);
+
+    // Cập nhật các trường thông thường
     if (groomName) invitation.groomName = groomName;
     if (brideName) invitation.brideName = brideName;
     if (weddingDate) invitation.weddingDate = weddingDate;
     if (aboutCouple !== undefined) invitation.aboutCouple = aboutCouple;
     if (youtubeUrl !== undefined) invitation.youtubeUrl = youtubeUrl;
-    if (loveStory) invitation.loveStory = loveStory;
+    if (loveStory) invitation.loveStory = loveStory; // Giả sử loveStory gửi lên đã sạch
     if (album) invitation.album = album;
-    if (events) invitation.events = events;
-    if (bankAccount) {
-      invitation.bankAccount = bankAccount;
+    if (bankAccount) invitation.bankAccount = bankAccount;
+
+    // --- XỬ LÝ TRƯỜNG EVENTS ---
+    if (events && Array.isArray(events)) {
+      // Duyệt qua từng sự kiện gửi lên và xử lý embedMapUrl
+      const processedEvents = events.map((event) => {
+        // Nếu có embedMapUrl và nó là một chuỗi
+        if (event && typeof event.embedMapUrl === "string") {
+          // Trích xuất URL thực sự từ thẻ iframe (nếu có)
+          const extractedUrl = extractSrcFromIframe(event.embedMapUrl);
+          console.log("Extracted URL:", extractedUrl);
+          // Trả về event mới với embedMapUrl đã được xử lý
+          return { ...event, embedMapUrl: extractedUrl };
+        }
+        // Nếu không có embedMapUrl hoặc không phải chuỗi, giữ nguyên event
+        return event;
+      });
+      // Gán mảng events đã xử lý vào document
+      invitation.events = processedEvents;
     }
+    // --- KẾT THÚC XỬ LÝ EVENTS ---
 
     const updatedInvitation = await invitation.save();
     res.status(200).json(updatedInvitation);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+    console.error("Lỗi khi cập nhật:", error); // Log lỗi chi tiết hơn
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ khi cập nhật." });
   }
 };
 

@@ -2,13 +2,21 @@ const express = require("express");
 const router = express.Router();
 const InvitationLetter = require("../models/InvitationLetter");
 
+// Dữ liệu mẫu (sample) CŨNG CẦN được cập nhật để có cấu trúc phẳng
+// và có các trường mới để trang /preview hoạt động
 const sampleWeddingData = {
-  groom: { firstName: "Chú Rể", fullName: "Nguyễn Văn Mẫu" },
-  bride: { firstName: "Cô Dâu", fullName: "Trần Thị Mẫu" },
-  coupleImage:
-    "https://i1-ngoisao.vnecdn.net/2020/11/10/Copy-of-IMG-3275-3124-1604978305.jpg?w=1020&h=0&q=100&dpr=1&fit=crop&s=4shNiv1Inpg1OF7D3bnpwQ",
+  groomName: "Nguyễn Văn Mẫu",
+  brideName: "Trần Thị Mẫu",
   weddingDate: "Ngày 03 Tháng 06, 2036",
-  youtubeUrl: "https://www.youtube.com/watch?v=cpGxn9SmxTc", // Cần có trường này trong Schema
+  aboutCouple:
+    "Đây là lời giới thiệu mẫu về cặp đôi. Chúng tôi rất vui mừng được chia sẻ...",
+  youtubeUrl: "https://www.youtube.com/watch?v=cpGxn9SmxTc",
+  guestRsvpCount: 10, // Dữ liệu mẫu
+  bankAccount: {
+    // Dữ liệu mẫu
+    bankBin: "970422",
+    accountNumber: "1234567890",
+  },
   loveStory: [
     {
       time: "Ngày đầu",
@@ -54,16 +62,11 @@ const sampleWeddingData = {
   guestbookMessages: [
     { name: "Khách mời mẫu", message: "Chúc hai bạn hạnh phúc!" },
     { name: "Khách mời 2", message: "Chúc mừng hạnh phúc!" },
-    { name: "Khách mời 3", message: "Chúc hai bạn trăm năm hạnh phúc!" },
-    { name: "Khách mời 4", message: "Chúc hai bạn sớm có em bé!" },
   ],
-  backgroundPicture:
-    "https://vcdn1-ngoisao.vnecdn.net/2020/11/10/Copy-of-IMG-3266-7581-1604978306.jpg?w=1020&h=0&q=100&dpr=1&fit=crop&s=zcLhuW8yo_eVLGVjkXj5ZQ",
   slug: "sample-slug",
 };
 
-// LƯU Ý: Đường dẫn ở đây là '/' vì tiền tố '/invitation' sẽ được định nghĩa trong server.js
-// Route này sẽ xử lý các request tới: GET /invitation/:slug
+// Route này sẽ xử lý các request tới: GET /inviletter/:slug
 router.get("/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
@@ -73,50 +76,49 @@ router.get("/:slug", async (req, res) => {
       return res.status(404).render("404");
     }
 
-    // BƯỚC 1: TÁI CẤU TRÚC DỮ LIỆU TỪ DB CHO ĐÚNG FORMAT MÀ EJS CẦN
-    // Lưu ý: Các trường như `introduction`, `image` cần tồn tại trong Schema của bạn
+    // --- BƯỚC QUAN TRỌNG: SỬA LẠI CẤU TRÚC DATA ---
+    // File EJS của bạn cần một object phẳng, không phải object lồng nhau.
+    // Chúng ta chỉ cần truyền thẳng các trường từ database.
     const weddingDataForRender = {
-      groom: {
-        fullName: invitationLetter.groomName || "Chú Rể",
-        firstName: invitationLetter.groomName.split(" ")[0], // Lấy tên đầu tiên
-        introduction:
-          invitationLetter.groomIntroduction || "Lời chào từ chú rể", // Thêm các trường này vào Schema nếu cần
-        image: invitationLetter.groomImage,
-      },
-      bride: {
-        fullName: invitationLetter.brideName || "Cô Dâu",
-        firstName: invitationLetter.brideName.split(" ")[0],
-        introduction:
-          invitationLetter.brideIntroduction || "Lời chào từ cô dâu",
-        image: invitationLetter.brideImage,
-      },
-      coupleImage: invitationLetter.coupleImage,
+      groomName: invitationLetter.groomName,
+      brideName: invitationLetter.brideName,
       weddingDate: invitationLetter.weddingDate,
-      youtubeUrl: invitationLetter.youtubeUrl, // Cần có trường này trong Schema
+      aboutCouple: invitationLetter.aboutCouple,
+      youtubeUrl: invitationLetter.youtubeUrl,
       loveStory: invitationLetter.loveStory,
       album: invitationLetter.album,
       events: invitationLetter.events,
       guestbookMessages: invitationLetter.guestbookMessages,
       slug: invitationLetter.slug,
+
+      // --- THÊM CÁC TRƯỜNG MỚI MÀ BẠN BỊ THIẾU ---
+      guestRsvpCount: invitationLetter.guestRsvpCount,
+      bankAccount: invitationLetter.bankAccount,
     };
 
     const templateName = `template-${invitationLetter.templateId}`;
 
-    // BƯỚC 2: TRUYỀN VÀO TEMPLATE DƯỚI DẠNG OBJECT `weddingData`
+    // Truyền object đã có cấu trúc đúng vào EJS
     res.render(templateName, { weddingData: weddingDataForRender });
   } catch (error) {
     console.error(error);
     res.status(500).send("Lỗi máy chủ nội bộ");
   }
 });
-// @desc    Hiển thị trang preview cho một template
-// @route   GET /preview/:templateId
-router.get("/preview/:templateId", (req, res) => {
-  const { templateId } = req.params;
-  const templateName = `template-${templateId}`;
 
-  // Render template với dữ liệu mẫu
-  res.render(templateName, { weddingData: sampleWeddingData });
+// @desc    Hiển thị trang preview cho một template
+// @route   GET /inviletter/preview/:templateId
+router.get("/preview/:templateId", (req, res) => {
+  try {
+    const { templateId } = req.params;
+    const templateName = `template-${templateId}`;
+
+    // Render template với dữ liệu mẫu (Đã sửa lại cấu trúc)
+    res.render(templateName, { weddingData: sampleWeddingData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Lỗi máy chủ nội bộ");
+  }
 });
 
 module.exports = router;

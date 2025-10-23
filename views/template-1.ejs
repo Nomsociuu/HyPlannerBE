@@ -453,6 +453,36 @@
           Cảm ơn bạn đã xác nhận! Hẹn gặp bạn tại buổi tiệc.
         </p>
       </section>
+      <% if (weddingData.bankAccount && weddingData.bankAccount.bankBin &&
+      weddingData.bankAccount.accountNumber) { %>
+      <section id="wedding-gift">
+        <h3>Mừng cưới</h3>
+        <p
+          style="
+            text-align: center;
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 30px;
+          "
+        >
+          Với những bạn bè ở xa không thể tham dự, bạn có thể gửi lời chúc mừng
+          hạnh phúc cho cặp đôi qua mã QR dưới đây.
+        </p>
+        <div style="text-align: center">
+          <img
+            src="https://api.vietqr.io/image/<%= weddingData.bankAccount.bankBin %>-<%= weddingData.bankAccount.accountNumber %>-print.jpg?accountName=<%= encodeURIComponent(weddingData.groomName) %>&addInfo=<%= encodeURIComponent('Mung cuoi ' + weddingData.groomName + ' va ' + weddingData.brideName) %>"
+            alt="QR Mừng cưới"
+            style="
+              width: 300px;
+              height: auto;
+              max-width: 100%;
+              border-radius: 8px;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            "
+          />
+        </div>
+      </section>
+      <% } %>
       <section id="guestbook">
         <h3>Sổ Lưu Bút</h3>
         <div class="guestbook-messages" id="guestbook-messages-container">

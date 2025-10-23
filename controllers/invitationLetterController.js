@@ -136,6 +136,7 @@ const updateUserInvitation = async (req, res) => {
       loveStory,
       album,
       events,
+      bankAccount,
     } = req.body;
 
     // Cập nhật các trường nếu chúng tồn tại trong request
@@ -147,6 +148,9 @@ const updateUserInvitation = async (req, res) => {
     if (loveStory) invitation.loveStory = loveStory;
     if (album) invitation.album = album;
     if (events) invitation.events = events;
+    if (bankAccount) {
+      invitation.bankAccount = bankAccount;
+    }
 
     const updatedInvitation = await invitation.save();
     res.status(200).json(updatedInvitation);

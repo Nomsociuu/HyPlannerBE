@@ -93,7 +93,17 @@ const invitationLetterSchema = new mongoose.Schema(
     },
     guestRsvpCount: {
       type: Number,
-      default: 0, // Bắt đầu bằng 0
+      default: 0,
+    },
+    bankAccount: {
+      bankBin: {
+        type: String,
+        default: "",
+      },
+      accountNumber: {
+        type: String,
+        default: "",
+      },
     },
     // Bạn có thể thêm các trường khác ở đây trong tương lai
   },

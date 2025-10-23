@@ -431,6 +431,28 @@
       </section>
       <% } %>
 
+      <section id="rsvp" style="text-align: center">
+        <h3>Bạn sẽ tham dự chứ?</h3>
+        <p style="font-size: 1.1em; color: #555; margin-bottom: 30px">
+          Sự hiện diện của bạn là niềm vinh hạnh lớn lao. Vui lòng xác nhận để
+          chúng tôi có thể đón tiếp bạn thật chu đáo nhé!
+        </p>
+        <button type="button" class="submit-btn" id="rsvp-btn">
+          Xác nhận tham dự
+        </button>
+        <p
+          id="rsvp-thanks"
+          style="
+            display: none;
+            font-size: 1.2em;
+            color: #a0522d;
+            font-weight: bold;
+            margin-top: 20px;
+          "
+        >
+          Cảm ơn bạn đã xác nhận! Hẹn gặp bạn tại buổi tiệc.
+        </p>
+      </section>
       <section id="guestbook">
         <h3>Sổ Lưu Bút</h3>
         <div class="guestbook-messages" id="guestbook-messages-container">
@@ -499,6 +521,49 @@
         "guestbook-messages-container"
       );
 
+      // --- BẮT ĐẦU CODE MỚI ---
+
+      const rsvpButton = document.getElementById("rsvp-btn");
+      const rsvpThanks = document.getElementById("rsvp-thanks");
+      const rsvpSlug = "<%= weddingData.slug %>"; // Lấy slug
+
+      // Kiểm tra xem khách đã xác nhận trước đó chưa (dùng localStorage)
+      if (localStorage.getItem("rsvp_confirmed_" + rsvpSlug) === "true") {
+        if (rsvpButton) rsvpButton.style.display = "none";
+        if (rsvpThanks) rsvpThanks.style.display = "block";
+      }
+
+      if (rsvpButton) {
+        rsvpButton.addEventListener("click", async () => {
+          rsvpButton.disabled = true;
+          rsvpButton.innerText = "Đang gửi xác nhận...";
+
+          try {
+            const response = await fetch(`/invitation/${rsvpSlug}/rsvp`, {
+              method: "POST",
+            });
+
+            if (!response.ok) {
+              throw new Error("Có lỗi xảy ra, vui lòng thử lại.");
+            }
+
+            // 1. Lưu vào localStorage để tránh nhấn lại
+            localStorage.setItem("rsvp_confirmed_" + rsvpSlug, "true");
+
+            // 2. Ẩn nút và hiện lời cảm ơn
+            rsvpButton.style.display = "none";
+            if (rsvpThanks) rsvpThanks.style.display = "block";
+
+            alert("Xác nhận tham dự thành công! Cảm ơn bạn.");
+          } catch (error) {
+            alert(error.message);
+            rsvpButton.disabled = false;
+            rsvpButton.innerText = "Xác nhận tham dự";
+          }
+        });
+      }
+      // --- KẾT THÚC CODE MỚI ---
+
       if (guestbookForm) {
         guestbookForm.addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -540,9 +605,9 @@
             const newMessageCard = document.createElement("div");
             newMessageCard.className = "guestbook-card";
             newMessageCard.innerHTML = `
-                        <p class="name">${name}</p>
-                        <p class="message">"${message}"</p>
-                    `;
+                                <p class="name">${name}</p>
+                                <p class="message">"${message}"</p>
+                            `;
 
             messagesContainer.prepend(newMessageCard);
 

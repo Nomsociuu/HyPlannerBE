@@ -185,12 +185,38 @@ const addGuestbookMessage = async (req, res) => {
 
     await invitation.save();
 
-    res
-      .status(201)
-      .json({
-        message: "Gửi lời chúc thành công!",
-        data: invitation.guestbookMessages[0],
-      });
+    res.status(201).json({
+      message: "Gửi lời chúc thành công!",
+      data: invitation.guestbookMessages[0],
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
+  }
+};
+
+// @desc    Xác nhận tham dự (RSVP)
+// @route   POST /invitation/:slug/rsvp
+// @access  Public
+const incrementRsvpCount = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const invitation = await InvitationLetter.findOne({ slug });
+
+    if (!invitation) {
+      return res.status(404).json({ message: "Không tìm thấy website." });
+    }
+
+    // Tăng trường đếm lên 1
+    // Sử dụng (invitation.guestRsvpCount || 0) để an toàn nếu trường này chưa tồn tại
+    invitation.guestRsvpCount = (invitation.guestRsvpCount || 0) + 1;
+
+    await invitation.save();
+
+    res.status(200).json({
+      message: "Xác nhận tham dự thành công!",
+      count: invitation.guestRsvpCount,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
@@ -203,4 +229,5 @@ module.exports = {
   deleteUserInvitation,
   addGuestbookMessage,
   updateUserInvitation,
+  incrementRsvpCount,
 };

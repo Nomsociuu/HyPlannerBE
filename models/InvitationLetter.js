@@ -91,6 +91,10 @@ const invitationLetterSchema = new mongoose.Schema(
       type: [GuestbookMessageSchema],
       default: [],
     },
+    guestRsvpCount: {
+      type: Number,
+      default: 0, // Bắt đầu bằng 0
+    },
     // Bạn có thể thêm các trường khác ở đây trong tương lai
   },
   {

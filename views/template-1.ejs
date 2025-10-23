@@ -13,6 +13,7 @@
       rel="stylesheet"
     />
     <style>
+      /* Your styles here */
       body {
         font-family: "Montserrat", sans-serif;
         margin: 0;
@@ -58,7 +59,7 @@
       section h3 {
         font-family: "Playfair Display", serif;
         font-size: 2.5em;
-        color: #a0522d; /* Sienna color for headings */
+        color: #a0522d;
         text-align: center;
         margin-bottom: 40px;
         position: relative;
@@ -73,7 +74,6 @@
         height: 3px;
         background-color: #a0522d;
       }
-
       .couple-names {
         font-family: "Playfair Display", serif;
         font-size: 1.8em;
@@ -312,57 +312,31 @@
         background-color: #ddd;
       }
       .directions-button {
-        background-color: #ddd; /* Màu nâu giống theme */
+        background-color: #a0522d;
         color: white;
-      }
+      } /* Sửa lại màu nền */
       .directions-button:hover {
         background-color: #8c462f;
-        color: #fff;
-      }
+      } /* Sửa lại màu hover */
       .event-item-layout {
-        display: flex; /* Bật Flexbox */
-        gap: 30px; /* Khoảng cách giữa các cột (ảnh, details, map) */
-        align-items: flex-start; /* Căn các cột theo đầu */
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
       }
-
       .event-image-fixed {
-        width: 150px; /* Giữ kích thước ảnh như cũ */
+        width: 150px;
         height: 150px;
         object-fit: cover;
         border-radius: 8px;
-        flex-shrink: 0; /* Không cho ảnh bị co lại */
+        flex-shrink: 0;
       }
-
       .event-details-column {
-        flex: 1; /* Cho phép cột details co giãn */
-        min-width: 0; /* Cần thiết để flexbox hoạt động đúng */
+        flex: 1;
+        min-width: 0;
       }
-
       .event-map-column {
-        /* Điều chỉnh chiều rộng cột bản đồ, ví dụ 40% */
-        /* Hoặc dùng flex-basis nếu muốn chính xác hơn */
         width: 40%;
-        flex-shrink: 0; /* Không cho bản đồ bị co lại */
-      }
-
-      /* Responsive: Trên màn hình nhỏ, quay lại layout dọc */
-      @media (max-width: 768px) {
-        .event-item-layout {
-          flex-direction: column; /* Chuyển thành cột */
-          align-items: center; /* Căn giữa các mục */
-          text-align: center; /* Căn giữa text */
-        }
-        .event-image-fixed {
-          margin-bottom: 15px; /* Thêm khoảng cách dưới ảnh */
-        }
-        .event-map-column {
-          width: 100%; /* Bản đồ chiếm toàn bộ chiều rộng */
-          margin-top: 20px; /* Thêm khoảng cách trên bản đồ */
-        }
-        /* Căn giữa các nút */
-        .event-details-column > div {
-          justify-content: center;
-        }
+        flex-shrink: 0;
       }
       @media (max-width: 768px) {
         header {
@@ -387,12 +361,28 @@
           padding: 15px;
         }
         .event-item {
+          /* Giữ lại style cũ cho event-item để media query hoạt động */
           flex-direction: column;
           align-items: center;
           text-align: center;
         }
         .event-item img {
           margin-bottom: 15px;
+        } /* Giữ lại style cũ */
+        .event-item-layout {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        } /* Bố cục dọc cho layout mới */
+        .event-image-fixed {
+          margin-bottom: 15px;
+        }
+        .event-map-column {
+          width: 100%;
+          margin-top: 20px;
+        }
+        .event-details-column > div {
+          justify-content: center;
         }
       }
       @media (max-width: 480px) {
@@ -487,53 +477,71 @@
       <section id="events">
         <h3>Chương Trình Cưới</h3>
         <% weddingData.events.forEach(function(event) { %>
-        <div class="event-item">
+        <div class="event-item event-item-layout">
           <% if (event.image) { %>
-          <img src="<%= event.image %>" alt="<%= event.name %>" class="event-image-fixed" />
+          <img
+            src="<%= event.image %>"
+            alt="<%= event.name %>"
+            class="event-image-fixed"
+          />
           <% } %>
           <div class="event-details-column">
             <h4><%= event.name %></h4>
             <p><strong>Thời gian:</strong> <%= event.time %></p>
             <p><strong>Địa điểm:</strong> <%= event.venue %></p>
             <p><strong>Địa chỉ:</strong> <%= event.address %></p>
-
-            <div style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
-            <% if (event.mapLink) { %>
-              <a href="<%= event.mapLink %>" target="_blank" class="event-button">Xem bản đồ</a>
-            <% } %>
-            <!-- <% if (event.address) { %>
-              <a href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3834.110510619176!2d108.22080381532139!3d16.0597540888863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142183a54b35e7d%3A0xe5a36057a66e4a2e!2zQ-G6p3UgUuG7k25n!5e0!3m2!1svi!2s!4v1666504898801!5m2!1svi!2s<%= encodeURIComponent(event.address) %>" target="_blank" class="event-button directions-button">Chỉ đường đến đây</a>
-            <% } %> -->
-          </div>
-        </div>
-            <% if (event.embedMapUrl) { %>
-            <div class="event-map-column">
-              <div
-                class="map-container"
-                style="
-                  position: relative;
-                  width: 100%;
-                  padding-bottom: 100%; /* Giữ tỉ lệ vuông, có thể điều chỉnh */
-                  height: 0;
-                  overflow: hidden;
-                  border-radius: 8px;
-                  border: 1px solid #eee;
-                "
+            <div
+              style="
+                margin-top: 15px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+              "
+            >
+              <% if (event.mapLink) { %>
+              <a
+                href="<%= event.mapLink %>"
+                target="_blank"
+                class="event-button"
+                >Xem bản đồ</a
               >
-                <iframe
-                  src="<%= event.embedMapUrl %>"
-                  width="100%"
-                  height="100%"
-                  style="position: absolute; top: 0; left: 0; border: 0"
-                  allowfullscreen=""
-                  loading="lazy"
-                  referrerpolicy="no-referrer-when-downgrade"
-                >
-                </iframe>
-              </div>
+              <% } %> <% if (event.address) { %>
+              <!-- <a
+                href="https://www.google.com/maps/embed<%= encodeURIComponent(event.address) %>"
+                target="_blank"
+                class="event-button directions-button"
+                >Chỉ đường đến đây</a
+              > -->
+              <% } %>
             </div>
-            <% } %>
           </div>
+          <% if (event.embedMapUrl) { %>
+          <div class="event-map-column">
+            <div
+              class="map-container"
+              style="
+                position: relative;
+                width: 100%;
+                padding-bottom: 100%;
+                height: 0;
+                overflow: hidden;
+                border-radius: 8px;
+                border: 1px solid #eee;
+              "
+            >
+              <iframe
+                src="<%= event.embedMapUrl %>"
+                width="100%"
+                height="100%"
+                style="position: absolute; top: 0; left: 0; border: 0"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              >
+              </iframe>
+            </div>
+          </div>
+          <% } %>
         </div>
         <% }); %>
       </section>
@@ -672,7 +680,7 @@
 
       const rsvpButton = $("rsvp-btn");
       const rsvpThanks = $("rsvp-thanks");
-      // Read slug from a safe JSON script tag to avoid embedding EJS tags inside JS expressions
+      // Read slug from a safe JSON script tag
       let rsvpSlug = "";
       let guestbookSlug = "";
       (function () {
@@ -683,13 +691,12 @@
           rsvpSlug = parsed.slug || "";
           guestbookSlug = parsed.slug || "";
         } catch (e) {
-          // ignore malformed JSON
+          /* ignore malformed JSON */
         }
       })();
 
       // --- RSVP Logic ---
       if (rsvpButton && rsvpThanks) {
-        // Check if elements exist
         if (localStorage.getItem("rsvp_confirmed_" + rsvpSlug) === "true") {
           rsvpButton.style.display = "none";
           rsvpThanks.style.display = "block";
@@ -697,15 +704,11 @@
           rsvpButton.addEventListener("click", async () => {
             rsvpButton.disabled = true;
             rsvpButton.innerText = "Đang gửi xác nhận...";
-
             try {
               const response = await fetch(`/invitation/${rsvpSlug}/rsvp`, {
                 method: "POST",
               });
-
-              // Check if response failed
               if (!response.ok) {
-                // Try to get error message, default if fails
                 let errorMsg = "Lỗi khi xác nhận. Vui lòng thử lại.";
                 try {
                   const errorData = await response.json();
@@ -713,29 +716,24 @@
                     errorMsg = errorData.message;
                   }
                 } catch (e) {
-                  /* Ignore parsing error */
+                  /* Ignore */
                 }
-                // IMPORTANT: Throw error inside the braces
                 throw new Error(errorMsg);
               }
-
-              // --- Success ---
               localStorage.setItem("rsvp_confirmed_" + rsvpSlug, "true");
               rsvpButton.style.display = "none";
               rsvpThanks.style.display = "block";
               alert("Xác nhận tham dự thành công! Cảm ơn bạn.");
             } catch (error) {
-              // Catch block for fetch or thrown error
               const message =
                 error instanceof Error ? error.message : String(error);
               alert(message);
-              // Re-enable button
               rsvpButton.disabled = false;
               rsvpButton.innerText = "Xác nhận tham dự";
             }
           });
         }
-      } // End if (rsvpButton && rsvpThanks)
+      }
 
       // --- Guestbook Logic ---
       if (
@@ -745,22 +743,16 @@
         submitButton &&
         messagesContainer
       ) {
-        // Check elements
         guestbookForm.addEventListener("submit", async (event) => {
           event.preventDefault();
-
-          // Get values
           const name = guestNameInput.value.trim();
           const message = guestMessageInput.value.trim();
-
           if (!name || !message) {
             alert("Vui lòng không để trống tên hoặc lời chúc!");
             return;
           }
-
           submitButton.disabled = true;
           submitButton.innerText = "Đang gửi...";
-
           try {
             const response = await fetch(
               `/invitation/${guestbookSlug}/add-wish`,
@@ -770,35 +762,22 @@
                 body: JSON.stringify({ name, message }),
               }
             );
-
             const result = await response.json();
-
-            // Check if response failed
             if (!response.ok) {
-              // IMPORTANT: Throw error inside the braces
               throw new Error(result.message || "Lỗi khi gửi lời chúc.");
             }
-
-            // --- Success ---
             alert("Gửi lời chúc thành công! Cảm ơn bạn rất nhiều.");
-
             const noMessagesEl = $("no-messages-yet");
             if (noMessagesEl) {
               noMessagesEl.remove();
             }
-
             const newMessageCard = document.createElement("div");
             newMessageCard.className = "guestbook-card";
-            newMessageCard.innerHTML = `
-                      <p class="name">${name}</p>
-                      <p class="message">"${message}"</p>
-                  `;
+            newMessageCard.innerHTML = `<p class="name">${name}</p><p class="message">"${message}"</p>`;
             messagesContainer.prepend(newMessageCard);
-
             guestNameInput.value = "";
             guestMessageInput.value = "";
           } catch (error) {
-            // Catch block for fetch or thrown error
             console.error("Lỗi khi gửi lời chúc:", error);
             const errMsg =
               error instanceof Error ? error.message : String(error);
@@ -808,7 +787,7 @@
             submitButton.innerText = "Gửi Lời Chúc";
           }
         });
-      } // End if (guestbookForm && ...)
+      }
     </script>
   </body>
 </html>

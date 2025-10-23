@@ -1,4 +1,5 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 const router = express.Router();
 const {
   createInvitationLetter,
@@ -9,6 +10,26 @@ const {
   incrementRsvpCount,
 } = require("../controllers/invitationLetterController");
 const { protect } = require("../middleware/authMiddleware");
+
+const rsvpLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000 * 24 * 30, // 30 ngày (tính bằng mili-giây)
+  max: 3, // Chỉ cho phép 3 request từ 1 IP trong 30 ngày
+  message: {
+    message: "Bạn đã xác nhận quá nhiều lần. Vui lòng thử lại sau 30 ngày.",
+  },
+  standardHeaders: true, // Gửi thông tin về rate limit trong header
+  legacyHeaders: false, // Tắt header X-RateLimit-* cũ
+});
+
+const addWishLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000 * 24, // 1 ngày (tính bằng mili-giây)
+  max: 1, // Chỉ cho phép 1 request từ 1 IP trong 1 ngày
+  message: {
+    message: "Bạn đã gửi quá nhiều lời chúc. Vui lòng thử lại sau 1 ngày.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Route tạo website mới
 router.post("/invitation-letters", protect, createInvitationLetter);
@@ -23,9 +44,9 @@ router.delete("/my-invitation", protect, deleteUserInvitation);
 router.put("/my-invitation", protect, updateUserInvitation);
 
 // --- THÊM ROUTE MỚI ĐỂ NHẬN LỜI CHÚC ---
-router.post("/:slug/add-wish", addGuestbookMessage);
+router.post("/:slug/add-wish", addWishLimiter, addGuestbookMessage);
 
 // --- 2. THÊM ROUTE MỚI CHO RSVP ---
-router.post("/:slug/rsvp", incrementRsvpCount);
+router.post("/:slug/rsvp", rsvpLimiter, incrementRsvpCount);
 
 module.exports = router;

@@ -319,6 +319,51 @@
         background-color: #8c462f;
         color: #fff;
       }
+      .event-item-layout {
+        display: flex; /* Bật Flexbox */
+        gap: 30px; /* Khoảng cách giữa các cột (ảnh, details, map) */
+        align-items: flex-start; /* Căn các cột theo đầu */
+      }
+
+      .event-image-fixed {
+        width: 150px; /* Giữ kích thước ảnh như cũ */
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0; /* Không cho ảnh bị co lại */
+      }
+
+      .event-details-column {
+        flex: 1; /* Cho phép cột details co giãn */
+        min-width: 0; /* Cần thiết để flexbox hoạt động đúng */
+      }
+
+      .event-map-column {
+        /* Điều chỉnh chiều rộng cột bản đồ, ví dụ 40% */
+        /* Hoặc dùng flex-basis nếu muốn chính xác hơn */
+        width: 40%;
+        flex-shrink: 0; /* Không cho bản đồ bị co lại */
+      }
+
+      /* Responsive: Trên màn hình nhỏ, quay lại layout dọc */
+      @media (max-width: 768px) {
+        .event-item-layout {
+          flex-direction: column; /* Chuyển thành cột */
+          align-items: center; /* Căn giữa các mục */
+          text-align: center; /* Căn giữa text */
+        }
+        .event-image-fixed {
+          margin-bottom: 15px; /* Thêm khoảng cách dưới ảnh */
+        }
+        .event-map-column {
+          width: 100%; /* Bản đồ chiếm toàn bộ chiều rộng */
+          margin-top: 20px; /* Thêm khoảng cách trên bản đồ */
+        }
+        /* Căn giữa các nút */
+        .event-details-column > div {
+          justify-content: center;
+        }
+      }
       @media (max-width: 768px) {
         header {
           padding: 70px 20px;
@@ -438,15 +483,19 @@
           <% }); %>
         </div>
       </section>
-      <% } %> <% if (weddingData.events && weddingData.events.length > 0) { %>
+      <% if (weddingData.events && weddingData.events.length > 0) { %>
       <section id="events">
         <h3>Chương Trình Cưới</h3>
         <% weddingData.events.forEach(function(event) { %>
-        <div class="event-item">
+        <div class="event-item event-item-layout">
           <% if (event.image) { %>
-          <img src="<%= event.image %>" alt="<%= event.name %>" />
+          <img
+            src="<%= event.image %>"
+            alt="<%= event.name %>"
+            class="event-image-fixed"
+          />
           <% } %>
-          <div class="event-details">
+          <div class="event-details-column">
             <h4><%= event.name %></h4>
             <p><strong>Thời gian:</strong> <%= event.time %></p>
             <p><strong>Địa điểm:</strong> <%= event.venue %></p>
@@ -469,22 +518,23 @@
               >
               <% } %> <% if (event.address) { %>
               <a
-                href="https://maps.google.com/?q=<%= encodeURIComponent(event.address) %>"
+                href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3834.110510619176!2d108.22080381532139!3d16.0597540888863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142183a54b35e7d%3A0xe5a36057a66e4a2e!2zQ-G6p3UgUuG7k25n!5e0!3m2!1svi!2s!4v1666504898801!5m2!1svi!2s<%= encodeURIComponent(event.address) %>"
                 target="_blank"
                 class="event-button directions-button"
+                >Chỉ đường đến đây</a
               >
-                Chỉ đường đến đây
-              </a>
               <% } %>
             </div>
+          </div>
 
-            <% if (event.embedMapUrl) { %>
+          <% if (event.embedMapUrl) { %>
+          <div class="event-map-column">
             <div
               class="map-container"
               style="
-                margin-top: 20px;
                 position: relative;
-                padding-bottom: 75%; /* Aspect ratio for map */
+                width: 100%;
+                padding-bottom: 100%; /* Giữ tỉ lệ vuông, có thể điều chỉnh */
                 height: 0;
                 overflow: hidden;
                 border-radius: 8px;
@@ -502,8 +552,8 @@
               >
               </iframe>
             </div>
-            <% } %>
           </div>
+          <% } %>
         </div>
         <% }); %>
       </section>

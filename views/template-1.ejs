@@ -619,13 +619,10 @@
         "guestbook-messages-container"
       );
 
-      // --- BẮT ĐẦU CODE MỚI ---
-
       const rsvpButton = document.getElementById("rsvp-btn");
       const rsvpThanks = document.getElementById("rsvp-thanks");
-      const rsvpSlug = "<%= weddingData.slug %>"; // Lấy slug
+      const rsvpSlug = "<%= weddingData.slug %>";
 
-      // Kiểm tra xem khách đã xác nhận trước đó chưa (dùng localStorage)
       if (localStorage.getItem("rsvp_confirmed_" + rsvpSlug) === "true") {
         if (rsvpButton) rsvpButton.style.display = "none";
         if (rsvpThanks) rsvpThanks.style.display = "block";
@@ -641,26 +638,38 @@
               method: "POST",
             });
 
+            // --- SỬA Ở ĐÂY: Thêm {} ---
             if (!response.ok) {
-              throw new Error("Có lỗi xảy ra, vui lòng thử lại.");
+              // Lấy lỗi từ server nếu có, hoặc báo lỗi chung
+              let errorMsg = "Có lỗi xảy ra khi xác nhận, vui lòng thử lại.";
+              try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorMsg;
+              } catch (parseError) {
+                // Không parse được json lỗi, dùng lỗi chung
+              }
+              throw new Error(errorMsg);
             }
+            // --- KẾT THÚC SỬA ---
 
-            // 1. Lưu vào localStorage để tránh nhấn lại
             localStorage.setItem("rsvp_confirmed_" + rsvpSlug, "true");
-
-            // 2. Ẩn nút và hiện lời cảm ơn
             rsvpButton.style.display = "none";
             if (rsvpThanks) rsvpThanks.style.display = "block";
-
             alert("Xác nhận tham dự thành công! Cảm ơn bạn.");
           } catch (error) {
-            alert(error.message);
-            rsvpButton.disabled = false;
-            rsvpButton.innerText = "Xác nhận tham dự";
+            // Khối catch giờ đã hợp lệ
+            // Đảm bảo error là một Error object trước khi truy cập message
+            const message =
+              error instanceof Error ? error.message : String(error);
+            alert(message);
+            // Thêm kiểm tra null cho rsvpButton trước khi thao tác
+            if (rsvpButton) {
+              rsvpButton.disabled = false;
+              rsvpButton.innerText = "Xác nhận tham dự";
+            }
           }
         });
       }
-      // --- KẾT THÚC CODE MỚI ---
 
       if (guestbookForm) {
         guestbookForm.addEventListener("submit", async (event) => {
@@ -675,8 +684,11 @@
             return;
           }
 
-          submitButton.disabled = true;
-          submitButton.innerText = "Đang gửi...";
+          if (submitButton) {
+            // Thêm kiểm tra null
+            submitButton.disabled = true;
+            submitButton.innerText = "Đang gửi...";
+          }
 
           try {
             const response = await fetch(`/invitation/${slug}/add-wish`, {
@@ -687,11 +699,16 @@
               body: JSON.stringify({ name, message }),
             });
 
-            const result = await response.json();
+            const result = await response.json(); // Luôn parse json
 
+            // --- SỬA Ở ĐÂY: Thêm {} ---
             if (!response.ok) {
-              throw new Error(result.message || "Có lỗi xảy ra.");
+              // Lấy message lỗi từ result đã parse
+              throw new Error(
+                result.message || "Có lỗi xảy ra khi gửi lời chúc."
+              );
             }
+            // --- KẾT THÚC SỬA ---
 
             alert("Gửi lời chúc thành công! Cảm ơn bạn rất nhiều.");
 
@@ -707,16 +724,23 @@
                                 <p class="message">"${message}"</p>
                             `;
 
-            messagesContainer.prepend(newMessageCard);
+            if (messagesContainer) messagesContainer.prepend(newMessageCard); // Thêm kiểm tra null
 
-            guestNameInput.value = "";
-            guestMessageInput.value = "";
+            if (guestNameInput) guestNameInput.value = ""; // Thêm kiểm tra null
+            if (guestMessageInput) guestMessageInput.value = ""; // Thêm kiểm tra null
           } catch (error) {
+            // Khối catch giờ đã hợp lệ
             console.error("Lỗi khi gửi lời chúc:", error);
-            alert(error.message);
+            // Đảm bảo error là một Error object trước khi truy cập message
+            const message =
+              error instanceof Error ? error.message : String(error);
+            alert(message);
           } finally {
-            submitButton.disabled = false;
-            submitButton.innerText = "Gửi Lời Chúc";
+            if (submitButton) {
+              // Thêm kiểm tra null
+              submitButton.disabled = false;
+              submitButton.innerText = "Gửi Lời Chúc";
+            }
           }
         });
       }

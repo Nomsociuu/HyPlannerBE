@@ -1,574 +1,439 @@
 <!DOCTYPE html>
-<html lang="vi" style="scroll-behavior: smooth">
-  <head>
+<html lang="vi">
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      Save the Date | <%= weddingData.groom.firstName %> & <%=
-      weddingData.bride.firstName %>
+      Trang Cưới Của <% if (weddingData && weddingData.groomName) { %><%=
+      weddingData.groomName %><% } else { %>Chú rể<% } %> & <% if (weddingData
+      && weddingData.brideName) { %><%= weddingData.brideName %><% } else { %>Cô
+      dâu<% } %>
     </title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Roboto:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
     <style>
       :root {
-        --primary-color: #2c5d63; /* Màu xanh cổ vịt */
-        --secondary-color: #f0ebe3; /* Màu be nhạt */
-        --text-dark: #333333;
-        --text-light: #555555;
-        --bg-color: #ffffff;
-        --font-heading: "Poppins", sans-serif;
-        --font-body: "Roboto", sans-serif;
+        --cream: #fef9f3;
+        --cream-dark: #f5e6d3;
+        --rose: #d4a5a5;
+        --rose-dark: #b88585;
+        --gold: #c9a961;
+        --gold-light: #e4d4a8;
+        --sage: #9fb8ad;
+        --charcoal: #3a3a3a;
+        --white: #ffffff;
+        --shadow-soft: 0 8px 32px rgba(180, 150, 130, 0.15);
+        --shadow-medium: 0 12px 40px rgba(180, 150, 130, 0.2);
       }
 
-      body {
-        font-family: var(--font-body);
-        margin: 0;
-        padding: 0;
-        background-color: var(--bg-color);
-        color: var(--text-dark);
-        line-height: 1.7;
-      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body { font-family: "Cormorant Garamond", serif; color: var(--charcoal); background: linear-gradient( to bottom, var(--cream) 0%, var(--cream-dark) 50%, var(--cream) 100% ); line-height: 1.8; overflow-x: hidden; }
 
-      .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 80px 20px;
-      }
+      @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; } 50% { transform: translateY(-20px) rotate(5deg); opacity: 1; } }
+      .hearts-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+      .heart { position: absolute; font-size: 20px; color: var(--rose); opacity: 0.3; animation: float 6s ease-in-out infinite; }
 
-      /* --- Header & Hero Section --- */
-      .hero {
-        min-height: 100vh;
-        background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-          url("<%= weddingData.coupleImage %>") no-repeat center center/cover;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 20px;
-      }
+      header { position: relative; min-height: 75vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; padding: 60px 20px; background: linear-gradient( to bottom, rgba(254, 249, 243, 0.75), rgba(254, 249, 243, 0.9) ), url("<%= (weddingData && weddingData.album && weddingData.album.length>0) ? weddingData.album[0] : 'https://images.pexels.com/photos/169198/pexels-photo-169198.jpeg' %>") center/cover no-repeat; }
+      header::before { content: ""; position: absolute; top: -50%; left: -10%; width: 120%; height: 200%; background: radial-gradient( circle, rgba(212, 165, 165, 0.1) 0%, transparent 70% ); animation: pulse 8s ease-in-out infinite; }
+      @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 0.8; } }
 
-      .hero h3 {
-        font-family: var(--font-heading);
-        font-weight: 300;
-        font-size: 1.5rem;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        margin: 0;
-      }
+      .hero { position: relative; z-index: 1; max-width: 900px; padding: 50px 40px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border-radius: 30px; box-shadow: var(--shadow-medium); border: 2px solid rgba(201, 169, 97, 0.2); }
+      .hero::before { content: "✦"; position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 50px; color: var(--gold); }
+      .hero h1 { font-family: "Playfair Display", serif; font-weight: 700; font-size: clamp(36px, 6vw, 64px); color: var(--charcoal); letter-spacing: 2px; margin-bottom: 25px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05); }
+      .names-line { display: flex; gap: 20px; justify-content: center; align-items: center; margin: 20px 0; font-size: clamp(20px, 3vw, 28px); color: var(--rose-dark); font-weight: 600; }
+      .names-line .and { display: inline-flex; align-items: center; justify-content: center; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--rose), var(--gold-light)); color: var(--white); font-weight: 700; font-size: 24px; box-shadow: var(--shadow-soft); }
+      .hero .date { margin-top: 20px; font-size: clamp(16px, 2.5vw, 22px); color: var(--sage); font-style: italic; font-weight: 500; }
+      .divider { width: 100px; height: 2px; background: linear-gradient( to right, transparent, var(--gold), transparent ); margin: 30px auto; }
 
-      .hero h1 {
-        font-family: var(--font-heading);
-        font-weight: 700;
-        font-size: 4rem;
-        margin: 10px 0;
-      }
+      .container { position: relative; z-index: 1; max-width: 1200px; margin: 60px auto 100px; padding: 0 20px; }
+      section { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px); border-radius: 25px; padding: 50px clamp(25px, 4vw, 60px); margin-bottom: 40px; box-shadow: var(--shadow-soft); border: 1px solid rgba(201, 169, 97, 0.15); position: relative; overflow: hidden; }
+      section::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient( to right, var(--rose), var(--gold), var(--sage) ); }
+      .section-title { font-family: "Playfair Display", serif; font-size: clamp(28px, 4vw, 42px); text-align: center; color: var(--charcoal); margin: 0 0 35px; font-weight: 700; letter-spacing: 1px; position: relative; }
+      .section-title span { color: var(--rose-dark); }
+      .section-title::after { content: "❦"; display: block; margin: 15px auto 0; font-size: 28px; color: var(--gold); }
 
-      .hero p.full-names {
-        font-family: var(--font-heading);
-        font-size: 1.8rem;
-        margin-top: 15px;
-        margin-bottom: 5px;
-      }
+      .lead { text-align: center; color: var(--charcoal); font-size: clamp(17px, 2.5vw, 20px); max-width: 900px; margin: 0 auto; line-height: 1.9; font-weight: 400; }
+      .video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 20px; box-shadow: var(--shadow-medium); border: 3px solid var(--cream-dark); }
+      .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
-      /* --- Countdown Timer --- */
-      #countdown {
-        display: flex;
-        gap: 20px;
-        margin-top: 30px;
-      }
+      .timeline { display: grid; gap: 30px; }
+      .story { display: grid; grid-template-columns: 180px 1fr; gap: 25px; background: rgba(255, 255, 255, 0.6); border: 2px solid var(--cream-dark); border-radius: 20px; padding: 25px; transition: all 0.3s ease; position: relative; }
+      .story:hover { transform: translateY(-3px); box-shadow: var(--shadow-medium); border-color: var(--gold-light); }
+      .story::before { content: "♥"; position: absolute; top: 15px; right: 20px; font-size: 24px; color: var(--rose); opacity: 0.3; }
+      .story img { width: 100%; height: 180px; object-fit: cover; border-radius: 15px; box-shadow: var(--shadow-soft); border: 3px solid var(--white); }
+      .story h4 { font-family: "Playfair Display", serif; font-size: 24px; color: var(--rose-dark); margin: 0 0 8px; font-weight: 700; }
+      .story .time { margin: 0 0 12px; color: var(--sage); font-style: italic; font-size: 16px; }
+      .story .content { margin: 0; color: var(--charcoal); font-size: 17px; line-height: 1.8; }
 
-      .countdown-item {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 8px;
-        padding: 15px 25px;
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-      }
+      .album { columns: 3 250px; column-gap: 20px; }
+      .album img { width: 100%; margin: 0 0 20px; border-radius: 15px; display: block; object-fit: cover; break-inside: avoid; box-shadow: var(--shadow-soft); border: 4px solid var(--white); transition: all 0.3s ease; }
+      .album img:hover { transform: scale(1.03) rotate(1deg); box-shadow: var(--shadow-medium); }
 
-      .countdown-item span {
-        display: block;
-        font-family: var(--font-heading);
-        font-size: 2.5rem;
-        font-weight: 600;
-      }
+      .event { display: grid; grid-template-columns: 200px 1fr; gap: 30px; background: rgba(255, 255, 255, 0.6); border: 2px solid var(--cream-dark); border-radius: 20px; padding: 30px; margin-bottom: 25px; position: relative; overflow: hidden; }
+      .event::before { content: ""; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: linear-gradient(to bottom, var(--rose), var(--gold)); }
+      .event img { width: 100%; height: 200px; object-fit: cover; border-radius: 15px; box-shadow: var(--shadow-soft); border: 3px solid var(--white); }
+      .event h4 { font-family: "Playfair Display", serif; font-size: 26px; margin: 0 0 15px; color: var(--rose-dark); font-weight: 700; }
+      .event p { margin: 8px 0; color: var(--charcoal); font-size: 17px; }
+      .event .btns { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px; }
+      .btn { display: inline-block; padding: 12px 24px; font-weight: 600; border-radius: 25px; border: 2px solid var(--gold); background: var(--white); color: var(--charcoal); text-decoration: none; transition: all 0.3s ease; box-shadow: var(--shadow-soft); font-family: "Cormorant Garamond", serif; font-size: 16px; }
+      .btn:hover { transform: translateY(-2px); background: var(--cream); box-shadow: var(--shadow-medium); }
+      .btn.primary { background: linear-gradient(135deg, var(--rose), var(--gold)); color: var(--white); border-color: transparent; }
+      .btn.primary:hover { filter: brightness(1.1); }
 
-      .countdown-item p {
-        margin: 0;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
+      .guest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+      .guest-card { background: rgba(255, 255, 255, 0.8); border: 2px solid var(--cream-dark); border-left: 5px solid var(--rose); border-radius: 15px; padding: 25px; box-shadow: var(--shadow-soft); transition: all 0.3s ease; position: relative; }
+      .guest-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-medium); }
+      .guest-card::before { content: '"'; position: absolute; top: 10px; right: 15px; font-size: 60px; color: var(--gold-light); font-family: Georgia, serif; line-height: 1; }
+      .guest-card .name { margin: 0 0 10px; color: var(--rose-dark); font-weight: 700; font-size: 20px; font-family: "Playfair Display", serif; }
+      .guest-card .message { margin: 0; color: var(--charcoal); font-style: italic; line-height: 1.7; font-size: 16px; }
+      .muted-center { text-align: center; color: var(--sage); font-style: italic; }
 
-      /* --- Section Styling --- */
-      .section-heading {
-        text-align: center;
-        margin-bottom: 60px;
-      }
+      .form-title { font-family: "Playfair Display", serif; font-size: clamp(22px, 3vw, 28px); text-align: center; margin: 0 0 25px; color: var(--rose-dark); font-weight: 700; }
+      .form-row { margin-bottom: 20px; }
+      label { display: block; margin-bottom: 8px; color: var(--charcoal); font-weight: 600; font-size: 17px; }
+      input, textarea { width: 100%; padding: 15px 20px; font-family: "Cormorant Garamond", serif; font-size: 16px; color: var(--charcoal); background: rgba(255, 255, 255, 0.9); border: 2px solid var(--cream-dark); border-radius: 15px; outline: none; transition: all 0.3s ease; }
+      input:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(201, 169, 97, 0.1); background: var(--white); }
+      .submit { display: block; width: 100%; padding: 18px 30px; font-family: "Playfair Display", serif; font-weight: 700; font-size: 18px; letter-spacing: 1px; border-radius: 25px; border: none; cursor: pointer; background: linear-gradient(135deg, var(--rose), var(--gold)); color: var(--white); box-shadow: var(--shadow-medium); transition: all 0.3s ease; }
+      .submit:hover { transform: translateY(-2px); filter: brightness(1.1); }
+      .submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      .section-heading h2 {
-        font-family: var(--font-heading);
-        font-size: 2.5rem;
-        font-weight: 600;
-        color: var(--primary-color);
-        position: relative;
-        display: inline-block;
-        padding-bottom: 10px;
-      }
+      footer { text-align: center; padding: 50px 20px; color: var(--sage); font-size: 16px; background: rgba(255, 255, 255, 0.5); }
+      footer p:first-child { font-family: "Playfair Display", serif; font-size: 20px; margin-bottom: 10px; color: var(--rose-dark); }
 
-      .section-heading h2::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 50%;
-        height: 3px;
-        background-color: var(--primary-color);
-      }
-
-      /* --- YouTube Video --- */
-      .video-wrapper {
-        position: relative;
-        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-        height: 0;
-        overflow: hidden;
-        max-width: 800px;
-        margin: 0 auto 50px auto;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      }
-
-      .video-wrapper iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: 0;
-      }
-
-      /* --- Love Story Timeline --- */
-      .timeline {
-        position: relative;
-        max-width: 800px;
-        margin: 0 auto;
-      }
-      .timeline::after {
-        content: "";
-        position: absolute;
-        width: 3px;
-        background-color: var(--secondary-color);
-        top: 0;
-        bottom: 0;
-        left: 50%;
-        margin-left: -1.5px;
-      }
-      .timeline-item {
-        padding: 10px 40px;
-        position: relative;
-        background-color: inherit;
-        width: 50%;
-      }
-      .timeline-item::after {
-        content: "";
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        right: -10px;
-        background-color: white;
-        border: 4px solid var(--primary-color);
-        top: 25px;
-        border-radius: 50%;
-        z-index: 1;
-      }
-      .left {
-        left: 0;
-      }
-      .right {
-        left: 50%;
-      }
-      .right::after {
-        left: -10px;
-      }
-      .timeline-content {
-        padding: 20px 30px;
-        background-color: var(--secondary-color);
-        border-radius: 8px;
-      }
-      .timeline-content h3 {
-        font-family: var(--font-heading);
-        color: var(--primary-color);
-      }
-      .timeline-content .story-image {
-        /* Style for potential love story images */
-        width: 100%;
-        height: 150px;
-        object-fit: cover;
-        border-radius: 6px;
-        margin-bottom: 15px;
-      }
-
-      /* --- Events Section --- */
-      .events-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-      }
-      .event-card {
-        background: #fff;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s, box-shadow 0.3s;
-      }
-      .event-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-      }
-      .event-card img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-      }
-      .event-details {
-        padding: 25px;
-      }
-      .event-details h3 {
-        font-family: var(--font-heading);
-        color: var(--primary-color);
-        margin-top: 0;
-      }
-      .event-details p {
-        margin: 5px 0;
-        color: var(--text-light);
-      }
-      .event-details a {
-        color: var(--primary-color);
-        text-decoration: none;
-        font-weight: 500;
-      }
-
-      /* --- Album Section --- */
-      .album-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-      }
-      .album-grid img {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
-        border-radius: 8px;
-        transition: transform 0.3s, opacity 0.3s;
-      }
-      .album-grid img:hover {
-        transform: scale(1.05);
-        opacity: 0.8;
-      }
-
-      /* --- Guestbook Section --- */
-      .guestbook-message {
-        background-color: #fff;
-        padding: 20px;
-        border-left: 5px solid var(--primary-color);
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-      .guestbook-message p {
-        margin: 0;
-        font-style: italic;
-      }
-      .guestbook-message .name {
-        font-weight: bold;
-        font-style: normal;
-        margin-top: 10px;
-        color: var(--primary-color);
-        text-align: right;
-      }
-      .guestbook-form {
-        margin-top: 50px;
-      }
-      .form-group {
-        margin-bottom: 20px;
-      }
-      .form-group input,
-      .form-group textarea {
-        width: 100%;
-        padding: 15px;
-        border: 1px solid #746565;
-        border-radius: 8px;
-        font-family: var(--font-body);
-        font-size: 1rem;
-        box-sizing: border-box;
-      }
-      .submit-btn {
-        width: 100%;
-        padding: 15px;
-        border: none;
-        background-color: var(--primary-color);
-        color: white;
-        font-family: var(--font-heading);
-        font-size: 1.1rem;
-        font-weight: 600;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      .submit-btn:hover {
-        background-color: #1e3f43;
-      }
-
-      /* --- Footer --- */
-      footer {
-        text-align: center;
-        padding: 40px;
-        background-color: var(--secondary-color);
-        margin-top: 80px;
-      }
-      footer p {
-        font-family: var(--font-heading);
-        font-size: 1.5rem;
-        color: var(--primary-color);
-        margin: 0;
-      }
-
-      /* --- Responsive Design --- */
       @media (max-width: 768px) {
-        .hero h1 {
-          font-size: 3rem;
-        }
-        .hero p.full-names {
-          font-size: 1.4rem;
-        }
-        .countdown-item {
-          padding: 10px 15px;
-          gap: 10px;
-        }
-        .countdown-item span {
-          font-size: 2rem;
-        }
-        .timeline::after {
-          left: 10px;
-        }
-        .timeline-item {
-          width: 100%;
-          padding-left: 40px;
-          padding-right: 15px;
-        }
-        .timeline-item::after {
-          left: 0;
-        }
-        .left,
-        .right {
-          left: 0%;
-        }
+        .story, .event { grid-template-columns: 1fr; }
+        .album { columns: 2 200px; }
+      }
+      @media (max-width: 480px) {
+        .album { columns: 1; }
       }
     </style>
-  </head>
-  <body>
-    <header class="hero">
-      <h3>We Are Getting Married</h3>
-      <h1>
-        <%= weddingData.groom.firstName %> & <%= weddingData.bride.firstName %>
-      </h1>
-      <p class="full-names">
-        <%= weddingData.groom.fullName %> & <%= weddingData.bride.fullName %>
-      </p>
-      <p><%= weddingData.weddingDate %></p>
-      <div id="countdown">
-        <div class="countdown-item">
-          <span id="days">00</span>
-          <p>Days</p>
+</head>
+<body>
+    <div class="hearts-bg">
+      <span class="heart" style="left: 10%; top: 20%; animation-delay: 0s">♥</span>
+      <span class="heart" style="left: 85%; top: 15%; animation-delay: 1s">♥</span>
+      <span class="heart" style="left: 25%; top: 60%; animation-delay: 2s">♥</span>
+      <span class="heart" style="left: 70%; top: 70%; animation-delay: 3s">♥</span>
+      <span class="heart" style="left: 50%; top: 40%; animation-delay: 4s">♥</span>
+      <span class="heart" style="left: 15%; top: 80%; animation-delay: 5s">♥</span>
+    </div>
+
+    <header>
+      <div class="hero">
+        <h1>
+          <%= (weddingData && weddingData.groomName) ? weddingData.groomName : 'Chú rể' %>
+          <span class="and">&</span>
+          <%= (weddingData && weddingData.brideName) ? weddingData.brideName : 'Cô dâu' %>
+        </h1>
+        <div class="divider"></div>
+        <div class="names-line">
+          <span><%= (weddingData && weddingData.groomName) ? weddingData.groomName : 'Chú rể' %></span>
+          <span class="and">&</span>
+          <span><%= (weddingData && weddingData.brideName) ? weddingData.brideName : 'Cô dâu' %></span>
         </div>
-        <div class="countdown-item">
-          <span id="hours">00</span>
-          <p>Hours</p>
-        </div>
-        <div class="countdown-item">
-          <span id="minutes">00</span>
-          <p>Minutes</p>
-        </div>
-        <div class="countdown-item">
-          <span id="seconds">00</span>
-          <p>Seconds</p>
-        </div>
+        <p class="date">
+          <%= (weddingData && weddingData.weddingDate) ? weddingData.weddingDate : '' %>
+        </p>
       </div>
     </header>
 
-    <main>
-      <section id="video" class="container">
-        <div class="section-heading">
-          <h2>Our Story Video</h2>
-        </div>
-        <div class="video-wrapper">
+    <main class="container">
+      <section id="welcome">
+        <h3 class="section-title"><span>Welcome</span> & Lời mở đầu</h3>
+        <% if (weddingData && weddingData.aboutCouple) { %>
+          <p class="lead"><%= weddingData.aboutCouple %></p>
+        <% } else { %>
+          <p class="lead">
+            Chúng tôi rất hạnh phúc được chia sẻ ngày trọng đại này cùng bạn. Cảm ơn vì đã là một phần trong câu chuyện của chúng tôi.
+          </p>
+        <% } %>
+      </section>
+
+      <% if (weddingData && weddingData.youtubeUrl) { %>
+      <section id="video">
+        <h3 class="section-title"><span>Memories</span> Video</h3>
+        <div class="video-wrap">
           <iframe
-            src="https://www.youtube.com/embed/<%= weddingData.youtubeUrl.split('v=')[1] %>"
+            src="https://www.youtube.com/embed/<%= (function(u){ try{
+                 if(!u) return '';
+                 // Improved regex to handle various YouTube URL formats
+                 const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+                 const match = u.match(regex);
+                 return match ? match[1] : '';
+               } catch(e){ return '' } })(weddingData.youtubeUrl) %>"
             title="YouTube video player"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          >
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
           </iframe>
         </div>
       </section>
+      <% } %>
 
-      <section id="story" class="container">
-        <div class="section-heading">
-          <h2>Our Love Story</h2>
-        </div>
+      <% if (weddingData && weddingData.loveStory && weddingData.loveStory.length>0) { %>
+      <section id="love-story">
+        <h3 class="section-title"><span>Love</span> Story</h3>
         <div class="timeline">
-          <% weddingData.loveStory.forEach(function(story, index) { %>
-          <div class="timeline-item <%= index % 2 === 0 ? 'left' : 'right' %>">
-            <div class="timeline-content">
-              <h3><%= story.title %></h3>
-              <p><strong><%= story.time %>:</strong> <%= story.content %></p>
-            </div>
-          </div>
-          <% }); %>
+          <% weddingData.loveStory.forEach(function(story){ %>
+            <article class="story">
+              <img src="<%= story.image %>" alt="<%= story.title %>" loading="lazy" />
+              <div>
+                <h4><%= story.title %></h4>
+                <p class="time"><%= story.time %></p>
+                <p class="content"><%= story.content %></p>
+              </div>
+            </article>
+          <% }) %>
         </div>
       </section>
+      <% } %>
 
-      <section id="events" style="background-color: var(--secondary-color)">
-        <div class="container">
-          <div class="section-heading">
-            <h2>Wedding Events</h2>
-          </div>
-          <div class="events-grid">
-            <% weddingData.events.forEach(function(event) { %>
-            <div class="event-card">
-              <img src="<%= event.image %>" alt="<%= event.name %>" />
-              <div class="event-details">
-                <h3><%= event.name %></h3>
-                <p><strong>Thời gian:</strong> <%= event.time %></p>
-                <p><strong>Địa điểm:</strong> <%= event.venue %></p>
-                <p><strong>Địa chỉ:</strong> <%= event.address %></p>
+      <% if (weddingData && weddingData.album && weddingData.album.length>0) { %>
+      <section id="album">
+        <h3 class="section-title"><span>Gallery</span> Album Ảnh</h3>
+        <div class="album">
+          <% weddingData.album.forEach(function(img){ %>
+            <img src="<%= img %>" alt="Ảnh cưới" loading="lazy" />
+          <% }) %>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (weddingData && weddingData.events && weddingData.events.length>0) { %>
+      <section id="events">
+        <h3 class="section-title"><span>Schedule</span> Chương trình</h3>
+        <% weddingData.events.forEach(function(event){ %>
+          <article class="event">
+             <% if (event.image) { %>
+                <img src="<%= event.image %>" alt="<%= event.name %>" loading="lazy" />
+             <% } else { %>
+                 <div style="width: 200px; height: 200px; background: #eee; border-radius: 15px;"></div>
+             <% } %>
+            <div>
+              <h4><%= event.name %></h4>
+              <p><strong>Thời gian:</strong> <%= event.time %></p>
+              <p><strong>Địa điểm:</strong> <%= event.venue %></p>
+              <p><strong>Địa chỉ:</strong> <%= event.address %></p>
+              <div class="btns">
                 <% if (event.mapLink) { %>
-                <p>
-                  <a href="<%= event.mapLink %>" target="_blank"
-                    >Xem bản đồ &rarr;</a
-                  >
-                </p>
+                  <a class="btn" target="_blank" href="<%= event.mapLink %>">Xem bản đồ</a>
+                <% } %>
+                <% if (event.address) { %>
+                  <!-- <a class="btn primary" target="_blank" href="https://www.google.com/maps/embed<%= encodeURIComponent(event.address) %>">Chỉ đường</a> -->
                 <% } %>
               </div>
+
+              <% if (event.embedMapUrl) { %>
+                <div style="margin-top: 20px; border: 3px solid var(--cream-dark); border-radius: 15px; overflow: hidden; position: relative; padding-bottom: 64%; height: 0; box-shadow: var(--shadow-soft);">
+                  <iframe
+                    src="<%= event.embedMapUrl %>"
+                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0;"
+                    loading="lazy"
+                    allowfullscreen
+                    referrerpolicy="no-referrer-when-downgrade">
+                  </iframe>
+                </div>
+              <% } %>
             </div>
-            <% }); %>
-          </div>
+          </article>
+        <% }) %>
+      </section>
+      <% } %>
+
+      <section id="rsvp" style="text-align: center">
+        <h3 class="section-title">Xác nhận tham dự</h3>
+        <p class="lead" style="margin-bottom: 25px">
+          Sự hiện diện của bạn là niềm vinh hạnh lớn lao. Vui lòng xác nhận để chúng tôi chuẩn bị chu đáo nhất!
+        </p>
+        <button type="button" class="submit" id="rsvp-btn"> Xác nhận tham dự
+        </button>
+        <p id="rsvp-thanks" style="display: none; font-weight: 700; margin-top: 20px; color: var(--sage); font-size: 20px;">
+          ✓ Cảm ơn bạn đã xác nhận! Hẹn gặp bạn tại buổi tiệc.
+        </p>
+      </section>
+
+      <% if (weddingData && weddingData.bankAccount && weddingData.bankAccount.bankBin && weddingData.bankAccount.accountNumber) { %>
+      <section id="wedding-gift">
+        <h3 class="section-title"><span>Wedding Gift (Mừng cưới)</span></h3>
+        <p class="lead" style="margin-bottom: 25px">
+          Nếu bạn không thể tham dự, có thể gửi lời chúc & mừng cưới qua QR dưới đây.
+        </p>
+        <div style="text-align: center">
+          <img
+            src="https://api.vietqr.io/image/<%= weddingData.bankAccount.bankBin %>-<%= weddingData.bankAccount.accountNumber %>-print.jpg?accountName=<%= encodeURIComponent((weddingData && weddingData.groomName) ? weddingData.groomName : '') %>&addInfo=<%= encodeURIComponent('Mung cuoi ' + ((weddingData && weddingData.groomName) ? weddingData.groomName : '') + ' va ' + ((weddingData && weddingData.brideName) ? weddingData.brideName : '')) %>"
+            alt="QR Mừng cưới"
+            style="width: 350px; max-width: 100%; border-radius: 20px; border: 4px solid var(--white); box-shadow: var(--shadow-medium);"
+            loading="lazy"
+          />
+        </div>
+      </section>
+      <% } %>
+
+      <section id="guestbook">
+        <h3 class="section-title"><span>Sổ lưu bút</span></h3>
+        <div class="guest-grid" id="guestbook-messages-container">
+          <% if (weddingData && weddingData.guestbookMessages && weddingData.guestbookMessages.length>0) { %>
+            <% weddingData.guestbookMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).forEach(function(m){ %>
+              <div class="guest-card">
+                <p class="name"><%= m.name %></p>
+                <p class="message">"<%= m.message %>"</p>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p id="no-messages-yet" class="muted-center" style="grid-column: 1/-1">
+              Chưa có lời chúc nào. Hãy là người đầu tiên nhé!
+            </p>
+          <% } %>
         </div>
       </section>
 
-      <section id="album" class="container">
-        <div class="section-heading">
-          <h2>Our Album</h2>
-        </div>
-        <div class="album-grid">
-          <% weddingData.album.forEach(function(image) { %>
-          <img src="<%= image %>" alt="Ảnh cưới" />
-          <% }); %>
-        </div>
-      </section>
-
-      <section id="guestbook" style="background-color: var(--secondary-color)">
-        <div class="container">
-          <div class="section-heading">
-            <h2>Guestbook</h2>
+      <section>
+        <h4 class="form-title">Gửi lời chúc của bạn</h4>
+        <form id="guestbook-form">
+          <div class="form-row">
+            <label for="guestName">Tên của bạn</label>
+            <input id="guestName" name="name" type="text" placeholder="Nhập tên của bạn" required />
           </div>
-          <% weddingData.guestbookMessages.forEach(function(message) { %>
-          <div class="guestbook-message">
-            <p>"<%= message.message %>"</p>
-            <p class="name">- <%= message.name %> -</p>
+          <div class="form-row">
+            <label for="guestMessage">Lời chúc</label>
+            <textarea id="guestMessage" name="message" rows="5" placeholder="Viết lời chúc tại đây..." required></textarea>
           </div>
-          <% }); %>
-
-          <div class="guestbook-form">
-            <form>
-              <div class="form-group">
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Tên của bạn"
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <textarea
-                  name="message"
-                  rows="5"
-                  placeholder="Để lại lời chúc của bạn..."
-                  required
-                ></textarea>
-              </div>
-              <button type="submit" class="submit-btn">Gửi Lời Chúc</button>
-            </form>
-          </div>
-        </div>
+          <button type="submit" class="submit" id="submit-wish-btn"> Gửi Lời Chúc
+          </button>
+        </form>
       </section>
     </main>
 
     <footer>
       <p>
-        Chúc phúc <%= weddingData.groom.fullName %> & <%=
-        weddingData.bride.fullName %>
+        Chúc mừng hạnh phúc của <%= (weddingData && weddingData.groomName) ? weddingData.groomName : 'Chú rể' %> và <%= (weddingData && weddingData.brideName) ? weddingData.brideName : 'Cô dâu' %>
       </p>
+      <p>© 2025. All rights reserved.</p>
     </footer>
 
-    <script>
-      // JavaScript cho bộ đếm ngược
-      (function () {
-        // Chuyển đổi chuỗi ngày tháng tiếng Việt sang định dạng Date object
-        const weddingDateStr = "<%= weddingData.weddingDate %>"; // "Ngày 03 Tháng 06, 2036"
-        const dateParts = weddingDateStr.match(
-          /(\d+)\s+Tháng\s+(\d+),\s+(\d+)/
-        );
-        if (dateParts) {
-          const day = parseInt(dateParts[1], 10);
-          const month = parseInt(dateParts[2], 10); // Lấy tháng là số (ví dụ: 06 -> 6)
-          const year = parseInt(dateParts[3], 10);
-
-          // Tạo đối tượng Date (Lưu ý: tháng trong JS là 0-indexed, nên cần trừ 1)
-          const weddingDate = new Date(year, month - 1, day).getTime();
-
-          const countdownFunction = setInterval(function () {
-            const now = new Date().getTime();
-            const distance = weddingDate - now;
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor(
-              (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-            );
-            const minutes = Math.floor(
-              (distance % (1000 * 60 * 60)) / (1000 * 60)
-            );
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            // Đảm bảo hiển thị 2 chữ số
-            document.getElementById("days").innerText =
-              days < 10 ? "0" + days : days;
-            document.getElementById("hours").innerText =
-              hours < 10 ? "0" + hours : hours;
-            document.getElementById("minutes").innerText =
-              minutes < 10 ? "0" + minutes : minutes;
-            document.getElementById("seconds").innerText =
-              seconds < 10 ? "0" + seconds : seconds;
-
-            if (distance < 0) {
-              clearInterval(countdownFunction);
-              document.getElementById("countdown").innerHTML =
-                "<h2>The Big Day Is Here!</h2>";
-            }
-          }, 1000);
-        } else {
-          console.error("Could not parse wedding date:", weddingDateStr);
-          document.getElementById("countdown").innerText = "Date format error.";
-        }
-      })();
+     <script id="wedding-data" type="application/json">
+      <%- JSON.stringify({ slug: (weddingData && weddingData.slug) ? weddingData.slug : "" }) %>
     </script>
-  </body>
+
+    <script>
+      // Helper function to safely get elements
+      function $(selector) {
+          return document.getElementById(selector);
+      }
+
+      // Guestbook Elements (IDs match template 2 form)
+      const guestbookForm = $("guestbook-form");
+      const guestNameInput = $("guestName");
+      const guestMessageInput = $("guestMessage");
+      const submitButton = $("submit-wish-btn"); // ID matches template 2 button
+      const messagesContainer = $("guestbook-messages-container");
+
+      // RSVP Elements (IDs match template 2 section)
+      const rsvpButton = $("rsvp-btn");
+      const rsvpThanks = $("rsvp-thanks");
+
+      // Read slug from the safe JSON script tag
+      let rsvpSlug = "";
+      let guestbookSlug = "";
+      (function () {
+        const el = document.getElementById("wedding-data");
+        if (!el) return;
+        try {
+          const parsed = JSON.parse(el.textContent || "{}");
+          rsvpSlug = parsed.slug || "";
+          guestbookSlug = parsed.slug || "";
+        } catch (e) { /* ignore malformed JSON */ }
+      })();
+
+      // --- RSVP Logic ---
+      if (rsvpButton && rsvpThanks) {
+        if (localStorage.getItem("rsvp_confirmed_" + rsvpSlug) === "true") {
+          rsvpButton.style.display = "none";
+          rsvpThanks.style.display = "block";
+        } else {
+          rsvpButton.addEventListener("click", async () => {
+            rsvpButton.disabled = true;
+            rsvpButton.innerText = "Đang gửi xác nhận...";
+            try {
+              const response = await fetch(`/invitation/${rsvpSlug}/rsvp`, { method: "POST" });
+              if (!response.ok) {
+                let errorMsg = "Lỗi khi xác nhận. Vui lòng thử lại.";
+                try {
+                  const errorData = await response.json();
+                  if (errorData && errorData.message) { errorMsg = errorData.message; }
+                } catch (e) { /* Ignore */ }
+                throw new Error(errorMsg);
+              }
+              localStorage.setItem("rsvp_confirmed_" + rsvpSlug, "true");
+              rsvpButton.style.display = "none";
+              rsvpThanks.style.display = "block";
+              alert("Xác nhận tham dự thành công! Cảm ơn bạn.");
+            } catch (error) {
+              const message = (error instanceof Error) ? error.message : String(error);
+              alert(message);
+              // Check rsvpButton exists before accessing properties
+              if (rsvpButton) {
+                  rsvpButton.disabled = false;
+                  rsvpButton.innerText = "Xác nhận tham dự";
+              }
+            }
+          });
+        }
+      }
+
+      // --- Guestbook Logic ---
+      if (guestbookForm && guestNameInput && guestMessageInput && submitButton && messagesContainer) {
+        guestbookForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const name = guestNameInput.value.trim();
+          const message = guestMessageInput.value.trim();
+          if (!name || !message) {
+            alert("Vui lòng không để trống tên hoặc lời chúc!");
+            return;
+          }
+          submitButton.disabled = true;
+          submitButton.innerText = "Đang gửi...";
+          try {
+            const response = await fetch(`/invitation/${guestbookSlug}/add-wish`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, message }),
+            });
+            const result = await response.json();
+            if (!response.ok) {
+              throw new Error(result.message || "Lỗi khi gửi lời chúc.");
+            }
+            alert("Gửi lời chúc thành công! Cảm ơn bạn rất nhiều.");
+            const noMessagesEl = $("no-messages-yet");
+            if (noMessagesEl) { noMessagesEl.remove(); }
+
+            // *** ADAPTATION: Use the correct class name for template 2 ***
+            const newMessageCard = document.createElement("div");
+            newMessageCard.className = "guest-card"; // Use template 2's class
+            newMessageCard.innerHTML = `<p class="name">${name}</p><p class="message">"${message}"</p>`;
+            messagesContainer.prepend(newMessageCard);
+            // *** END ADAPTATION ***
+
+            guestNameInput.value = "";
+            guestMessageInput.value = "";
+          } catch (error) {
+            console.error("Lỗi khi gửi lời chúc:", error);
+            const errMsg = (error instanceof Error) ? error.message : String(error);
+            alert(errMsg);
+          } finally {
+             // Check submitButton exists before accessing properties
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerText = "Gửi Lời Chúc";
+            }
+          }
+        });
+      }
+    </script>
+</body>
 </html>

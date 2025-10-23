@@ -19,6 +19,7 @@ const EventSchema = new mongoose.Schema({
   address: String,
   mapLink: String,
   image: String,
+  embedMapUrl: String,
 });
 
 const GuestbookMessageSchema = new mongoose.Schema(

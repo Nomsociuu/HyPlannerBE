@@ -12,17 +12,17 @@ const {
 const { protect } = require("../middleware/authMiddleware");
 
 const rsvpLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000 * 24 * 30, // 30 ngày (tính bằng mili-giây)
-  max: 3, // Chỉ cho phép 3 request từ 1 IP trong 30 ngày
+  windowMs: 24 * 60 * 60 * 1000, // 1 ngày (tính bằng mili-giây)
+  max: 3, // Chỉ cho phép 3 request từ 1 IP trong 1 ngày
   message: {
-    message: "Bạn đã xác nhận quá nhiều lần. Vui lòng thử lại sau 30 ngày.",
+    message: "Bạn đã xác nhận quá nhiều lần. Vui lòng thử lại sau 1 ngày.",
   },
   standardHeaders: true, // Gửi thông tin về rate limit trong header
   legacyHeaders: false, // Tắt header X-RateLimit-* cũ
 });
 
 const addWishLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000 * 24, // 1 ngày (tính bằng mili-giây)
+  windowMs: 24 * 60 * 60 * 1000, // 1 ngày (tính bằng mili-giây)
   max: 1, // Chỉ cho phép 1 request từ 1 IP trong 1 ngày
   message: {
     message: "Bạn đã gửi quá nhiều lời chúc. Vui lòng thử lại sau 1 ngày.",

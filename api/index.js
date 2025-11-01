@@ -17,6 +17,7 @@ const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
 const publicRoutes = require("../routes/publicRoutes");
 const templateRoutes = require("../routes/templateRoutes");
 const paymentRoutes = require("../routes/paymentRoutes");
+const feedbackRoutes = require("../routes/feedbackRoutes");
 const { handlePayOsWebhook } = require("../controllers/paymentController");
 require("dotenv").config();
 
@@ -72,6 +73,7 @@ app.use("/invitation", invitationLetterRoutes);
 app.use("/inviletter", publicRoutes);
 app.use("/templates", templateRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/feedback", feedbackRoutes);
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;

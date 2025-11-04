@@ -5,7 +5,7 @@ const axios = require("axios");
 const asyncHandler = require("express-async-handler");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
-const mixpanel = require("../services/mixpanelServer");
+const mixpanel = require("../service/mixpanelServer");
 
 const trackMixpanelSignup = (user, method) => {
   try {

@@ -2,7 +2,7 @@ const payOs = require("../config/payos");
 const Order = require("../models/Order");
 const User = require("../models/User");
 const { APIError } = require("@payos/node");
-const mixpanel = require("../services/mixpanelServer");
+const mixpanel = require("../service/mixpanelServer");
 
 const APP_SCHEME = process.env.EXPO_PUBLIC_SCHEME;
 

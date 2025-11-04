@@ -2,6 +2,7 @@ const payOs = require("../config/payos");
 const Order = require("../models/Order");
 const User = require("../models/User");
 const { APIError } = require("@payos/node");
+const mixpanel = require("../services/mixpanelServer");
 
 const APP_SCHEME = process.env.EXPO_PUBLIC_SCHEME;
 
@@ -53,6 +54,13 @@ const createPaymentLink = async (req, res) => {
     };
 
     const paymentLinkResponse = await payOs.paymentRequests.create(payosOrder);
+    mixpanel.track("Initiated Payment", {
+      distinct_id: userId, // Định danh user
+      "Package Type": packageType,
+      Amount: price,
+      "Order Code": order.orderCode,
+      "Payment Provider": "PayOS",
+    });
 
     res.status(200).json({
       message: "Tạo link thanh toán thành công",
@@ -125,6 +133,21 @@ const handlePayOsWebhook = async (req, res) => {
           console.log(
             `ĐÃ NÂNG CẤP tài khoản cho User ID: ${user._id} thành ${user.accountType}`
           );
+
+          mixpanel.track("Payment Successful", {
+            distinct_id: order.userId.toString(),
+            "Package Type": order.packageType,
+            Amount: order.amount,
+            "Order Code": order.orderCode,
+            "Payment Provider": "PayOS",
+          }); // 2. Cập nhật hồ sơ người dùng (User Profile) trong Mixpanel
+
+          mixpanel.people.set(order.userId.toString(), {
+            "Account Type": user.accountType,
+            "Account Expires": user.accountExpires,
+            $email: user.email, // Cập nhật lại thông tin
+            $name: user.fullName,
+          });
         } else {
           console.error(
             `LỖI WEBHOOK: Không tìm thấy user với ID ${order.userId} để nâng cấp.`
@@ -180,6 +203,12 @@ const handleCancelOrder = async (req, res) => {
     if (order.status === "PENDING") {
       order.status = "CANCELLED";
       await order.save();
+      mixpanel.track("Cancelled Payment", {
+        distinct_id: userId,
+        "Order Code": orderCode,
+        "Package Type": order.packageType,
+        Amount: order.amount,
+      });
       console.log(`Đã hủy đơn hàng: ${orderCode}`);
       return res.status(200).json({ message: "Đã hủy đơn hàng thành công." });
     } else {

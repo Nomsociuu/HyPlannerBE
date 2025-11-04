@@ -5,6 +5,32 @@ const axios = require("axios");
 const asyncHandler = require("express-async-handler");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
+const mixpanel = require("../services/mixpanelServer");
+
+const trackMixpanelSignup = (user, method) => {
+  try {
+    const userId = user._id.toString();
+
+    // 1. Gửi sự kiện "Signed Up"
+    mixpanel.track("Signed Up", {
+      distinct_id: userId,
+      "Signup Method": method, // 'Email', 'Google', 'Facebook'
+    });
+
+    // 2. Tạo hồ sơ người dùng (User Profile)
+    mixpanel.people.set(userId, {
+      $first_name: user.fullName.split(" ")[0] || "", // Lấy tên
+      $last_name: user.fullName.split(" ").slice(1).join(" ") || "", // Lấy họ
+      $name: user.fullName,
+      $email: user.email,
+      $created: new Date().toISOString(),
+      "Signup Method": method,
+    });
+  } catch (err) {
+    console.error("Mixpanel signup tracking error:", err);
+    // Không block flow đăng ký dù Mixpanel lỗi
+  }
+};
 // Hàm trợ giúp để tạo JWT
 const generateToken = (user) => {
   const payload = { id: user._id, name: user.fullName, email: user.email };
@@ -36,6 +62,7 @@ exports.findOrCreateUser = async (accessToken, refreshToken, profile, done) => {
     });
 
     await newUser.save();
+    trackMixpanelSignup(newUser, "Google");
     done(null, newUser);
   } catch (error) {
     done(error, null);
@@ -64,6 +91,7 @@ exports.findOrCreateFacebookUser = async (
       isVerified: true,
     });
     await newUser.save();
+    trackMixpanelSignup(newUser, "Facebook");
     done(null, newUser);
   } catch (error) {
     done(error, null);
@@ -104,6 +132,7 @@ exports.facebookToken = async (req, res) => {
 
     // Tìm người dùng bằng EMAIL, không phải facebookId
     let user = await User.findOne({ email: profile.email });
+    let isNewUser = false;
 
     if (user) {
       // Người dùng đã tồn tại (có thể đã đăng ký bằng Google hoặc email)
@@ -115,6 +144,7 @@ exports.facebookToken = async (req, res) => {
         await user.save();
       }
     } else {
+      isNewUser = true;
       // Người dùng chưa tồn tại -> tạo một người dùng hoàn toàn mới
       user = new User({
         facebookId: profile.id,
@@ -124,6 +154,10 @@ exports.facebookToken = async (req, res) => {
         isVerified: true, // Email từ Facebook được coi là đã xác thực
       });
       await user.save();
+    }
+
+    if (isNewUser) {
+      trackMixpanelSignup(user, "Facebook");
     }
 
     // <<< KẾT THÚC THAY ĐỔI QUAN TRỌNG >>>
@@ -284,6 +318,8 @@ exports.verifyEmail = asyncHandler(async (req, res) => {
   user.otp = undefined;
   user.otpExpires = undefined;
   await user.save();
+
+  trackMixpanelSignup(user, "Email");
 
   // Trả về token và thông tin user để app tự động đăng nhập
   res.status(200).json({

@@ -1,17 +1,15 @@
 const groupActivities = require("../models/GroupActivity");
-const weddingEvent = require("../models/WeddingEvents");
+const WeddingEvent = require("../models/WeddingEvent");
 const activity = require("../models/Activity");
 
 // GET: http://localhost:8082/groupActivities/getAllActivities/eventId
 exports.getAllActivities = async (req, res) => {
   const { eventId } = req.params;
   try {
-    const event = await weddingEvent
-      .findById(eventId)
-      .populate({
-        path: "groupActivities",
-        populate: { path: "activities" },
-      });
+    const event = await WeddingEvent.findById(eventId).populate({
+      path: "groupActivities",
+      populate: { path: "activities" },
+    });
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
@@ -36,7 +34,7 @@ exports.createGroupActivity = async (req, res) => {
     });
     await newActivity.save();
     // Cập nhật weddingEvent để thêm groupActivity vào
-    await weddingEvent.findByIdAndUpdate(eventId, {
+    await WeddingEvent.findByIdAndUpdate(eventId, {
       $push: { groupActivities: newActivity._id },
     });
     res.status(201).json(newActivity);
@@ -82,7 +80,7 @@ exports.deleteGroupActivity = async (req, res) => {
       return res.status(404).json({ message: "Activity not found" });
     }
     // Xóa groupActivity khỏi tất cả các weddingEvent chứa nó
-    await weddingEvent.updateMany(
+    await WeddingEvent.updateMany(
       { activities: activityGroupId },
       { $pull: { activities: activityGroupId } }
     );

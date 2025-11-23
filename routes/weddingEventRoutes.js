@@ -5,8 +5,8 @@ const routes = require("express").Router();
 // routes.get('/getAllWeddingEvents', weddingEventController.getAllWeddingEvents, authMiddleware.protect) for developer
 routes.get(
   "/getWeddingEvent/:eventId",
-  weddingEventController.getWeddingEvent,
-  authMiddleware.protect
+  authMiddleware.protect,
+  weddingEventController.getWeddingEvent
 );
 
 routes.get(
@@ -16,20 +16,20 @@ routes.get(
 
 routes.post(
   "/createWeddingEvent",
-  weddingEventController.createWeddingEvent,
-  authMiddleware.protect
+  authMiddleware.protect,
+  weddingEventController.createWeddingEvent
 );
 
 routes.post(
   "/addMember",
-  weddingEventController.joinWeddingEvent,
-  authMiddleware.protect
+  authMiddleware.protect,
+  weddingEventController.joinWeddingEvent
 );
 
 routes.post(
   "/leaveWeddingEvent",
-  weddingEventController.leaveWeddingEvent,
-  authMiddleware.protect
+  authMiddleware.protect,
+  weddingEventController.leaveWeddingEvent
 );
 
 routes.post("/checkAndInsertTasks", weddingEventController.checkAndInsertTasks);
@@ -39,8 +39,8 @@ routes.post(
 );
 routes.get(
   "/checkEventData/:eventId",
-  weddingEventController.checkEventData,
-  authMiddleware.protect
+  authMiddleware.protect,
+  weddingEventController.checkEventData
 );
 
 routes.get(

@@ -6,6 +6,7 @@ const GroupActivity = require("../models/GroupActivity");
 const Task = require("../models/Task");
 const Phase = require("../models/Phase");
 const Hashids = require("hashids/cjs");
+const mixpanel = require("../service/mixpanelServer");
 
 const hashids = new Hashids(process.env.SECRET_KEY_SALT, 6);
 
@@ -45,6 +46,24 @@ exports.createWeddingEvent = async (req, res) => {
       groupActivities: [],
     });
     await newWeddingEvent.save();
+
+    // Track với Mixpanel
+    mixpanel.track("Wedding Event - Created", {
+      distinct_id: creatorId.toString(),
+      eventId: newWeddingEvent._id.toString(),
+      budget: budget,
+      daysUntilWedding: Math.ceil(
+        (new Date(timeToMarried) - new Date()) / (1000 * 60 * 60 * 24)
+      ),
+    });
+
+    // Set user properties
+    mixpanel.people.set(creatorId.toString(), {
+      "Wedding Date": new Date(timeToMarried).toISOString(),
+      "Wedding Budget": budget,
+      "Has Wedding Event": true,
+    });
+
     res.status(201).json({ message: "Wedding event created", newWeddingEvent });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });

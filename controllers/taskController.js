@@ -1,5 +1,6 @@
 const phase = require("../models/Phase");
 const task = require("../models/Task");
+const mixpanel = require("../service/mixpanelServer");
 
 // GET: http://localhost:8082/tasks/getAllTasks/phaseId
 exports.getAllTasks = async (req, res) => {
@@ -58,6 +59,17 @@ exports.createTask = async (req, res) => {
       $push: { tasks: savedTask._id },
     });
 
+    // Track với Mixpanel
+    if (member && member.length > 0) {
+      mixpanel.track("Task - Created", {
+        distinct_id: member[0].toString(),
+        taskId: savedTask._id.toString(),
+        phaseId: phaseId,
+        hasNote: !!taskNote,
+        hasMember: member && member.length > 0,
+      });
+    }
+
     res
       .status(201)
       .json({ task: savedTask, message: "Tạo công việc thành công" });
@@ -81,6 +93,18 @@ exports.markCompleted = async (req, res) => {
 
     if (!updatedTask) {
       return res.status(404).json({ message: "Công việc không tồn tại" });
+    }
+
+    // Track với Mixpanel
+    if (updatedTask.member && updatedTask.member.length > 0) {
+      mixpanel.track(
+        "Task - Marked as " + (completed ? "Completed" : "Incomplete"),
+        {
+          distinct_id: updatedTask.member[0].toString(),
+          taskId: taskId,
+          completed: completed,
+        }
+      );
     }
 
     res.json({

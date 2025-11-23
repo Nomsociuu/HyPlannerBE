@@ -1,5 +1,7 @@
 // index.js (hoặc tên tệp chính của bạn)
 
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
@@ -7,7 +9,7 @@ const path = require("path");
 const session = require("express-session");
 const phaseRoutes = require("../routes/phaseRoutes");
 const taskRoutes = require("../routes/taskRoutes");
-const weddingEventRoutes = require("../routes/weddingEventsRoutes");
+const weddingEventRoutes = require("../routes/weddingEventRoutes");
 const weddingCostumeRoutes = require("../routes/weddingCostumeRoutes");
 const userSelectionRoutes = require("../routes/userSelectionRoutes");
 const groupActivityRoutes = require("../routes/groupActivityRoutes");
@@ -19,7 +21,6 @@ const templateRoutes = require("../routes/templateRoutes");
 const paymentRoutes = require("../routes/paymentRoutes");
 const feedbackRoutes = require("../routes/feedbackRoutes");
 const { handlePayOsWebhook } = require("../controllers/paymentController");
-require("dotenv").config();
 
 const connectDB = require("../config/db");
 const configurePassport = require("../config/passport");

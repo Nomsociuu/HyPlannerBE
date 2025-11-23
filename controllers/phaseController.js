@@ -1,13 +1,13 @@
 const phase = require("../models/Phase");
 const task = require("../models/Task");
-const weddingEvent = require("../models/WeddingEvents");
+const WeddingEvent = require("../models/WeddingEvent");
 
 // GET: http://localhost:8082/phases/getAllPhases/:eventId
 exports.getAllPhases = async (req, res) => {
   const { eventId } = req.params;
   try {
     // Lấy wedding event và populate phases
-    const event = await weddingEvent.findById(eventId).populate({
+    const event = await WeddingEvent.findById(eventId).populate({
       path: "phases",
       populate: {
         path: "tasks",
@@ -54,13 +54,11 @@ exports.createPhase = async (req, res) => {
     const savedPhase = await newPhase.save();
 
     // Thêm phase vào event tương ứng
-    const updatedEvent = await weddingEvent
-      .findByIdAndUpdate(
-        eventId,
-        { $push: { phases: savedPhase._id } },
-        { new: true }
-      )
-      .populate("phases");
+    const updatedEvent = await WeddingEvent.findByIdAndUpdate(
+      eventId,
+      { $push: { phases: savedPhase._id } },
+      { new: true }
+    ).populate("phases");
 
     if (!updatedEvent) {
       // Nếu event không tồn tại, xóa phase vừa tạo để tránh rác
@@ -100,7 +98,7 @@ exports.deletePhase = async (req, res) => {
     const deletedPhase = await phase.findByIdAndDelete(phaseId);
 
     // Cập nhật wedding event - xóa phaseId khỏi array phases
-    await weddingEvent.updateMany(
+    await WeddingEvent.updateMany(
       { phases: phaseId },
       { $pull: { phases: phaseId } }
     );
@@ -118,23 +116,23 @@ exports.deletePhase = async (req, res) => {
   }
 };
 
-
 exports.updatePhase = async (req, res) => {
   const { phaseId } = req.params;
   const { phaseTimeStart, phaseTimeEnd } = req.body;
 
   // Validation
   if (!phaseTimeStart && !phaseTimeEnd) {
-    return res.status(400).json({ 
-      message: "At least one field (phaseTimeStart or phaseTimeEnd) is required for update" 
+    return res.status(400).json({
+      message:
+        "At least one field (phaseTimeStart or phaseTimeEnd) is required for update",
     });
   }
 
   // Validate dates nếu cả hai đều được cung cấp
   // if (phaseTimeStart && phaseTimeEnd) {
   //   if (new Date(phaseTimeEnd) <= new Date(phaseTimeStart)) {
-  //     return res.status(400).json({ 
-  //       message: "phaseTimeEnd must be greater than phaseTimeStart" 
+  //     return res.status(400).json({
+  //       message: "phaseTimeEnd must be greater than phaseTimeStart"
   //     });
   //   }
   // }
@@ -152,42 +150,46 @@ exports.updatePhase = async (req, res) => {
     if (phaseTimeEnd) updateData.phaseTimeEnd = phaseTimeEnd;
 
     // Validate dates với dữ liệu hiện tại
-    const newStartTime = phaseTimeStart ? new Date(phaseTimeStart) : currentPhase.phaseTimeStart;
-    const newEndTime = phaseTimeEnd ? new Date(phaseTimeEnd) : currentPhase.phaseTimeEnd;
-    
+    const newStartTime = phaseTimeStart
+      ? new Date(phaseTimeStart)
+      : currentPhase.phaseTimeStart;
+    const newEndTime = phaseTimeEnd
+      ? new Date(phaseTimeEnd)
+      : currentPhase.phaseTimeEnd;
+
     if (newEndTime <= newStartTime) {
-      return res.status(400).json({ 
-        message: "phaseTimeEnd must be greater than phaseTimeStart" 
+      return res.status(400).json({
+        message: "phaseTimeEnd must be greater than phaseTimeStart",
       });
     }
 
     // Update phase
-    const updatedPhase = await phase.findByIdAndUpdate(
-      phaseId,
-      updateData,
-      { new: true, runValidators: true }
-    ).populate('tasks');
+    const updatedPhase = await phase
+      .findByIdAndUpdate(phaseId, updateData, {
+        new: true,
+        runValidators: true,
+      })
+      .populate("tasks");
 
     res.status(200).json({
       message: "Phase updated successfully",
-      updatedPhase: updatedPhase
+      updatedPhase: updatedPhase,
     });
-
   } catch (error) {
     console.error("Error updating phase:", error);
-    
+
     // Handle validation errors
     // if (error.name === 'ValidationError') {
     //   const validationErrors = Object.values(error.errors).map(err => err.message);
-    //   return res.status(400).json({ 
-    //     message: "Validation error", 
-    //     errors: validationErrors 
+    //   return res.status(400).json({
+    //     message: "Validation error",
+    //     errors: validationErrors
     //   });
     // }
-    
-    res.status(500).json({ 
-      message: "Error updating phase", 
-      error: error.message 
+
+    res.status(500).json({
+      message: "Error updating phase",
+      error: error.message,
     });
   }
 };

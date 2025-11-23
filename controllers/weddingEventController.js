@@ -1,4 +1,4 @@
-const weddingEvent = require("../models/WeddingEvents");
+const WeddingEvent = require("../models/WeddingEvent");
 const mongoose = require("mongoose");
 // const phase = require("../models/Phase");
 const Activity = require("../models/Activity");
@@ -13,7 +13,7 @@ const hashids = new Hashids(process.env.SECRET_KEY_SALT, 6);
 // GET http://localhost:8082/weddingEvents/getAllWeddingEvents
 exports.getAllWeddingEvents = async (req, res) => {
   try {
-    const events = await weddingEvent.find({ member: req.user._id });
+    const events = await WeddingEvent.find({ member: req.user._id });
     res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -34,7 +34,7 @@ exports.createWeddingEvent = async (req, res) => {
         .status(400)
         .json({ message: "timeToMarried must be in the future" });
     }
-    const newWeddingEvent = new weddingEvent({
+    const newWeddingEvent = new WeddingEvent({
       creatorId,
       brideName,
       groomName,
@@ -51,20 +51,19 @@ exports.createWeddingEvent = async (req, res) => {
   }
 };
 
-
 // POST: http://localhost:8082/weddingEvents/checkAndInsertTasks
 exports.checkAndInsertTasks = async (req, res) => {
   try {
     const { eventId, phasesData } = req.body;
 
     if (!eventId || !phasesData) {
-      return res.status(400).json({ 
-        message: "EventId and phasesData are required" 
+      return res.status(400).json({
+        message: "EventId and phasesData are required",
       });
     }
 
     // Tìm wedding event
-    const event = await weddingEvent.findById(eventId).populate('phases');
+    const event = await WeddingEvent.findById(eventId).populate("phases");
     if (!event) {
       return res.status(404).json({ message: "Wedding event not found" });
     }
@@ -74,7 +73,7 @@ exports.checkAndInsertTasks = async (req, res) => {
       return res.status(200).json({
         message: "Tasks already exist",
         hasData: true,
-        phases: event.phases
+        phases: event.phases,
       });
     }
 
@@ -86,15 +85,15 @@ exports.checkAndInsertTasks = async (req, res) => {
     for (const phaseData of phasesData) {
       // Tạo Tasks cho phase này
       const taskIds = [];
-      
+
       for (const taskData of phaseData.tasks) {
         const taskWithMember = {
           taskName: taskData.taskName,
           taskNote: taskData.taskNote,
           member: [event.creatorId], // Đảm bảo member có creatorId
-          completed: taskData.completed || false
+          completed: taskData.completed || false,
         };
-        
+
         const newTask = new Task(taskWithMember);
         const savedTask = await newTask.save();
         taskIds.push(savedTask._id);
@@ -102,9 +101,13 @@ exports.checkAndInsertTasks = async (req, res) => {
 
       // Tạo Phase với tasks đã tạo
       const newPhaseData = {
-        phaseTimeStart: new Date(phaseData.phaseTimeStart.replace("ISODate('", "").replace("')", "")),
-        phaseTimeEnd: new Date(phaseData.phaseTimeEnd.replace("ISODate('", "").replace("')", "")),
-        tasks: taskIds
+        phaseTimeStart: new Date(
+          phaseData.phaseTimeStart.replace("ISODate('", "").replace("')", "")
+        ),
+        phaseTimeEnd: new Date(
+          phaseData.phaseTimeEnd.replace("ISODate('", "").replace("')", "")
+        ),
+        tasks: taskIds,
       };
 
       const newPhase = new Phase(newPhaseData);
@@ -119,9 +122,8 @@ exports.checkAndInsertTasks = async (req, res) => {
     res.status(201).json({
       message: "Tasks inserted successfully",
       hasData: false,
-      phases: createdPhases
+      phases: createdPhases,
     });
-
   } catch (error) {
     console.error("Error inserting tasks:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -135,13 +137,15 @@ exports.checkAndInsertActivities = async (req, res) => {
     const { eventId, groupActivitiesData } = req.body;
 
     if (!eventId || !groupActivitiesData) {
-      return res.status(400).json({ 
-        message: "EventId and groupActivitiesData are required" 
+      return res.status(400).json({
+        message: "EventId and groupActivitiesData are required",
       });
     }
 
     // Tìm wedding event
-    const event = await weddingEvent.findById(eventId).populate('groupActivities');
+    const event = await WeddingEvent.findById(eventId).populate(
+      "groupActivities"
+    );
     if (!event) {
       return res.status(404).json({ message: "Wedding event not found" });
     }
@@ -151,7 +155,7 @@ exports.checkAndInsertActivities = async (req, res) => {
       return res.status(200).json({
         message: "Activities already exist",
         hasData: true,
-        groupActivities: event.groupActivities
+        groupActivities: event.groupActivities,
       });
     }
 
@@ -163,16 +167,16 @@ exports.checkAndInsertActivities = async (req, res) => {
     for (const groupData of groupActivitiesData) {
       // Tạo Activities cho group này
       const activityIds = [];
-      
+
       for (const activityData of groupData.activities) {
         const newActivityData = {
           activityName: activityData.activityName,
           activityNote: activityData.activityNote,
           expectedBudget: activityData.expectedBudget || 0,
           actualBudget: activityData.actualBudget || 0,
-          payer: activityData.payer
+          payer: activityData.payer,
         };
-        
+
         const newActivity = new Activity(newActivityData);
         const savedActivity = await newActivity.save();
         activityIds.push(savedActivity._id);
@@ -181,7 +185,7 @@ exports.checkAndInsertActivities = async (req, res) => {
       // Tạo GroupActivity với activities đã tạo
       const newGroupData = {
         groupName: groupData.groupName,
-        activities: activityIds
+        activities: activityIds,
       };
 
       const newGroupActivity = new GroupActivity(newGroupData);
@@ -196,9 +200,8 @@ exports.checkAndInsertActivities = async (req, res) => {
     res.status(201).json({
       message: "Activities inserted successfully",
       hasData: false,
-      groupActivities: createdGroupActivities
+      groupActivities: createdGroupActivities,
     });
-
   } catch (error) {
     console.error("Error inserting activities:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -211,16 +214,17 @@ exports.checkEventData = async (req, res) => {
   try {
     const { eventId } = req.params;
 
-    const event = await weddingEvent.findById(eventId)
-      .populate('phases')
-      .populate('groupActivities');
+    const event = await WeddingEvent.findById(eventId)
+      .populate("phases")
+      .populate("groupActivities");
 
     if (!event) {
       return res.status(404).json({ message: "Wedding event not found" });
     }
 
     const hasPhases = event.phases && event.phases.length > 0;
-    const hasActivities = event.groupActivities && event.groupActivities.length > 0;
+    const hasActivities =
+      event.groupActivities && event.groupActivities.length > 0;
 
     res.status(200).json({
       eventId: eventId,
@@ -228,9 +232,8 @@ exports.checkEventData = async (req, res) => {
       hasActivities: hasActivities,
       phasesCount: event.phases ? event.phases.length : 0,
       activitiesCount: event.groupActivities ? event.groupActivities.length : 0,
-      event: event
+      event: event,
     });
-
   } catch (error) {
     console.error("Error checking event data:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -242,11 +245,9 @@ exports.checkEventData = async (req, res) => {
 exports.getUserWeddingEvents = async (req, res) => {
   try {
     const { userId } = req.params;
-    const events = await weddingEvent
-      .findOne({
-        $or: [{ creatorId: userId }, { member: userId }],
-      })
-      .populate("member", "-password");
+    const events = await WeddingEvent.findOne({
+      $or: [{ creatorId: userId }, { member: userId }],
+    }).populate("member", "-password");
     res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -258,7 +259,7 @@ exports.getUserWeddingEvents = async (req, res) => {
 exports.getWeddingEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
-    const event = await weddingEvent.findById(eventId).populate("phases");
+    const event = await WeddingEvent.findById(eventId).populate("phases");
     if (!event) {
       return res.status(404).json({ message: "Wedding event not found" });
     }
@@ -281,7 +282,7 @@ exports.joinWeddingEvent = async (req, res) => {
   const eventId = hashids.decodeHex(code);
 
   try {
-    const event = await weddingEvent.findById(eventId);
+    const event = await WeddingEvent.findById(eventId);
     if (!event) {
       return res.status(404).json({
         message: "Sự kiện cưới không tồn tại. Hãy kiểm tra lại mã mời",
@@ -315,7 +316,7 @@ exports.leaveWeddingEvent = async (req, res) => {
   }
 
   try {
-    const event = await weddingEvent.findById(eventId);
+    const event = await WeddingEvent.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: "Sự kiện cưới không tồn tại" });
     }
@@ -366,7 +367,7 @@ exports.checkUserInEvent = async (req, res) => {
 
     // Bước 3: Thực thi query và tìm một sự kiện duy nhất
     // SỬA Ở ĐÂY: Đổi tên biến kết quả để không bị trùng lặp
-    const foundEvent = await weddingEvent.findOne(query);
+    const foundEvent = await WeddingEvent.findOne(query);
 
     // Bước 4: Trả response về cho frontend
     if (foundEvent) {

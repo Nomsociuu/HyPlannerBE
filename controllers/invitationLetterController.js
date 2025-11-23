@@ -1,4 +1,5 @@
 const InvitationLetter = require("../models/InvitationLetter");
+const mixpanel = require("../service/mixpanelServer");
 
 // Hàm helper để trích xuất src từ iframe
 function extractSrcFromIframe(htmlString) {
@@ -76,6 +77,14 @@ const createInvitationLetter = async (req, res) => {
     });
 
     const savedInvitation = await invitation.save();
+
+    // Track với Mixpanel
+    mixpanel.track("Invitation - Created", {
+      distinct_id: userId.toString(),
+      invitationId: savedInvitation._id.toString(),
+      templateId: templateId,
+      slug: slug,
+    });
 
     const fullUrl = `${req.protocol}://${req.get("host")}/inviletter/${
       savedInvitation.slug

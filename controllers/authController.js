@@ -349,8 +349,20 @@ exports.loginUser = async (req, res) => {
 
     const user = await User.findOne({ email: normalizedEmail });
 
-    // Dùng phương thức user.matchPassword đã tạo trong model
+    // Dùng phương thức user.matchPassword đã tầo trong model
     if (user && (await user.matchPassword(password))) {
+      // Track login với Mixpanel
+      mixpanel.track("Logged In", {
+        distinct_id: user._id.toString(),
+        "Login Method": "Email",
+        Email: user.email,
+      });
+
+      // Cập nhật last login time
+      mixpanel.people.set(user._id.toString(), {
+        $last_login: new Date().toISOString(),
+      });
+
       const token = generateToken(user);
       res.status(200).json({
         token,

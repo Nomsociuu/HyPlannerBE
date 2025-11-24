@@ -6,45 +6,49 @@ const mixpanel = require("../service/mixpanelServer");
 // POST /posts/create
 exports.createPost = async (req, res) => {
   try {
-    const userId = req.user._id; // Lấy từ auth middleware
-    const { content, images } = req.body;
+    // Lấy userId từ middleware `protect` (req.user)
+    const userId = req.user._id;
+    const { content, images } = req.body; // 1. Validate input
 
-    // Validate input
     if (!content || content.trim() === "") {
       return res.status(400).json({
         message: "Nội dung không được để trống",
       });
-    }
+    } // 2. Tạo post mới (sử dụng userId, content, images)
 
-    // Tạo post mới
     const newPost = new Post({
       userId,
       content,
-      images: images || [],
+      images: images || [], // Đảm bảo images là một mảng nếu không được cung cấp
     });
 
-    await newPost.save();
+    await newPost.save(); // 3. Populate user info trước khi trả về
 
-    // Populate user info
-    await newPost.populate("userId", "fullName picture email");
+    await newPost.populate("userId", "fullName picture email"); // 4. Track với Mixpanel
 
-    // Track với Mixpanel
     mixpanel.track("Community - Create Post", {
       distinct_id: userId.toString(),
       postId: newPost._id.toString(),
       hasImages: images && images.length > 0,
       imageCount: images ? images.length : 0,
       contentLength: content.length,
-    });
+    }); // 5. Trả về kết quả thành công
 
     res.status(201).json({
       message: "Đăng bài thành công!",
       post: newPost,
     });
   } catch (error) {
-    console.error("Error creating post:", error);
+    // === PHẦN CẬP NHẬT ĐỂ LOG LỖI CHI TIẾT HƠN ===
+    console.error("❌ Lỗi khi tạo bài viết (Chi tiết):", error); // ========================================== // Phân loại lỗi Mongoose Validation để trả về mã 400
+    let errorMessage = "Lỗi máy chủ nội bộ. Vui lòng kiểm tra console BackEnd.";
+    if (error.name === "ValidationError") {
+      errorMessage = "Lỗi dữ liệu: " + error.message;
+      return res.status(400).json({ message: errorMessage });
+    } // Xử lý lỗi chung (bao gồm cả 401/403 nếu token hết hạn/không hợp lệ)
+
     res.status(500).json({
-      message: "Lỗi máy chủ",
+      message: errorMessage,
       error: error.message,
     });
   }
@@ -288,7 +292,7 @@ exports.reactToPost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id;
-    const { type } = req.body; // type: 'like' hoặc 'love'
+    const { type } = req.body;
 
     if (!["like", "love"].includes(type)) {
       return res.status(400).json({
@@ -304,31 +308,28 @@ exports.reactToPost = async (req, res) => {
       });
     }
 
-    // Kiểm tra user đã react chưa
-    const hasLiked = post.reactions.like.includes(userId);
-    const hasLoved = post.reactions.love.includes(userId);
+    const hasLiked = post.reactions.like.some(
+      (id) => id.toString() === userId.toString()
+    );
+    const hasLoved = post.reactions.love.some(
+      (id) => id.toString() === userId.toString()
+    );
 
-    // Nếu đã react cùng loại thì bỏ react
+    // Logic xử lý Like/Love (Giữ nguyên logic của bạn)
     if (type === "like" && hasLiked) {
       post.reactions.like = post.reactions.like.filter(
         (id) => id.toString() !== userId.toString()
       );
       post.totalReactions = Math.max(0, post.totalReactions - 1);
-    }
-    // Nếu đã react loại khác thì chuyển sang loại mới
-    else if (type === "like" && hasLoved) {
+    } else if (type === "like" && hasLoved) {
       post.reactions.love = post.reactions.love.filter(
         (id) => id.toString() !== userId.toString()
       );
       post.reactions.like.push(userId);
-    }
-    // Thêm react mới
-    else if (type === "like" && !hasLiked) {
+    } else if (type === "like" && !hasLiked) {
       post.reactions.like.push(userId);
       post.totalReactions += 1;
-    }
-    // Tương tự cho love
-    else if (type === "love" && hasLoved) {
+    } else if (type === "love" && hasLoved) {
       post.reactions.love = post.reactions.love.filter(
         (id) => id.toString() !== userId.toString()
       );
@@ -345,7 +346,10 @@ exports.reactToPost = async (req, res) => {
 
     await post.save();
 
-    // Track với Mixpanel
+    // === QUAN TRỌNG: Populate thông tin người đăng bài để trả về Full Object ===
+    await post.populate("userId", "fullName picture email");
+
+    // Track Mixpanel (Giữ nguyên)
     const action =
       (type === "like" && hasLiked) || (type === "love" && hasLoved)
         ? "Remove Reaction"
@@ -361,10 +365,10 @@ exports.reactToPost = async (req, res) => {
       totalReactions: post.totalReactions,
     });
 
+    // === SỬA PHẢN HỒI: Trả về object post đầy đủ ===
     res.status(200).json({
       message: "React thành công",
-      reactions: post.reactions,
-      totalReactions: post.totalReactions,
+      post: post, // <--- Redux cần cái này
     });
   } catch (error) {
     console.error("Error reacting to post:", error);
@@ -390,7 +394,6 @@ exports.unreactToPost = async (req, res) => {
       });
     }
 
-    // Xóa react của user
     const hadLike = post.reactions.like.includes(userId);
     const hadLove = post.reactions.love.includes(userId);
 
@@ -407,10 +410,13 @@ exports.unreactToPost = async (req, res) => {
 
     await post.save();
 
+    // === QUAN TRỌNG: Populate ===
+    await post.populate("userId", "fullName picture email");
+
+    // === SỬA PHẢN HỒI ===
     res.status(200).json({
       message: "Đã bỏ react",
-      reactions: post.reactions,
-      totalReactions: post.totalReactions,
+      post: post, // <--- Redux cần cái này
     });
   } catch (error) {
     console.error("Error unreacting to post:", error);

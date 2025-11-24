@@ -22,6 +22,8 @@ const paymentRoutes = require("../routes/paymentRoutes");
 const feedbackRoutes = require("../routes/feedbackRoutes");
 const postRoutes = require("../routes/postRoutes");
 const commentRoutes = require("../routes/commentRoutes");
+const uploadRoutes = require("../routes/uploadRoutes");
+const guestRoutes = require("../routes/guestRoutes");
 const { handlePayOsWebhook } = require("../controllers/paymentController");
 
 const connectDB = require("../config/db");
@@ -79,6 +81,8 @@ app.use("/payments", paymentRoutes);
 app.use("/feedback", feedbackRoutes);
 app.use("/posts", postRoutes);
 app.use("/comments", commentRoutes);
+app.use("/upload", uploadRoutes);
+app.use("/guests", guestRoutes);
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;

@@ -173,7 +173,8 @@ const updateUserInvitation = async (req, res) => {
       bankAccount, // <--- events ở đây
     } = req.body;
 
-    console.log("Received events data:", events.embedMapUrl);
+    console.log("Received album data:", album);
+    console.log("Received events data:", events);
 
     // Cập nhật các trường thông thường
     if (groomName) invitation.groomName = groomName;
@@ -182,7 +183,16 @@ const updateUserInvitation = async (req, res) => {
     if (aboutCouple !== undefined) invitation.aboutCouple = aboutCouple;
     if (youtubeUrl !== undefined) invitation.youtubeUrl = youtubeUrl;
     if (loveStory) invitation.loveStory = loveStory; // Giả sử loveStory gửi lên đã sạch
-    if (album) invitation.album = album;
+
+    // Sửa lỗi: kiểm tra album là array trước khi gán
+    if (album !== undefined) {
+      if (Array.isArray(album)) {
+        invitation.album = album;
+      } else {
+        console.error("Album is not an array:", album);
+      }
+    }
+
     if (bankAccount) invitation.bankAccount = bankAccount;
 
     // --- XỬ LÝ TRƯỜNG EVENTS ---

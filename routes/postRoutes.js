@@ -7,7 +7,7 @@ const { protect } = require("../middleware/authMiddleware");
 router.use(protect);
 
 // Post CRUD routes
-router.post("/create", postController.createPost);
+router.post("/", postController.createPost);
 router.get("/", postController.getAllPosts);
 router.get("/:id", postController.getPostById);
 router.get("/user/:userId", postController.getPostsByUser);

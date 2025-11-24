@@ -313,7 +313,7 @@ exports.deleteComment = async (req, res) => {
   }
 };
 
-// React vào comment
+// Thả reaction vào comment
 // POST /comments/:id/react
 exports.reactToComment = async (req, res) => {
   try {
@@ -321,6 +321,7 @@ exports.reactToComment = async (req, res) => {
     const userId = req.user._id;
     const { type } = req.body; // type: 'like' hoặc 'love'
 
+    // 1. Validate
     if (!["like", "love"].includes(type)) {
       return res.status(400).json({
         message: "Loại reaction không hợp lệ. Chỉ chấp nhận 'like' hoặc 'love'",
@@ -335,41 +336,51 @@ exports.reactToComment = async (req, res) => {
       });
     }
 
-    // Logic tương tự như post reaction
+    // 2. Xử lý Logic Like/Love
     const hasLiked = comment.reactions.like.includes(userId);
     const hasLoved = comment.reactions.love.includes(userId);
 
     if (type === "like" && hasLiked) {
+      // Đã like rồi -> Bỏ like
       comment.reactions.like = comment.reactions.like.filter(
         (id) => id.toString() !== userId.toString()
       );
       comment.totalReactions = Math.max(0, comment.totalReactions - 1);
     } else if (type === "like" && hasLoved) {
+      // Đang love -> Chuyển sang like
       comment.reactions.love = comment.reactions.love.filter(
         (id) => id.toString() !== userId.toString()
       );
       comment.reactions.like.push(userId);
     } else if (type === "like" && !hasLiked) {
+      // Chưa like -> Thêm like
       comment.reactions.like.push(userId);
       comment.totalReactions += 1;
     } else if (type === "love" && hasLoved) {
+      // Đã love rồi -> Bỏ love
       comment.reactions.love = comment.reactions.love.filter(
         (id) => id.toString() !== userId.toString()
       );
       comment.totalReactions = Math.max(0, comment.totalReactions - 1);
     } else if (type === "love" && hasLiked) {
+      // Đang like -> Chuyển sang love
       comment.reactions.like = comment.reactions.like.filter(
         (id) => id.toString() !== userId.toString()
       );
       comment.reactions.love.push(userId);
     } else if (type === "love" && !hasLoved) {
+      // Chưa love -> Thêm love
       comment.reactions.love.push(userId);
       comment.totalReactions += 1;
     }
 
     await comment.save();
 
-    // Track với Mixpanel
+    // === 🔥 QUAN TRỌNG: Populate thông tin người dùng ===
+    // Nếu không có dòng này, tên và avatar người comment sẽ bị mất trên UI sau khi react
+    await comment.populate("userId", "fullName picture email");
+
+    // 3. Track Mixpanel
     const action =
       (type === "like" && hasLiked) || (type === "love" && hasLoved)
         ? "Remove Reaction"
@@ -385,10 +396,10 @@ exports.reactToComment = async (req, res) => {
       isReply: !!comment.parentCommentId,
     });
 
+    // === 🔥 QUAN TRỌNG: Trả về nguyên object comment ===
     res.status(200).json({
       message: "React thành công",
-      reactions: comment.reactions,
-      totalReactions: comment.totalReactions,
+      comment: comment, // <--- Redux cần cái này để cập nhật state
     });
   } catch (error) {
     console.error("Error reacting to comment:", error);
@@ -414,7 +425,7 @@ exports.unreactToComment = async (req, res) => {
       });
     }
 
-    // Xóa react của user
+    // 1. Xử lý Logic Xóa Reaction
     const hadLike = comment.reactions.like.includes(userId);
     const hadLove = comment.reactions.love.includes(userId);
 
@@ -431,10 +442,13 @@ exports.unreactToComment = async (req, res) => {
 
     await comment.save();
 
+    // === 🔥 QUAN TRỌNG: Populate thông tin người dùng ===
+    await comment.populate("userId", "fullName picture email");
+
+    // === 🔥 QUAN TRỌNG: Trả về nguyên object comment ===
     res.status(200).json({
       message: "Đã bỏ react",
-      reactions: comment.reactions,
-      totalReactions: comment.totalReactions,
+      comment: comment, // <--- Redux cần cái này
     });
   } catch (error) {
     console.error("Error unreacting to comment:", error);

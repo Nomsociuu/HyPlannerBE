@@ -17,6 +17,18 @@ const postSchema = new mongoose.Schema(
         type: String, // URLs của hình ảnh
       },
     ],
+    topicGroupId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TopicGroup",
+    },
+    linkedAlbumId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Album",
+    },
+    linkedSelectionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "UserSelection",
+    },
     reactions: {
       like: [
         {
@@ -39,9 +51,25 @@ const postSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    totalVotes: {
+      type: Number,
+      default: 0,
+    },
+    totalSaves: {
+      type: Number,
+      default: 0,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isFeatured: {
+      type: Boolean,
+      default: false, // Cho Inspire Board
     },
   },
   {

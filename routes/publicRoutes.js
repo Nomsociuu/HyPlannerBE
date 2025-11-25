@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const InvitationLetter = require("../models/InvitationLetter");
+const guestController = require("../controllers/guestController");
 
 // Dữ liệu mẫu (sample) CŨNG CẦN được cập nhật để có cấu trúc phẳng
 // và có các trường mới để trang /preview hoạt động
@@ -120,5 +121,8 @@ router.get("/preview/:templateId", (req, res) => {
     res.status(500).send("Lỗi máy chủ nội bộ");
   }
 });
+
+// Public route for shared guest list (no authentication required)
+router.get("/guests/shared/:token", guestController.getSharedGuestList);
 
 module.exports = router;

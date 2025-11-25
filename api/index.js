@@ -24,6 +24,11 @@ const postRoutes = require("../routes/postRoutes");
 const commentRoutes = require("../routes/commentRoutes");
 const uploadRoutes = require("../routes/uploadRoutes");
 const guestRoutes = require("../routes/guestRoutes");
+const topicGroupRoutes = require("../routes/topicGroupRoutes");
+const albumRoutes = require("../routes/albumRoutes");
+const voteRoutes = require("../routes/voteRoutes");
+const ratingRoutes = require("../routes/ratingRoutes");
+const savedPostRoutes = require("../routes/savedPostRoutes");
 const { handlePayOsWebhook } = require("../controllers/paymentController");
 
 const connectDB = require("../config/db");
@@ -83,6 +88,11 @@ app.use("/posts", postRoutes);
 app.use("/comments", commentRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/guests", guestRoutes);
+app.use("/topic-groups", topicGroupRoutes);
+app.use("/albums", albumRoutes);
+app.use("/votes", voteRoutes);
+app.use("/ratings", ratingRoutes);
+app.use("/saved-posts", savedPostRoutes);
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;

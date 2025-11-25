@@ -6,6 +6,10 @@ const { protect } = require("../middleware/authMiddleware");
 // Tất cả routes đều cần authentication
 router.use(protect);
 
+// Special routes (phải đặt trước dynamic routes)
+router.get("/featured", postController.getFeaturedPosts);
+router.get("/trending", postController.getTrendingPosts);
+
 // Post CRUD routes
 router.post("/", postController.createPost);
 router.get("/", postController.getAllPosts);

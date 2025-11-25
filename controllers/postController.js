@@ -426,3 +426,97 @@ exports.unreactToPost = async (req, res) => {
     });
   }
 };
+
+// Lấy featured posts (Inspire Board)
+// GET /posts/featured?limit=10
+exports.getFeaturedPosts = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const category = req.query.category; // Optional filter by topic group category
+
+    let filter = { isActive: true, isFeatured: true };
+
+    // Nếu có category, lọc theo topic group
+    if (category) {
+      const TopicGroup = require("../models/TopicGroup");
+      const groups = await TopicGroup.find({ category, isActive: true }).select(
+        "_id"
+      );
+      const groupIds = groups.map((g) => g._id);
+      filter.topicGroupId = { $in: groupIds };
+    }
+
+    const posts = await Post.find(filter)
+      .populate("userId", "fullName picture email")
+      .populate("topicGroupId", "name category")
+      .populate("linkedAlbumId", "name")
+      .sort({
+        averageRating: -1,
+        totalVotes: -1,
+        totalSaves: -1,
+        createdAt: -1,
+      })
+      .limit(limit);
+
+    if (req.user) {
+      mixpanel.track("Community - View Inspire Board", {
+        distinct_id: req.user._id.toString(),
+        category: category || "all",
+      });
+    }
+
+    res.status(200).json({
+      posts,
+      total: posts.length,
+    });
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy featured posts:", error);
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message,
+    });
+  }
+};
+
+// Lấy trending posts (dựa trên reactions, votes, saves gần đây)
+// GET /posts/trending?limit=10&days=7
+exports.getTrendingPosts = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const days = parseInt(req.query.days) || 7;
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - days);
+
+    const posts = await Post.find({
+      isActive: true,
+      createdAt: { $gte: dateThreshold },
+    })
+      .populate("userId", "fullName picture email")
+      .populate("topicGroupId", "name category")
+      .sort({
+        totalReactions: -1,
+        totalVotes: -1,
+        totalSaves: -1,
+        totalComments: -1,
+      })
+      .limit(limit);
+
+    if (req.user) {
+      mixpanel.track("Community - View Trending Posts", {
+        distinct_id: req.user._id.toString(),
+        days: days,
+      });
+    }
+
+    res.status(200).json({
+      posts,
+      total: posts.length,
+    });
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy trending posts:", error);
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message,
+    });
+  }
+};

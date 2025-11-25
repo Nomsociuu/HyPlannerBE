@@ -131,6 +131,15 @@ const guestSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Liên kết với thiệp mời cá nhân
+    personalInvitationLink: {
+      type: String, // URL unique cho từng khách
+      trim: true,
+    },
+    invitationLetterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "InvitationLetter",
+    },
   },
   {
     collection: "guests",

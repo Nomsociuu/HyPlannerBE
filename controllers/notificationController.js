@@ -86,82 +86,107 @@ exports.createNotification = async (notificationData) => {
 exports.checkTableDeadlineNotifications = async () => {
   try {
     const now = new Date();
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    now.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
 
-    // Find wedding events happening soon
+    // Calculate deadline dates
+    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+    const oneDayFromNow = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
+
+    // Find wedding events happening in exactly 3, 2, or 1 day
     const upcomingEvents = await WeddingEvent.find({
       weddingDate: {
         $gte: now,
-        $lte: sevenDaysFromNow,
+        $lte: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
       },
     });
 
     for (const event of upcomingEvents) {
-      const daysDiff = Math.ceil(
-        (new Date(event.weddingDate) - now) / (1000 * 60 * 60 * 24)
+      const weddingDate = new Date(event.weddingDate);
+      weddingDate.setHours(0, 0, 0, 0);
+
+      const daysUntilWedding = Math.ceil(
+        (weddingDate - now) / (1000 * 60 * 60 * 24)
       );
 
-      // Get pending guests count
+      // Only send notification if exactly 3, 2, or 1 day before wedding
+      if (![1, 2, 3].includes(daysUntilWedding)) {
+        continue;
+      }
+
+      // Check if notification already sent for this day
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const existingNotification = await Notification.findOne({
+        userId: event.creatorId,
+        weddingEventId: event._id,
+        type: "table_deadline",
+        "data.daysRemaining": daysUntilWedding,
+        createdAt: {
+          $gte: today,
+          $lt: tomorrow,
+        },
+      });
+
+      if (existingNotification) {
+        console.log(
+          `Notification already sent for event ${event._id} - ${daysUntilWedding} days remaining`
+        );
+        continue;
+      }
+
+      // Get guest statistics
+      const totalGuests = await Guest.countDocuments({
+        weddingEventId: event._id,
+      });
+      const confirmedGuests = await Guest.countDocuments({
+        weddingEventId: event._id,
+        attendanceStatus: "confirmed",
+      });
       const pendingGuests = await Guest.countDocuments({
         weddingEventId: event._id,
-        isActive: true,
         attendanceStatus: { $in: ["pending", "no_response"] },
       });
 
-      // Get guests without table assignment
-      const guestsWithoutTable = await Guest.countDocuments({
+      // Determine message based on days remaining
+      let title, message;
+      if (daysUntilWedding === 3) {
+        title = "⏰ Còn 3 ngày đến ngày cưới!";
+        message = `Hãy kiểm tra và chốt số lượng bàn tiệc. Hiện có ${confirmedGuests}/${totalGuests} khách đã xác nhận, ${pendingGuests} khách chưa phản hồi.`;
+      } else if (daysUntilWedding === 2) {
+        title = "⚠️ Còn 2 ngày đến ngày cưới!";
+        message = `Đến lúc chốt số bàn rồi! ${confirmedGuests}/${totalGuests} khách đã xác nhận. Hãy liên hệ nhà hàng ngay.`;
+      } else if (daysUntilWedding === 1) {
+        title = "🚨 Ngày mai là ngày cưới!";
+        message = `Kiểm tra lại danh sách khách mời lần cuối. ${confirmedGuests} khách đã xác nhận tham dự.`;
+      }
+
+      // Create and send notification
+      await exports.createNotification({
+        userId: event.creatorId,
         weddingEventId: event._id,
-        isActive: true,
-        attendanceStatus: "confirmed",
-        $or: [{ tableNumber: { $exists: false } }, { tableNumber: null }],
+        type: "table_deadline",
+        title,
+        message,
+        data: {
+          daysRemaining: daysUntilWedding,
+          totalGuests,
+          confirmedGuests,
+          pendingGuests,
+          weddingDate: event.weddingDate,
+        },
+        priority: daysUntilWedding === 1 ? "high" : "medium",
       });
 
-      // Create notifications based on deadline proximity
-      let shouldNotify = false;
-      let priority = "medium";
-      let title = "";
-      let message = "";
-
-      if (daysDiff <= 3) {
-        shouldNotify = true;
-        priority = "high";
-        title = "⚠️ Gấp! Còn " + daysDiff + " ngày đến đám cưới";
-        message = `Còn ${pendingGuests} khách chưa phản hồi và ${guestsWithoutTable} khách chưa được sắp xếp bàn. Hãy hoàn thiện ngay!`;
-      } else if (daysDiff <= 7) {
-        shouldNotify = true;
-        priority = "medium";
-        title = "📋 Nhắc nhở: Còn " + daysDiff + " ngày đến đám cưới";
-        message = `Bạn có ${pendingGuests} khách chưa phản hồi và ${guestsWithoutTable} khách chưa được sắp xếp bàn.`;
-      }
-
-      if (shouldNotify && (pendingGuests > 0 || guestsWithoutTable > 0)) {
-        // Check if similar notification was sent today
-        const todayStart = new Date(now.setHours(0, 0, 0, 0));
-        const existingNotif = await Notification.findOne({
-          userId: event.creatorId,
-          weddingEventId: event._id,
-          type: "table_deadline",
-          createdAt: { $gte: todayStart },
-        });
-
-        if (!existingNotif) {
-          await exports.createNotification({
-            userId: event.creatorId,
-            weddingEventId: event._id,
-            type: "table_deadline",
-            title,
-            message,
-            data: {
-              daysRemaining: daysDiff,
-            },
-            priority,
-          });
-        }
-      }
+      console.log(
+        `Table deadline notification sent for event ${event._id} - ${daysUntilWedding} days remaining`
+      );
     }
 
-    return { message: "Table deadline check completed" };
+    return { success: true, eventsChecked: upcomingEvents.length };
   } catch (error) {
     console.error("Error checking table deadlines:", error);
     throw error;

@@ -113,7 +113,17 @@ exports.getAllGuests = async (req, res) => {
 
     // Build filter
     const filter = { weddingEventId, isActive: true };
-    if (group) filter.group = group;
+
+    // Filter group with "both" logic
+    // When filtering "groom" or "bride", also include guests with group "both"
+    if (group) {
+      if (group === "groom" || group === "bride") {
+        filter.group = { $in: [group, "both"] };
+      } else {
+        filter.group = group;
+      }
+    }
+
     if (attendanceStatus) filter.attendanceStatus = attendanceStatus;
     if (relationship) filter.relationship = relationship;
 

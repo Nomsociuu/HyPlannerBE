@@ -136,11 +136,6 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
     const { slug } = req.params;
     const { name, email } = req.body;
 
-    console.log("🔵 RSVP Request received:");
-    console.log("  - Slug:", slug);
-    console.log("  - Name:", name);
-    console.log("  - Email:", email);
-
     // Validate input
     if (!name || !email) {
       return res.status(400).json({
@@ -151,13 +146,6 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
 
     // Find invitation letter
     const invitationLetter = await InvitationLetter.findOne({ slug });
-    console.log("\n========== DEBUG RSVP ==========");
-    console.log("🔵 STEP 1: Find InvitationLetter by slug:", slug);
-    console.log("  ✅ Found:", invitationLetter ? "YES" : "NO");
-    if (invitationLetter) {
-      console.log("  - InvitationLetter._id:", invitationLetter._id);
-      console.log("  - InvitationLetter.userId:", invitationLetter.userId);
-    }
 
     if (!invitationLetter) {
       return res.status(404).json({
@@ -168,25 +156,10 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
 
     // Get WeddingEvent from userId
     const WeddingEvent = require("../models/WeddingEvent");
-    console.log("\n🔵 STEP 2: Find WeddingEvent by creatorId");
-    console.log("  - Query: { creatorId:", invitationLetter.userId, "}");
 
     const weddingEvent = await WeddingEvent.findOne({
       creatorId: invitationLetter.userId,
     });
-
-    console.log("  ✅ Found:", weddingEvent ? "YES" : "NO");
-    if (weddingEvent) {
-      console.log("  - WeddingEvent._id:", weddingEvent._id);
-      console.log("  - WeddingEvent.creatorId:", weddingEvent.creatorId);
-    } else {
-      // Debug: kiểm tra xem có WeddingEvent nào không
-      const allEvents = await WeddingEvent.find({}).limit(5);
-      console.log("  ⚠️ All WeddingEvents (max 5):");
-      allEvents.forEach((e, i) => {
-        console.log(`    [${i}] _id: ${e._id}, creatorId: ${e.creatorId}`);
-      });
-    }
 
     if (!weddingEvent) {
       return res.status(404).json({
@@ -197,37 +170,36 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
 
     // Check if guest already exists
     const Guest = require("../models/Guest");
-    console.log("\n🔵 STEP 3: Check/Create Guest");
-    console.log(
-      "  - Query: { weddingEventId:",
-      weddingEvent._id,
-      ", email:",
-      email.toLowerCase(),
-      "}"
-    );
-
     let guest = await Guest.findOne({
       weddingEventId: weddingEvent._id,
       email: email.toLowerCase(),
     });
 
-    console.log(
-      "  ✅ Existing guest:",
-      guest ? "YES (will update)" : "NO (will create)"
-    );
-
     if (guest) {
       // Update existing guest
-      console.log("  📝 Updating existing guest...");
       guest.attendanceStatus = "confirmed";
       guest.confirmedViaInvitation = true;
       guest.invitationConfirmDate = new Date();
       guest.invitationLetterId = invitationLetter._id;
       guest.responseDate = new Date();
       await guest.save();
-      console.log("  ✅ Guest updated:", guest._id);
 
-      console.log("✅ Guest updated successfully:", guest._id);
+      // Send push notification to wedding event creator
+      const notificationController = require("../controllers/notificationController");
+      await notificationController.createNotification({
+        userId: weddingEvent.creatorId,
+        weddingEventId: weddingEvent._id,
+        type: "guest_confirmed",
+        title: "🎉 Khách mời xác nhận tham dự!",
+        message: `${name} đã xác nhận sẽ tham dự đám cưới của bạn qua thiệp mời online.`,
+        data: {
+          guestId: guest._id,
+          guestName: name,
+          guestEmail: email,
+          newStatus: "confirmed",
+        },
+        priority: "high",
+      });
 
       return res.status(200).json({
         success: true,
@@ -236,7 +208,6 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
       });
     } else {
       // Create new guest
-      console.log("  📝 Creating new guest...");
       guest = await Guest.create({
         weddingEventId: weddingEvent._id,
         name: name.trim(),
@@ -250,16 +221,27 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
         invitationStatus: "opened",
       });
 
-      console.log("  ✅ Guest created:", guest._id);
-      console.log("    - Name:", guest.name);
-      console.log("    - Email:", guest.email);
-      console.log("    - WeddingEventId:", guest.weddingEventId);
-      console.log("========== END DEBUG ==========\n");
-
       // Increment RSVP count
       invitationLetter.guestRsvpCount =
         (invitationLetter.guestRsvpCount || 0) + 1;
       await invitationLetter.save();
+
+      // Send push notification to wedding event creator
+      const notificationController = require("../controllers/notificationController");
+      await notificationController.createNotification({
+        userId: weddingEvent.creatorId,
+        weddingEventId: weddingEvent._id,
+        type: "guest_confirmed",
+        title: "🎉 Khách mời mới xác nhận tham dự!",
+        message: `${name} đã xác nhận sẽ tham dự đám cưới của bạn qua thiệp mời online.`,
+        data: {
+          guestId: guest._id,
+          guestName: name,
+          guestEmail: email,
+          newStatus: "confirmed",
+        },
+        priority: "high",
+      });
 
       return res.status(201).json({
         success: true,

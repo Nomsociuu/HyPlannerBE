@@ -19,6 +19,10 @@ const rsvpLimiter = rateLimit({
   },
   standardHeaders: true, // Gửi thông tin về rate limit trong header
   legacyHeaders: false, // Tắt header X-RateLimit-* cũ
+  validate: {
+    xForwardedForHeader: false, // Tắt warning vì đã set trust proxy
+    trustProxy: false, // Tắt warning
+  },
 });
 
 const addWishLimiter = rateLimit({
@@ -29,6 +33,10 @@ const addWishLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: {
+    xForwardedForHeader: false,
+    trustProxy: false,
+  },
 });
 
 // Route tạo website mới

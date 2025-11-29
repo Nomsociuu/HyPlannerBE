@@ -913,13 +913,16 @@
             rsvpButton.innerText = "Đang gửi xác nhận...";
 
             try {
-              const response = await fetch(`/invitation/${weddingSlug}/rsvp`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ name, email }),
-              });
+              const response = await fetch(
+                `/inviletter/invitation/${weddingSlug}/rsvp`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ name, email }),
+                }
+              );
 
               if (!response.ok) {
                 let errorMsg = "Lỗi khi xác nhận. Vui lòng thử lại.";
@@ -1017,7 +1020,7 @@
 
           try {
             const response = await fetch(
-              `/invitation/${weddingSlug}/add-wish`,
+              `/inviletter/invitation/${weddingSlug}/add-wish`,
               {
                 method: "POST",
                 headers: {

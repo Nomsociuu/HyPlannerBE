@@ -39,6 +39,10 @@ const configurePassport = require("../config/passport");
 
 const app = express();
 
+// Trust proxy - CRITICAL for Vercel deployment
+// This allows Express to read client IP from X-Forwarded-For header
+app.set("trust proxy", 1);
+
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "ejs");
 

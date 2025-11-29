@@ -151,9 +151,13 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
 
     // Find invitation letter
     const invitationLetter = await InvitationLetter.findOne({ slug });
-    console.log("🔵 Invitation Letter found:", invitationLetter ? "YES" : "NO");
-    console.log("  - InvitationLetter ID:", invitationLetter?._id);
-    console.log("  - User ID:", invitationLetter?.userId);
+    console.log("\n========== DEBUG RSVP ==========");
+    console.log("🔵 STEP 1: Find InvitationLetter by slug:", slug);
+    console.log("  ✅ Found:", invitationLetter ? "YES" : "NO");
+    if (invitationLetter) {
+      console.log("  - InvitationLetter._id:", invitationLetter._id);
+      console.log("  - InvitationLetter.userId:", invitationLetter.userId);
+    }
 
     if (!invitationLetter) {
       return res.status(404).json({
@@ -164,12 +168,25 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
 
     // Get WeddingEvent from userId
     const WeddingEvent = require("../models/WeddingEvent");
+    console.log("\n🔵 STEP 2: Find WeddingEvent by creatorId");
+    console.log("  - Query: { creatorId:", invitationLetter.userId, "}");
+
     const weddingEvent = await WeddingEvent.findOne({
-      userId: invitationLetter.creatorId,
+      creatorId: invitationLetter.userId,
     });
 
-    console.log("🔵 Wedding Event found:", weddingEvent ? "YES" : "NO");
-    console.log("  - WeddingEvent ID:", weddingEvent?._id);
+    console.log("  ✅ Found:", weddingEvent ? "YES" : "NO");
+    if (weddingEvent) {
+      console.log("  - WeddingEvent._id:", weddingEvent._id);
+      console.log("  - WeddingEvent.creatorId:", weddingEvent.creatorId);
+    } else {
+      // Debug: kiểm tra xem có WeddingEvent nào không
+      const allEvents = await WeddingEvent.find({}).limit(5);
+      console.log("  ⚠️ All WeddingEvents (max 5):");
+      allEvents.forEach((e, i) => {
+        console.log(`    [${i}] _id: ${e._id}, creatorId: ${e.creatorId}`);
+      });
+    }
 
     if (!weddingEvent) {
       return res.status(404).json({
@@ -180,24 +197,35 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
 
     // Check if guest already exists
     const Guest = require("../models/Guest");
+    console.log("\n🔵 STEP 3: Check/Create Guest");
+    console.log(
+      "  - Query: { weddingEventId:",
+      weddingEvent._id,
+      ", email:",
+      email.toLowerCase(),
+      "}"
+    );
+
     let guest = await Guest.findOne({
       weddingEventId: weddingEvent._id,
       email: email.toLowerCase(),
     });
 
     console.log(
-      "🔵 Existing guest found:",
-      guest ? "YES (updating)" : "NO (creating new)"
+      "  ✅ Existing guest:",
+      guest ? "YES (will update)" : "NO (will create)"
     );
 
     if (guest) {
       // Update existing guest
+      console.log("  📝 Updating existing guest...");
       guest.attendanceStatus = "confirmed";
       guest.confirmedViaInvitation = true;
       guest.invitationConfirmDate = new Date();
       guest.invitationLetterId = invitationLetter._id;
       guest.responseDate = new Date();
       await guest.save();
+      console.log("  ✅ Guest updated:", guest._id);
 
       console.log("✅ Guest updated successfully:", guest._id);
 
@@ -208,6 +236,7 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
       });
     } else {
       // Create new guest
+      console.log("  📝 Creating new guest...");
       guest = await Guest.create({
         weddingEventId: weddingEvent._id,
         name: name.trim(),
@@ -221,12 +250,11 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
         invitationStatus: "opened",
       });
 
-      console.log("✅ New guest created successfully:");
-      console.log("  - Guest ID:", guest._id);
-      console.log("  - Name:", guest.name);
-      console.log("  - Email:", guest.email);
-      console.log("  - WeddingEventId:", guest.weddingEventId);
-      console.log("  - ConfirmedViaInvitation:", guest.confirmedViaInvitation);
+      console.log("  ✅ Guest created:", guest._id);
+      console.log("    - Name:", guest.name);
+      console.log("    - Email:", guest.email);
+      console.log("    - WeddingEventId:", guest.weddingEventId);
+      console.log("========== END DEBUG ==========\n");
 
       // Increment RSVP count
       invitationLetter.guestRsvpCount =

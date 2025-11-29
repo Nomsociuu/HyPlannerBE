@@ -165,7 +165,7 @@ router.post("/invitation/:slug/rsvp", async (req, res) => {
     // Get WeddingEvent from userId
     const WeddingEvent = require("../models/WeddingEvent");
     const weddingEvent = await WeddingEvent.findOne({
-      userId: invitationLetter.userId,
+      userId: invitationLetter.creatorId,
     });
 
     console.log("🔵 Wedding Event found:", weddingEvent ? "YES" : "NO");

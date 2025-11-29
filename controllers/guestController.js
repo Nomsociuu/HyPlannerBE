@@ -2,6 +2,7 @@ const Guest = require("../models/Guest");
 const Table = require("../models/Table");
 const WeddingEvent = require("../models/WeddingEvent");
 const InvitationLetter = require("../models/InvitationLetter");
+const notificationController = require("./notificationController");
 const mixpanel = require("../service/mixpanelServer");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
@@ -42,7 +43,7 @@ exports.createGuest = async (req, res) => {
     // Verify wedding event belongs to user
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -101,7 +102,7 @@ exports.getAllGuests = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -195,7 +196,7 @@ exports.updateGuest = async (req, res) => {
     // Verify ownership
     const weddingEvent = await WeddingEvent.findOne({
       _id: guest.weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -244,7 +245,7 @@ exports.deleteGuest = async (req, res) => {
     // Verify ownership
     const weddingEvent = await WeddingEvent.findOne({
       _id: guest.weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -303,7 +304,7 @@ exports.updateAttendanceStatus = async (req, res) => {
     // Verify ownership
     const weddingEvent = await WeddingEvent.findOne({
       _id: guest.weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -354,7 +355,7 @@ exports.updateGift = async (req, res) => {
     // Verify ownership
     const weddingEvent = await WeddingEvent.findOne({
       _id: guest.weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -407,7 +408,7 @@ exports.getTableSuggestions = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -461,7 +462,7 @@ exports.importGuests = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -514,7 +515,7 @@ exports.exportGuests = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -558,7 +559,7 @@ exports.getTableSuggestions = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -665,7 +666,7 @@ exports.getPopularTags = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -748,14 +749,39 @@ exports.updateInvitationStatusFromHub = async (req, res) => {
 
     // Update invitation status if provided
     if (invitationStatus) {
+      const previousInvitationStatus = guest.invitationStatus;
       guest.invitationStatus = invitationStatus;
       if (invitationStatus === "opened" && !guest.invitationSentDate) {
         guest.invitationSentDate = new Date();
+
+        // Create notification when guest opens invitation
+        try {
+          const weddingEvent = await WeddingEvent.findById(
+            guest.weddingEventId
+          );
+          if (weddingEvent && previousInvitationStatus !== "opened") {
+            await notificationController.createNotification({
+              userId: weddingEvent.creatorId,
+              weddingEventId: guest.weddingEventId,
+              type: "invitation_opened",
+              title: "📧 Khách đã mở thiệp mời",
+              message: `${guest.name} vừa mở thiệp mời điện tử của bạn!`,
+              data: {
+                guestId: guest._id,
+                guestName: guest.name,
+              },
+              priority: "low",
+            });
+          }
+        } catch (notifError) {
+          console.error("Error creating notification:", notifError);
+        }
       }
     }
 
     // Update attendance status if guest responded
     if (attendanceStatus) {
+      const previousStatus = guest.attendanceStatus;
       guest.attendanceStatus = attendanceStatus;
       guest.responseDate = new Date();
 
@@ -767,6 +793,50 @@ exports.updateInvitationStatusFromHub = async (req, res) => {
           `Phản hồi: ${responseMessage} (${new Date().toLocaleString(
             "vi-VN"
           )})`;
+      }
+
+      // Create notification for wedding event owner
+      try {
+        const weddingEvent = await WeddingEvent.findById(guest.weddingEventId);
+        if (weddingEvent) {
+          let notificationTitle = "";
+          let notificationMessage = "";
+          let notificationType = "guest_response";
+          let priority = "medium";
+
+          if (attendanceStatus === "confirmed") {
+            notificationTitle = "🎉 Khách xác nhận tham dự";
+            notificationMessage = `${guest.name} đã xác nhận sẽ tham dự đám cưới của bạn!`;
+            notificationType = "guest_confirmed";
+            priority = "high";
+          } else if (attendanceStatus === "declined") {
+            notificationTitle = "😔 Khách từ chối tham dự";
+            notificationMessage = `${guest.name} đã từ chối lời mời tham dự.`;
+            notificationType = "guest_declined";
+            priority = "medium";
+          } else {
+            notificationTitle = "📝 Khách cập nhật phản hồi";
+            notificationMessage = `${guest.name} đã cập nhật trạng thái phản hồi.`;
+          }
+
+          await notificationController.createNotification({
+            userId: weddingEvent.creatorId,
+            weddingEventId: guest.weddingEventId,
+            type: notificationType,
+            title: notificationTitle,
+            message: notificationMessage,
+            data: {
+              guestId: guest._id,
+              guestName: guest.name,
+              previousStatus,
+              newStatus: attendanceStatus,
+            },
+            priority,
+          });
+        }
+      } catch (notifError) {
+        console.error("Error creating notification:", notifError);
+        // Don't fail the main operation if notification fails
       }
     }
 
@@ -803,7 +873,7 @@ exports.generateInvitationLinks = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -877,7 +947,7 @@ exports.exportGuestListPDF = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -954,7 +1024,7 @@ exports.createShareLink = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -1094,7 +1164,7 @@ exports.sendThankYouEmails = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {
@@ -1106,19 +1176,21 @@ exports.sendThankYouEmails = async (req, res) => {
     // Get guests to send thank you
     let guests;
     if (guestIds && guestIds.length > 0) {
-      // Send to specific guests
+      // Send to specific guests who haven't received thank you email
       guests = await Guest.find({
         _id: { $in: guestIds },
         weddingEventId,
         isActive: true,
+        "thankYouEmailSent.sent": { $ne: true }, // Only guests who haven't received
       });
     } else {
-      // Send to all attended guests
+      // Send to all attended guests who haven't received thank you email
       guests = await Guest.find({
         weddingEventId,
         isActive: true,
         $or: [{ checkedIn: true }, { attendanceStatus: "confirmed" }],
         email: { $exists: true, $ne: "" },
+        "thankYouEmailSent.sent": { $ne: true }, // Only guests who haven't received
       });
     }
 
@@ -1128,6 +1200,46 @@ exports.sendThankYouEmails = async (req, res) => {
       });
     }
 
+    // 6 mẫu câu cảm ơn đa dạng - random cho mỗi email
+    const thankYouTemplates = [
+      {
+        // Template 1: Formal & Traditional
+        title: "Xin chân thành cảm ơn",
+        message: `Kính gửi {name},\n\nChúng tôi xin gửi lời cảm ơn sâu sắc đến {name} đã dành thời gian quý báu để tham dự lễ cưới của chúng tôi. Sự hiện diện của {name} đã làm cho ngày trọng đại của chúng tôi thêm phần ý nghĩa và trọn vẹn.\n\nMong rằng {name} đã có những khoảnh khắc đáng nhớ bên chúng tôi.`,
+        emoji: "🙏",
+      },
+      {
+        // Template 2: Warm & Personal
+        title: "Cảm ơn {name} rất nhiều!",
+        message: `Chào {name},\n\nĐội ngũ {groomName} & {brideName} gửi lời cảm ơn chân thành nhất đến {name}! Việc có {name} bên cạnh trong ngày đặc biệt này thật sự ý nghĩa với chúng tôi.\n\nNiềm vui của {name} chính là món quà tuyệt vời nhất mà chúng tôi nhận được. Hy vọng chúng ta sẽ còn nhiều dịp gặp gỡ!`,
+        emoji: "💝",
+      },
+      {
+        // Template 3: Emotional & Heartfelt
+        title: "Từ trái tim chúng tôi...",
+        message: `Gửi {name} thân mến,\n\nKhông có lời nào diễn tả được sự biết ơn của chúng tôi khi {name} đã đến chung vui cùng chúng tôi. Mỗi nụ cười, mỗi lời chúc phúc của {name} đều in sâu trong trái tim chúng tôi.\n\nCảm ơn {name} đã là một phần không thể thiếu trong câu chuyện tình yêu của chúng tôi!`,
+        emoji: "💕",
+      },
+      {
+        // Template 4: Grateful & Appreciative
+        title: "Lời cảm ơn chân thành",
+        message: `Kính gửi {name},\n\n{groomName} và {brideName} xin gửi lời tri ân sâu sắc đến {name}. Sự có mặt của {name} đã góp phần tạo nên một ngày cưới thật trọn vẹn và đáng nhớ.\n\nChúng tôi cảm thấy thật may mắn khi có {name} bên cạnh để cùng chia sẻ niềm hạnh phúc này. Xin chân thành cảm ơn!`,
+        emoji: "🌟",
+      },
+      {
+        // Template 5: Joyful & Celebratory
+        title: "Cảm ơn vì đã đến chung vui!",
+        message: `{name} thân mến,\n\nBuổi tiệc thật tuyệt vời và không thể trọn vẹn hơn khi có {name} ở đó! Chúng tôi rất vui vì đã có cơ hội chia sẻ khoảnh khắc đặc biệt này với {name}.\n\nTiếng cười và năng lượng tích cực từ {name} đã làm cho ngày cưới của chúng tôi thêm phần rực rỡ. Cảm ơn {name} vô cùng!`,
+        emoji: "🎉",
+      },
+      {
+        // Template 6: Simple & Sincere
+        title: "Cảm ơn {name}",
+        message: `Gửi {name},\n\nChúng tôi muốn gửi lời cảm ơn chân thành nhất đến {name} đã tham dự đám cưới của chúng tôi. Có {name} bên cạnh trong ngày trọng đại này thật sự có ý nghĩa.\n\nCảm ơn {name} đã luôn ở đó cùng chúng tôi!`,
+        emoji: "💐",
+      },
+    ];
+
     // Prepare email data and send emails
     const emailsToSend = [];
     const emailsSent = [];
@@ -1136,13 +1248,27 @@ exports.sendThankYouEmails = async (req, res) => {
     for (const guest of guests) {
       if (!guest.email) continue;
 
+      // Random chọn 1 trong 6 template
+      const randomTemplate =
+        thankYouTemplates[Math.floor(Math.random() * thankYouTemplates.length)];
+
+      // Replace placeholders với thông tin thực
+      const personalizedMessage = (message || randomTemplate.message)
+        .replace(/{name}/g, guest.name)
+        .replace(/{groomName}/g, weddingEvent.groomName || "Chú rể")
+        .replace(/{brideName}/g, weddingEvent.brideName || "Cô dâu");
+
+      const personalizedTitle = randomTemplate.title
+        .replace(/{name}/g, guest.name)
+        .replace(/{groomName}/g, weddingEvent.groomName || "Chú rể")
+        .replace(/{brideName}/g, weddingEvent.brideName || "Cô dâu");
+
       const emailData = {
         to: guest.email,
         name: guest.name,
-        subject: `Cảm ơn ${guest.name} đã tham dự đám cưới`,
-        message:
-          message ||
-          `Chân thành cảm ơn ${guest.name} đã dành thời gian tham dự ngày trọng đại của chúng tôi!`,
+        subject: personalizedTitle,
+        message: personalizedMessage,
+        template: randomTemplate.emoji,
       };
 
       emailsToSend.push(emailData);
@@ -1153,20 +1279,93 @@ exports.sendThankYouEmails = async (req, res) => {
           email: guest.email,
           subject: emailData.subject,
           message: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #ff6b9d;">Xin chân thành cảm ơn</h2>
-              <p>Kính gửi ${guest.name},</p>
-              <p>${emailData.message}</p>
-              <p>Sự hiện diện của bạn đã làm cho ngày đặc biệt của chúng tôi thêm phần ý nghĩa.</p>
-              <br>
-              <p>Trân trọng,</p>
-              <p><strong>${weddingEvent.groomName || "Chú rể"} & ${
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+                .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+                .header { 
+                  background: linear-gradient(135deg, #ff6b9d 0%, #ffa07a 100%); 
+                  padding: 40px 30px; 
+                  text-align: center; 
+                  border-radius: 8px 8px 0 0;
+                }
+                .emoji { font-size: 48px; margin-bottom: 10px; }
+                .header-title { color: #ffffff; font-size: 28px; margin: 0; font-weight: 600; }
+                .content { padding: 40px 30px; color: #333333; line-height: 1.8; }
+                .message { font-size: 16px; white-space: pre-line; margin: 20px 0; }
+                .signature { 
+                  margin-top: 30px; 
+                  padding-top: 20px; 
+                  border-top: 2px solid #ffe4e8;
+                }
+                .signature-text { font-size: 14px; color: #666; }
+                .signature-names { 
+                  font-size: 20px; 
+                  color: #ff6b9d; 
+                  font-weight: 600; 
+                  margin-top: 10px;
+                }
+                .footer { 
+                  background: #f9f9f9; 
+                  padding: 20px 30px; 
+                  text-align: center; 
+                  color: #999; 
+                  font-size: 12px;
+                  border-radius: 0 0 8px 8px;
+                }
+                .heart { color: #ff6b9d; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <div class="emoji">${randomTemplate.emoji}</div>
+                  <h1 class="header-title">${personalizedTitle}</h1>
+                </div>
+                
+                <div class="content">
+                  <div class="message">${personalizedMessage}</div>
+                  
+                  <div class="signature">
+                    <p class="signature-text">Trân trọng,</p>
+                    <p class="signature-names">
+                      ${
+                        weddingEvent.groomName || "Chú rể"
+                      } <span class="heart">♥</span> ${
             weddingEvent.brideName || "Cô dâu"
-          }</strong></p>
-            </div>
+          }
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="footer">
+                  <p>
+                    ${
+                      weddingEvent.weddingDate
+                        ? `Ngày cưới: ${weddingEvent.weddingDate}`
+                        : ""
+                    }
+                  </p>
+                  <p>Email này được gửi tự động từ HyPlanner Wedding Management</p>
+                </div>
+              </div>
+            </body>
+            </html>
           `,
         });
         emailsSent.push(emailData);
+
+        // Update guest record to mark thank you email as sent
+        await Guest.findByIdAndUpdate(guest._id, {
+          $set: {
+            "thankYouEmailSent.sent": true,
+            "thankYouEmailSent.sentDate": new Date(),
+          },
+        });
       } catch (emailError) {
         console.error(`Failed to send email to ${guest.email}:`, emailError);
         emailsFailed.push({ ...emailData, error: emailError.message });
@@ -1207,7 +1406,7 @@ exports.getNotifications = async (req, res) => {
     // Verify wedding event
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
-      userId: userId,
+      creatorId: userId,
     });
 
     if (!weddingEvent) {

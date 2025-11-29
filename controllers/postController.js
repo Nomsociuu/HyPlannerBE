@@ -490,6 +490,9 @@ exports.getTrendingPosts = async (req, res) => {
     const posts = await Post.find({
       isActive: true,
       createdAt: { $gte: dateThreshold },
+      totalReactions: { $gte: 1 },
+      totalComments: { $gte: 1 },
+      totalSaves: { $gte: 1 },
     })
       .populate("userId", "fullName picture email")
       .populate("topicGroupId", "name category")

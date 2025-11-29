@@ -18,6 +18,7 @@ const {
   resetPassword,
   verifyEmail,
   getUserAccountStatus,
+  updatePushToken,
 } = require("../controllers/authController");
 
 router.get(
@@ -53,5 +54,8 @@ router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyPasswordResetOtp);
 router.post("/reset-password", resetPassword);
 router.get("/status", protect, getUserAccountStatus);
+
+// Push notification
+router.post("/push-token", protect, updatePushToken);
 
 module.exports = router;

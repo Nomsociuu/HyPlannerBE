@@ -12,6 +12,14 @@ const AlbumSchema = new Schema(
       type: String,
       required: true,
     },
+    authorName: {
+      type: String,
+      default: "",
+    },
+    coverImage: {
+      type: String,
+      default: "",
+    },
     selections: [
       {
         type: Schema.Types.ObjectId,
@@ -21,6 +29,11 @@ const AlbumSchema = new Schema(
     images: [
       {
         type: String, // URLs của hình ảnh
+      },
+    ],
+    customImages: [
+      {
+        type: String, // URLs của hình ảnh do user upload
       },
     ],
     description: {

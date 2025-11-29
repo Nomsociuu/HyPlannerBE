@@ -34,6 +34,12 @@ const UserSchema = new mongoose.Schema({
   accountExpires: {
     type: Date, // Sẽ lưu ngày hết hạn cho gói VIP
   },
+  pushToken: {
+    type: String, // Expo push notification token
+  },
+  pushTokenUpdatedAt: {
+    type: Date,
+  },
 });
 
 // Mã hóa mật khẩu trước khi lưu

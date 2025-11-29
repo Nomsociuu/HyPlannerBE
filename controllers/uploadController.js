@@ -74,3 +74,23 @@ exports.uploadPostImages = asyncHandler(async (req, res) => {
     imageUrls: imageUrls,
   });
 });
+
+/**
+ * @desc    Upload ảnh album lên Cloudinary
+ * @route   POST /upload/album-images
+ * @access  Private
+ */
+exports.uploadAlbumImages = asyncHandler(async (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    res.status(400);
+    throw new Error("Không có file ảnh được tải lên");
+  }
+
+  // req.files là mảng các file đã được upload lên Cloudinary
+  const imageUrls = req.files.map((file) => file.path);
+
+  res.status(200).json({
+    message: "Upload ảnh album thành công",
+    imageUrls: imageUrls,
+  });
+});

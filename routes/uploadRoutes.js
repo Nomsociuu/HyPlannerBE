@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   uploadAvatar,
   uploadPostImages,
+  uploadAlbumImages,
 } = require("../controllers/uploadController");
 const { protect } = require("../middleware/authMiddleware");
 const {
@@ -19,6 +20,14 @@ router.post(
   protect,
   uploadPost.array("images", 5),
   uploadPostImages
+);
+
+// Route upload ảnh album (tối đa 10 ảnh)
+router.post(
+  "/album-images",
+  protect,
+  uploadPost.array("images", 10),
+  uploadAlbumImages
 );
 
 module.exports = router;

@@ -3,22 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Thiệp cưới online của <%= weddingData.groomName %> và <%= weddingData.brideName %>"
-    />
     <title>
-      Trang Cưới Của <%= weddingData.groomName %> & <%= weddingData.brideName %>
+      Trang Cưới Của <% if (weddingData && weddingData.groomName) { %> <%=
+      weddingData.groomName %> <% } %> & <% if (weddingData &&
+      weddingData.brideName) { %> <%= weddingData.brideName %> <% } %>
     </title>
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
     <style>
-      /* Base styles */
-      * {
-        box-sizing: border-box;
-      }
+      /* Your styles here */
       body {
         font-family: "Montserrat", sans-serif;
         margin: 0;
@@ -163,7 +158,6 @@
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         transition: transform 0.2s ease-in-out;
-        background-color: #f0f0f0;
       }
       .album-grid img:hover {
         transform: scale(1.03);
@@ -215,7 +209,6 @@
         border-left: 5px solid #a0522d;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        word-wrap: break-word;
       }
       .guestbook-card p.name {
         font-weight: bold;
@@ -225,6 +218,37 @@
       .guestbook-card p.message {
         font-style: italic;
         color: #666;
+      }
+      .placeholder {
+        text-align: center;
+        padding: 50px 20px;
+        background-color: #fcfcfc;
+        border: 2px dashed #e0e0e0;
+        border-radius: 8px;
+        color: #888;
+        font-style: italic;
+      }
+      footer {
+        text-align: center;
+        padding: 30px;
+        background-color: #a0522d;
+        color: white;
+        margin-top: 50px;
+      }
+      footer p {
+        margin: 0;
+      }
+      .guestbook-form-container {
+        margin-top: 50px;
+        padding-top: 30px;
+        border-top: 1px solid #eee;
+      }
+      .guestbook-form-container h4 {
+        font-family: "Playfair Display", serif;
+        color: #a0522d;
+        font-size: 1.8em;
+        text-align: center;
+        margin-bottom: 30px;
       }
       .form-group {
         margin-bottom: 20px;
@@ -252,12 +276,6 @@
         border-color: #a0522d;
         box-shadow: 0 0 5px rgba(160, 82, 45, 0.2);
       }
-      .error-message {
-        color: #dc3545;
-        font-size: 0.875em;
-        margin-top: 5px;
-        display: none;
-      }
       .submit-btn {
         display: block;
         width: 100%;
@@ -272,7 +290,7 @@
         cursor: pointer;
         transition: background-color 0.3s;
       }
-      .submit-btn:hover:not(:disabled) {
+      .submit-btn:hover {
         background-color: #8c462f;
       }
       .submit-btn:disabled {
@@ -296,10 +314,10 @@
       .directions-button {
         background-color: #a0522d;
         color: white;
-      }
+      } /* Sửa lại màu nền */
       .directions-button:hover {
         background-color: #8c462f;
-      }
+      } /* Sửa lại màu hover */
       .event-item-layout {
         display: flex;
         gap: 30px;
@@ -319,51 +337,6 @@
       .event-map-column {
         width: 40%;
         flex-shrink: 0;
-      }
-      /* Toast notification */
-      .toast {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        background-color: #333;
-        color: white;
-        padding: 16px 24px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
-        max-width: 400px;
-      }
-      .toast.show {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      .toast.success {
-        background-color: #28a745;
-      }
-      .toast.error {
-        background-color: #dc3545;
-      }
-      /* Loading skeleton */
-      .skeleton {
-        background: linear-gradient(
-          90deg,
-          #f0f0f0 25%,
-          #e0e0e0 50%,
-          #f0f0f0 75%
-        );
-        background-size: 200% 100%;
-        animation: loading 1.5s infinite;
-      }
-      @keyframes loading {
-        0% {
-          background-position: 200% 0;
-        }
-        100% {
-          background-position: -200% 0;
-        }
       }
       @media (max-width: 768px) {
         header {
@@ -387,13 +360,20 @@
         .love-story-content {
           padding: 15px;
         }
-        .event-item,
-        .event-item-layout {
+        .event-item {
+          /* Giữ lại style cũ cho event-item để media query hoạt động */
           flex-direction: column;
           align-items: center;
           text-align: center;
         }
-        .event-item img,
+        .event-item img {
+          margin-bottom: 15px;
+        } /* Giữ lại style cũ */
+        .event-item-layout {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        } /* Bố cục dọc cho layout mới */
         .event-image-fixed {
           margin-bottom: 15px;
         }
@@ -422,7 +402,7 @@
     </style>
   </head>
   <body>
-    <header role="banner">
+    <header>
       <h1><%= weddingData.groomName %> & <%= weddingData.brideName %></h1>
       <div class="couple-names">
         <span><%= weddingData.groomName %></span>
@@ -432,7 +412,7 @@
       <p><%= weddingData.weddingDate %></p>
     </header>
 
-    <main class="container">
+    <div class="container">
       <section id="welcome">
         <h3>Chào mừng đến với ngày trọng đại của chúng tôi!</h3>
         <% if (weddingData.aboutCouple) { %>
@@ -452,25 +432,18 @@
       <section id="video">
         <h3>Video Kỷ Niệm</h3>
         <div class="video-container">
-          <% let videoId = null; const url = weddingData.youtubeUrl; let match =
-          url.match(/[?&]v=([^&]+)/); if (match) videoId = match[1]; if
-          (!videoId) { match = url.match(/youtu\.be\/([^?]+)/); if (match)
-          videoId = match[1]; } if (!videoId) { match =
-          url.match(/youtube\.com\/embed\/([^?]+)/); if (match) videoId =
-          match[1]; } if (!videoId) { match =
-          url.match(/youtube\.com\/shorts\/([^?]+)/); if (match) videoId =
-          match[1]; } %> <% if (videoId) { %>
+          <% const videoIdMatch = weddingData.youtubeUrl.match(/[?&]v=([^&]+)/);
+          %> <% if (videoIdMatch && videoIdMatch[1]) { %>
           <iframe
-            src="https://www.youtube.com/embed/<%= videoId %>"
-            title="Video kỷ niệm cưới"
+            src="https://www.youtube.com/embed/<%= videoIdMatch[1] %>"
+            title="YouTube video player"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
-            loading="lazy"
           >
           </iframe>
           <% } else { %>
-          <p style="text-align: center; color: #dc3545">
+          <p style="text-align: center; color: red">
             Link YouTube không hợp lệ.
           </p>
           <% } %>
@@ -481,19 +454,14 @@
       <section id="love-story">
         <h3>Câu Chuyện Tình Yêu</h3>
         <% weddingData.loveStory.forEach(function(story) { %>
-        <article class="love-story-item">
-          <img
-            src="<%= story.image %>"
-            alt="<%= story.title %>"
-            loading="lazy"
-            onerror="this.style.display='none'"
-          />
+        <div class="love-story-item">
+          <img src="<%= story.image %>" alt="<%= story.title %>" />
           <div class="love-story-content">
             <p class="time"><%= story.time %></p>
             <h4><%= story.title %></h4>
             <p class="content"><%= story.content %></p>
           </div>
-        </article>
+        </div>
         <% }); %>
       </section>
       <% } %> <% if (weddingData.album && weddingData.album.length > 0) { %>
@@ -501,12 +469,7 @@
         <h3>Album Ảnh Cưới</h3>
         <div class="album-grid">
           <% weddingData.album.forEach(function(image) { %>
-          <img
-            src="<%= image %>"
-            alt="Ảnh cưới"
-            loading="lazy"
-            onerror="this.style.display='none'"
-          />
+          <img src="<%= image %>" alt="Ảnh cưới" />
           <% }); %>
         </div>
       </section>
@@ -514,14 +477,12 @@
       <section id="events">
         <h3>Chương Trình Cưới</h3>
         <% weddingData.events.forEach(function(event) { %>
-        <article class="event-item event-item-layout">
+        <div class="event-item event-item-layout">
           <% if (event.image) { %>
           <img
             src="<%= event.image %>"
             alt="<%= event.name %>"
             class="event-image-fixed"
-            loading="lazy"
-            onerror="this.style.display='none'"
           />
           <% } %>
           <div class="event-details-column">
@@ -537,14 +498,20 @@
                 gap: 10px;
               "
             >
-              <% if (event.mapLink && /^https?:\/\//.test(event.mapLink)) { %>
+              <% if (event.mapLink) { %>
               <a
                 href="<%= event.mapLink %>"
                 target="_blank"
-                rel="noopener noreferrer"
                 class="event-button"
                 >Xem bản đồ</a
               >
+              <% } %> <% if (event.address) { %>
+              <!-- <a
+                href="https://www.google.com/maps/embed<%= encodeURIComponent(event.address) %>"
+                target="_blank"
+                class="event-button directions-button"
+                >Chỉ đường đến đây</a
+              > -->
               <% } %>
             </div>
           </div>
@@ -570,13 +537,12 @@
                 allowfullscreen=""
                 loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade"
-                title="Bản đồ địa điểm"
               >
               </iframe>
             </div>
           </div>
           <% } %>
-        </article>
+        </div>
         <% }); %>
       </section>
       <% } %>
@@ -587,48 +553,9 @@
           Sự hiện diện của bạn là niềm vinh hạnh lớn lao. Vui lòng xác nhận để
           chúng tôi có thể đón tiếp bạn thật chu đáo nhé!
         </p>
-        <form id="rsvp-form" style="display: block" novalidate>
-          <div class="form-group" style="text-align: left">
-            <label for="rsvpName"
-              >Tên của bạn <span style="color: #dc3545">*</span></label
-            >
-            <input
-              type="text"
-              id="rsvpName"
-              name="name"
-              placeholder="Nhập tên của bạn"
-              required
-              maxlength="100"
-              aria-required="true"
-              aria-describedby="rsvp-name-error"
-            />
-            <div id="rsvp-name-error" class="error-message" role="alert"></div>
-          </div>
-          <div class="form-group" style="text-align: left">
-            <label for="rsvpEmail"
-              >Email của bạn <span style="color: #dc3545">*</span></label
-            >
-            <input
-              type="email"
-              id="rsvpEmail"
-              name="email"
-              placeholder="Nhập email của bạn"
-              required
-              maxlength="100"
-              aria-required="true"
-              aria-describedby="rsvp-email-error"
-            />
-            <div id="rsvp-email-error" class="error-message" role="alert"></div>
-          </div>
-          <button
-            type="submit"
-            class="submit-btn"
-            id="rsvp-btn"
-            aria-label="Xác nhận tham dự tiệc cưới"
-          >
-            Xác nhận tham dự
-          </button>
-        </form>
+        <button type="button" class="submit-btn" id="rsvp-btn">
+          Xác nhận tham dự
+        </button>
         <p
           id="rsvp-thanks"
           style="
@@ -638,8 +565,6 @@
             font-weight: bold;
             margin-top: 20px;
           "
-          role="status"
-          aria-live="polite"
         >
           Cảm ơn bạn đã xác nhận! Hẹn gặp bạn tại buổi tiệc.
         </p>
@@ -663,7 +588,7 @@
         <div style="text-align: center">
           <img
             src="https://api.vietqr.io/image/<%= weddingData.bankAccount.bankBin %>-<%= weddingData.bankAccount.accountNumber %>-print.jpg?accountName=<%= encodeURIComponent(weddingData.groomName || '') %>&addInfo=<%= encodeURIComponent('Mung cuoi ' + (weddingData.groomName || '') + ' va ' + (weddingData.brideName || '')) %>"
-            alt="Mã QR mừng cưới"
+            alt="QR Mừng cưới"
             style="
               width: 300px;
               height: auto;
@@ -671,8 +596,6 @@
               border-radius: 8px;
               box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             "
-            loading="lazy"
-            onerror="this.parentElement.innerHTML='<p style=color:#dc3545>Không thể tải mã QR</p>'"
           />
         </div>
       </section>
@@ -682,16 +605,13 @@
         <h3>Sổ Lưu Bút</h3>
         <div class="guestbook-messages" id="guestbook-messages-container">
           <% if (weddingData.guestbookMessages &&
-          weddingData.guestbookMessages.length > 0) { %> <% function
-          escapeHtml(text) { const map = { '&': '&amp;', '<': '&lt;', '>':
-          '&gt;', '"': '&quot;', "'": '&#039;' }; return
-          text.replace(/[&<>"']/g, m => map[m]); } %> <%
-          weddingData.guestbookMessages .sort((a, b) => new
-          Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .forEach(function(message) { %>
+          weddingData.guestbookMessages.length > 0) { %> <%
+          weddingData.guestbookMessages.sort((a, b) => new
+          Date(b.createdAt).getTime() - new
+          Date(a.createdAt).getTime()).forEach(function(message) { %>
           <div class="guestbook-card">
-            <p class="name"><%- escapeHtml(message.name) %></p>
-            <p class="message">"<%- escapeHtml(message.message) %>"</p>
+            <p class="name"><%= message.name %></p>
+            <p class="message">"<%= message.message %>"</p>
           </div>
           <% }); %> <% } else { %>
           <p
@@ -705,72 +625,36 @@
       </section>
 
       <div class="guestbook-form-container">
-        <h4
-          style="
-            font-family: 'Playfair Display', serif;
-            color: #a0522d;
-            font-size: 1.8em;
-            text-align: center;
-            margin-bottom: 30px;
-          "
-        >
-          Gửi Lời Chúc Của Bạn
-        </h4>
-        <form id="guestbook-form" novalidate>
+        <h4>Gửi Lời Chúc Của Bạn</h4>
+        <form id="guestbook-form">
           <div class="form-group">
-            <label for="guestName"
-              >Tên của bạn <span style="color: #dc3545">*</span></label
-            >
+            <label for="guestName">Tên của bạn</label>
             <input
               type="text"
               id="guestName"
               name="name"
               placeholder="Nhập tên của bạn"
               required
-              maxlength="100"
-              aria-required="true"
-              aria-describedby="name-error"
             />
-            <div id="name-error" class="error-message" role="alert"></div>
           </div>
           <div class="form-group">
-            <label for="guestMessage"
-              >Lời chúc <span style="color: #dc3545">*</span></label
-            >
+            <label for="guestMessage">Lời chúc</label>
             <textarea
               id="guestMessage"
               name="message"
               rows="5"
               placeholder="Viết lời chúc của bạn tại đây..."
               required
-              maxlength="500"
-              aria-required="true"
-              aria-describedby="message-error"
             ></textarea>
-            <div id="message-error" class="error-message" role="alert"></div>
           </div>
-          <button
-            type="submit"
-            class="submit-btn"
-            id="submit-wish-btn"
-            aria-label="Gửi lời chúc mừng cưới"
-          >
+          <button type="submit" class="submit-btn" id="submit-wish-btn">
             Gửi Lời Chúc
           </button>
         </form>
       </div>
-    </main>
+    </div>
 
-    <footer
-      role="contentinfo"
-      style="
-        text-align: center;
-        padding: 30px;
-        background-color: #a0522d;
-        color: white;
-        margin-top: 50px;
-      "
-    >
+    <footer>
       <p>
         Chúc mừng hạnh phúc của <%= weddingData.groomName %> và <%=
         weddingData.brideName %>
@@ -778,149 +662,52 @@
       <p>© 2025. All Rights Reserved.</p>
     </footer>
 
-    <!-- Toast notification -->
-    <div
-      id="toast"
-      class="toast"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
-    ></div>
-
     <script id="wedding-data" type="application/json">
       <%- JSON.stringify({ slug: weddingData.slug || "" }) %>
     </script>
 
     <script>
-      // Utility functions
-      function $(id) {
-        return document.getElementById(id);
+      // Helper function to safely get elements
+      function $(selector) {
+        return document.getElementById(selector);
       }
 
-      function showToast(message, type = "success") {
-        const toast = $("toast");
-        if (!toast) return;
+      const guestbookForm = $("guestbook-form");
+      const guestNameInput = $("guestName");
+      const guestMessageInput = $("guestMessage");
+      const submitButton = $("submit-wish-btn");
+      const messagesContainer = $("guestbook-messages-container");
 
-        toast.textContent = message;
-        toast.className = `toast ${type} show`;
-
-        setTimeout(() => {
-          toast.classList.remove("show");
-        }, 4000);
-      }
-
-      function escapeHtml(text) {
-        const div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
-      }
-
-      function validateInput(value, minLength, maxLength, fieldName) {
-        if (!value || value.trim().length === 0) {
-          return `${fieldName} không được để trống`;
-        }
-        if (value.trim().length < minLength) {
-          return `${fieldName} phải có ít nhất ${minLength} ký tự`;
-        }
-        if (value.trim().length > maxLength) {
-          return `${fieldName} không được vượt quá ${maxLength} ký tự`;
-        }
-        return null;
-      }
-
-      // Read wedding slug safely
-      let weddingSlug = "";
+      const rsvpButton = $("rsvp-btn");
+      const rsvpThanks = $("rsvp-thanks");
+      // Read slug from a safe JSON script tag
+      let rsvpSlug = "";
+      let guestbookSlug = "";
       (function () {
-        const el = $("wedding-data");
+        const el = document.getElementById("wedding-data");
         if (!el) return;
         try {
           const parsed = JSON.parse(el.textContent || "{}");
-          weddingSlug = parsed.slug || "";
+          rsvpSlug = parsed.slug || "";
+          guestbookSlug = parsed.slug || "";
         } catch (e) {
-          console.error("Error parsing wedding data:", e);
+          /* ignore malformed JSON */
         }
       })();
 
       // --- RSVP Logic ---
-      const rsvpForm = $("rsvp-form");
-      const rsvpButton = $("rsvp-btn");
-      const rsvpThanks = $("rsvp-thanks");
-      const rsvpNameInput = $("rsvpName");
-      const rsvpEmailInput = $("rsvpEmail");
-      const rsvpNameError = $("rsvp-name-error");
-      const rsvpEmailError = $("rsvp-email-error");
-
-      if (rsvpForm && rsvpButton && rsvpThanks) {
-        const storageKey = `rsvp_confirmed_${weddingSlug}`;
-
-        if (localStorage.getItem(storageKey) === "true") {
-          rsvpForm.style.display = "none";
+      if (rsvpButton && rsvpThanks) {
+        if (localStorage.getItem("rsvp_confirmed_" + rsvpSlug) === "true") {
+          rsvpButton.style.display = "none";
           rsvpThanks.style.display = "block";
         } else {
-          rsvpForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            // Clear previous errors
-            if (rsvpNameError) {
-              rsvpNameError.textContent = "";
-              rsvpNameError.style.display = "none";
-            }
-            if (rsvpEmailError) {
-              rsvpEmailError.textContent = "";
-              rsvpEmailError.style.display = "none";
-            }
-
-            const name = rsvpNameInput.value.trim();
-            const email = rsvpEmailInput.value.trim();
-
-            // Validate name
-            const nameValidation = validateInput(name, 2, 100, "Tên");
-            if (nameValidation) {
-              if (rsvpNameError) {
-                rsvpNameError.textContent = nameValidation;
-                rsvpNameError.style.display = "block";
-              }
-              rsvpNameInput.focus();
-              return;
-            }
-
-            // Validate email
-            if (!email || email.length === 0) {
-              if (rsvpEmailError) {
-                rsvpEmailError.textContent = "Email không được để trống";
-                rsvpEmailError.style.display = "block";
-              }
-              rsvpEmailInput.focus();
-              return;
-            }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-              if (rsvpEmailError) {
-                rsvpEmailError.textContent = "Email không hợp lệ";
-                rsvpEmailError.style.display = "block";
-              }
-              rsvpEmailInput.focus();
-              return;
-            }
-
-            if (!weddingSlug) {
-              showToast("Lỗi: Không tìm thấy thông tin sự kiện", "error");
-              return;
-            }
-
+          rsvpButton.addEventListener("click", async () => {
             rsvpButton.disabled = true;
             rsvpButton.innerText = "Đang gửi xác nhận...";
-
             try {
-              const response = await fetch(`/invitation/${weddingSlug}/rsvp`, {
+              const response = await fetch(`/invitation/${rsvpSlug}/rsvp`, {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ name, email }),
               });
-
               if (!response.ok) {
                 let errorMsg = "Lỗi khi xác nhận. Vui lòng thử lại.";
                 try {
@@ -929,24 +716,18 @@
                     errorMsg = errorData.message;
                   }
                 } catch (e) {
-                  if (response.status === 404) {
-                    errorMsg = "Không tìm thấy sự kiện";
-                  } else if (response.status === 500) {
-                    errorMsg = "Lỗi server. Vui lòng thử lại sau.";
-                  }
+                  /* Ignore */
                 }
                 throw new Error(errorMsg);
               }
-
-              localStorage.setItem(storageKey, "true");
-              rsvpForm.style.display = "none";
+              localStorage.setItem("rsvp_confirmed_" + rsvpSlug, "true");
+              rsvpButton.style.display = "none";
               rsvpThanks.style.display = "block";
-              showToast("Xác nhận tham dự thành công! Cảm ơn bạn.", "success");
+              alert("Xác nhận tham dự thành công! Cảm ơn bạn.");
             } catch (error) {
-              console.error("RSVP error:", error);
               const message =
                 error instanceof Error ? error.message : String(error);
-              showToast(message, "error");
+              alert(message);
               rsvpButton.disabled = false;
               rsvpButton.innerText = "Xác nhận tham dự";
             }
@@ -955,14 +736,6 @@
       }
 
       // --- Guestbook Logic ---
-      const guestbookForm = $("guestbook-form");
-      const guestNameInput = $("guestName");
-      const guestMessageInput = $("guestMessage");
-      const submitButton = $("submit-wish-btn");
-      const messagesContainer = $("guestbook-messages-container");
-      const nameError = $("name-error");
-      const messageError = $("message-error");
-
       if (
         guestbookForm &&
         guestNameInput &&
@@ -972,102 +745,43 @@
       ) {
         guestbookForm.addEventListener("submit", async (event) => {
           event.preventDefault();
-
-          // Clear previous errors
-          if (nameError) {
-            nameError.textContent = "";
-            nameError.style.display = "none";
-          }
-          if (messageError) {
-            messageError.textContent = "";
-            messageError.style.display = "none";
-          }
-
           const name = guestNameInput.value.trim();
           const message = guestMessageInput.value.trim();
-
-          // Validation
-          const nameValidation = validateInput(name, 2, 100, "Tên");
-          if (nameValidation) {
-            if (nameError) {
-              nameError.textContent = nameValidation;
-              nameError.style.display = "block";
-            }
-            guestNameInput.focus();
+          if (!name || !message) {
+            alert("Vui lòng không để trống tên hoặc lời chúc!");
             return;
           }
-
-          const messageValidation = validateInput(message, 10, 500, "Lời chúc");
-          if (messageValidation) {
-            if (messageError) {
-              messageError.textContent = messageValidation;
-              messageError.style.display = "block";
-            }
-            guestMessageInput.focus();
-            return;
-          }
-
-          if (!weddingSlug) {
-            showToast("Lỗi: Không tìm thấy thông tin sự kiện", "error");
-            return;
-          }
-
           submitButton.disabled = true;
           submitButton.innerText = "Đang gửi...";
-
           try {
             const response = await fetch(
-              `/invitation/${weddingSlug}/add-wish`,
+              `/invitation/${guestbookSlug}/add-wish`,
               {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, message }),
               }
             );
-
             const result = await response.json();
-
             if (!response.ok) {
               throw new Error(result.message || "Lỗi khi gửi lời chúc.");
             }
-
-            showToast(
-              "Gửi lời chúc thành công! Cảm ơn bạn rất nhiều.",
-              "success"
-            );
-
-            // Remove "no messages" text
+            alert("Gửi lời chúc thành công! Cảm ơn bạn rất nhiều.");
             const noMessagesEl = $("no-messages-yet");
             if (noMessagesEl) {
               noMessagesEl.remove();
             }
-
-            // Add new message card safely
             const newMessageCard = document.createElement("div");
             newMessageCard.className = "guestbook-card";
-
-            const nameP = document.createElement("p");
-            nameP.className = "name";
-            nameP.textContent = name;
-
-            const messageP = document.createElement("p");
-            messageP.className = "message";
-            messageP.textContent = `"${message}"`;
-
-            newMessageCard.appendChild(nameP);
-            newMessageCard.appendChild(messageP);
+            newMessageCard.innerHTML = `<p class="name">${name}</p><p class="message">"${message}"</p>`;
             messagesContainer.prepend(newMessageCard);
-
-            // Reset form
             guestNameInput.value = "";
             guestMessageInput.value = "";
           } catch (error) {
-            console.error("Error sending wish:", error);
+            console.error("Lỗi khi gửi lời chúc:", error);
             const errMsg =
               error instanceof Error ? error.message : String(error);
-            showToast(errMsg, "error");
+            alert(errMsg);
           } finally {
             submitButton.disabled = false;
             submitButton.innerText = "Gửi Lời Chúc";

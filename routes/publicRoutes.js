@@ -67,7 +67,254 @@ const sampleWeddingData = {
   slug: "sample-slug",
 };
 
-// Route này sẽ xử lý các request tới: GET /inviletter/:slug
+// @desc    Hiển thị trang preview cho một template
+// @route   GET /inviletter/preview/:templateId
+router.get("/preview/:templateId", (req, res) => {
+  try {
+    const { templateId } = req.params;
+    const templateName = `template-${templateId}`;
+
+    // Render template với dữ liệu mẫu (Đã sửa lại cấu trúc)
+    res.render(templateName, { weddingData: sampleWeddingData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Lỗi máy chủ nội bộ");
+  }
+});
+
+// Public route for shared guest list (no authentication required)
+router.get("/guests/shared/:token", guestController.getSharedGuestList);
+
+// @desc    Debug endpoint - Check guests data (MUST BE BEFORE /:slug)
+// @route   GET /invitation/:slug/debug-guests
+router.get("/invitation/:slug/debug-guests", async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const invitationLetter = await InvitationLetter.findOne({ slug });
+    if (!invitationLetter) {
+      return res.status(404).json({ message: "Không tìm thấy thiệp mời" });
+    }
+
+    const WeddingEvent = require("../models/WeddingEvent");
+    const weddingEvent = await WeddingEvent.findOne({
+      userId: invitationLetter.userId,
+    });
+
+    if (!weddingEvent) {
+      return res.status(404).json({ message: "Không tìm thấy sự kiện cưới" });
+    }
+
+    const Guest = require("../models/Guest");
+    const guests = await Guest.find({ weddingEventId: weddingEvent._id });
+
+    return res.json({
+      success: true,
+      weddingEventId: weddingEvent._id,
+      totalGuests: guests.length,
+      guests: guests.map((g) => ({
+        _id: g._id,
+        name: g.name,
+        email: g.email,
+        group: g.group,
+        attendanceStatus: g.attendanceStatus,
+        confirmedViaInvitation: g.confirmedViaInvitation,
+        invitationConfirmDate: g.invitationConfirmDate,
+        invitationLetterId: g.invitationLetterId,
+      })),
+    });
+  } catch (error) {
+    console.error("Debug error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// @desc    RSVP endpoint - Khách xác nhận tham dự qua thiệp mời
+// @route   POST /invitation/:slug/rsvp
+router.post("/invitation/:slug/rsvp", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { name, email } = req.body;
+
+    console.log("🔵 RSVP Request received:");
+    console.log("  - Slug:", slug);
+    console.log("  - Name:", name);
+    console.log("  - Email:", email);
+
+    // Validate input
+    if (!name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập đầy đủ tên và email",
+      });
+    }
+
+    // Find invitation letter
+    const invitationLetter = await InvitationLetter.findOne({ slug });
+    console.log("🔵 Invitation Letter found:", invitationLetter ? "YES" : "NO");
+    console.log("  - InvitationLetter ID:", invitationLetter?._id);
+    console.log("  - User ID:", invitationLetter?.userId);
+
+    if (!invitationLetter) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy thiệp mời",
+      });
+    }
+
+    // Get WeddingEvent from userId
+    const WeddingEvent = require("../models/WeddingEvent");
+    const weddingEvent = await WeddingEvent.findOne({
+      userId: invitationLetter.userId,
+    });
+
+    console.log("🔵 Wedding Event found:", weddingEvent ? "YES" : "NO");
+    console.log("  - WeddingEvent ID:", weddingEvent?._id);
+
+    if (!weddingEvent) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy sự kiện cưới",
+      });
+    }
+
+    // Check if guest already exists
+    const Guest = require("../models/Guest");
+    let guest = await Guest.findOne({
+      weddingEventId: weddingEvent._id,
+      email: email.toLowerCase(),
+    });
+
+    console.log(
+      "🔵 Existing guest found:",
+      guest ? "YES (updating)" : "NO (creating new)"
+    );
+
+    if (guest) {
+      // Update existing guest
+      guest.attendanceStatus = "confirmed";
+      guest.confirmedViaInvitation = true;
+      guest.invitationConfirmDate = new Date();
+      guest.invitationLetterId = invitationLetter._id;
+      guest.responseDate = new Date();
+      await guest.save();
+
+      console.log("✅ Guest updated successfully:", guest._id);
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật xác nhận tham dự thành công",
+        data: { guest },
+      });
+    } else {
+      // Create new guest
+      guest = await Guest.create({
+        weddingEventId: weddingEvent._id,
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        attendanceStatus: "confirmed",
+        group: "both", // Default
+        confirmedViaInvitation: true,
+        invitationConfirmDate: new Date(),
+        invitationLetterId: invitationLetter._id,
+        responseDate: new Date(),
+        invitationStatus: "opened",
+      });
+
+      console.log("✅ New guest created successfully:");
+      console.log("  - Guest ID:", guest._id);
+      console.log("  - Name:", guest.name);
+      console.log("  - Email:", guest.email);
+      console.log("  - WeddingEventId:", guest.weddingEventId);
+      console.log("  - ConfirmedViaInvitation:", guest.confirmedViaInvitation);
+
+      // Increment RSVP count
+      invitationLetter.guestRsvpCount =
+        (invitationLetter.guestRsvpCount || 0) + 1;
+      await invitationLetter.save();
+
+      return res.status(201).json({
+        success: true,
+        message: "Xác nhận tham dự thành công",
+        data: { guest },
+      });
+    }
+  } catch (error) {
+    console.error("RSVP error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi server khi xác nhận tham dự",
+      error: error.message,
+    });
+  }
+});
+
+// @desc    Add wish/guestbook message
+// @route   POST /invitation/:slug/add-wish
+router.post("/invitation/:slug/add-wish", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { name, message } = req.body;
+
+    // Validate input
+    if (!name || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập đầy đủ tên và lời chúc",
+      });
+    }
+
+    if (name.trim().length < 2 || name.trim().length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: "Tên phải có từ 2-100 ký tự",
+      });
+    }
+
+    if (message.trim().length < 10 || message.trim().length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: "Lời chúc phải có từ 10-500 ký tự",
+      });
+    }
+
+    // Find invitation letter
+    const invitationLetter = await InvitationLetter.findOne({ slug });
+    if (!invitationLetter) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy thiệp mời",
+      });
+    }
+
+    // Add guestbook message
+    invitationLetter.guestbookMessages.push({
+      name: name.trim(),
+      message: message.trim(),
+    });
+
+    await invitationLetter.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Gửi lời chúc thành công",
+      data: {
+        name: name.trim(),
+        message: message.trim(),
+      },
+    });
+  } catch (error) {
+    console.error("Add wish error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi server khi gửi lời chúc",
+      error: error.message,
+    });
+  }
+});
+
+// @desc    Hiển thị thiệp mời theo slug (MUST BE LAST - wildcard route)
+// @route   GET /inviletter/:slug
 router.get("/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
@@ -106,23 +353,5 @@ router.get("/:slug", async (req, res) => {
     res.status(500).send("Lỗi máy chủ nội bộ");
   }
 });
-
-// @desc    Hiển thị trang preview cho một template
-// @route   GET /inviletter/preview/:templateId
-router.get("/preview/:templateId", (req, res) => {
-  try {
-    const { templateId } = req.params;
-    const templateName = `template-${templateId}`;
-
-    // Render template với dữ liệu mẫu (Đã sửa lại cấu trúc)
-    res.render(templateName, { weddingData: sampleWeddingData });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Lỗi máy chủ nội bộ");
-  }
-});
-
-// Public route for shared guest list (no authentication required)
-router.get("/guests/shared/:token", guestController.getSharedGuestList);
 
 module.exports = router;

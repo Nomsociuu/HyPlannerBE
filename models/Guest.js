@@ -140,6 +140,22 @@ const guestSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "InvitationLetter",
     },
+    confirmedViaInvitation: {
+      type: Boolean,
+      default: false,
+    },
+    invitationConfirmDate: {
+      type: Date,
+    },
+    thankYouEmailSent: {
+      sent: {
+        type: Boolean,
+        default: false,
+      },
+      sentDate: {
+        type: Date,
+      },
+    },
   },
   {
     collection: "guests",

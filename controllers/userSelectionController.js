@@ -334,192 +334,45 @@ exports.getUserSelections = async (req, res) => {
 exports.createAlbum = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { name, note, type } = req.body;
+    const { name, authorName, coverImage, note, type } = req.body;
 
-    if (
-      !type ||
-      ![
-        "wedding-dress",
-        "vest",
-        "bride-engage",
-        "groom-engage",
-        "tone-color",
-        "wedding-venue",
-        "wedding-theme",
-      ].includes(type)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          'Type is required and must be "wedding-dress", "vest", "bride-engage", "groom-engage", or "tone-color"',
+    // Nếu có type, tạo album từ pinned selection (logic cũ)
+    if (type) {
+      if (
+        ![
+          "wedding-dress",
+          "vest",
+          "bride-engage",
+          "groom-engage",
+          "tone-color",
+          "wedding-venue",
+          "wedding-theme",
+        ].includes(type)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            'Type must be "wedding-dress", "vest", "bride-engage", "groom-engage", "tone-color", "wedding-venue", or "wedding-theme"',
+        });
+      }
+
+      // Get current pinned selection of specified type
+      const currentSelection = await UserSelection.findOne({
+        user: userId,
+        type,
+        isPinned: true,
       });
-    }
 
-    // Get current pinned selection of specified type
-    const currentSelection = await UserSelection.findOne({
-      user: userId,
-      type,
-      isPinned: true,
-    });
+      if (!currentSelection) {
+        return res.status(400).json({
+          success: false,
+          message: `No pinned ${type} selections found`,
+        });
+      }
 
-    if (!currentSelection) {
-      return res.status(400).json({
-        success: false,
-        message: `No pinned ${type} selections found`,
-      });
-    }
-
-    // Populate based on type
-    if (type === "wedding-dress") {
-      await currentSelection.populate([
-        "styles",
-        "materials",
-        "necklines",
-        "details",
-        "accessories.veils",
-        "accessories.jewelries",
-        "accessories.hairpins",
-        "accessories.crowns",
-        "flowers",
-      ]);
-    } else if (type === "vest") {
-      await currentSelection.populate([
-        "vestStyles",
-        "vestColors",
-        "vestMaterials",
-        "vestLapels",
-        "vestPockets",
-        "vestDecorations",
-      ]);
-    } else if (type === "bride-engage") {
-      await currentSelection.populate([
-        "brideEngageStyles",
-        "brideEngageMaterials",
-        "brideEngagePatterns",
-        "brideEngageHeadwears",
-      ]);
-    } else if (type === "groom-engage") {
-      await currentSelection.populate([
-        "groomEngageOutfits",
-        "groomEngageAccessories",
-      ]);
-    } else if (type === "tone-color") {
-      await currentSelection.populate([
-        "weddingToneColors",
-        "engageToneColors",
-      ]);
-    } else if (type === "wedding-venue") {
-      await currentSelection.populate(["weddingVenues"]);
-    } else if (type === "wedding-theme") {
-      await currentSelection.populate(["weddingThemes"]);
-    }
-
-    // Create a new selection with the same choices but unpinned
-    let newSelectionData = {
-      user: userId,
-      type,
-      isPinned: false,
-    };
-
-    if (type === "wedding-dress") {
-      newSelectionData = {
-        ...newSelectionData,
-        styles: currentSelection.styles.map((style) => style._id),
-        materials: currentSelection.materials.map((material) => material._id),
-        necklines: currentSelection.necklines.map((neckline) => neckline._id),
-        details: currentSelection.details.map((detail) => detail._id),
-        accessories: {
-          veils: currentSelection.accessories.veils.map((veil) => veil._id),
-          jewelries: currentSelection.accessories.jewelries.map(
-            (jewelry) => jewelry._id
-          ),
-          hairpins: currentSelection.accessories.hairpins.map(
-            (hairpin) => hairpin._id
-          ),
-          crowns: currentSelection.accessories.crowns.map((crown) => crown._id),
-        },
-        flowers: currentSelection.flowers.map((flower) => flower._id),
-      };
-    } else if (type === "vest") {
-      newSelectionData = {
-        ...newSelectionData,
-        vestStyles: currentSelection.vestStyles.map((style) => style._id),
-        vestColors: currentSelection.vestColors.map((color) => color._id),
-        vestMaterials: currentSelection.vestMaterials.map(
-          (material) => material._id
-        ),
-        vestLapels: currentSelection.vestLapels.map((lapel) => lapel._id),
-        vestPockets: currentSelection.vestPockets.map((pocket) => pocket._id),
-        vestDecorations: currentSelection.vestDecorations.map(
-          (decoration) => decoration._id
-        ),
-      };
-    } else if (type === "bride-engage") {
-      newSelectionData = {
-        ...newSelectionData,
-        brideEngageStyles: currentSelection.brideEngageStyles.map(
-          (style) => style._id
-        ),
-        brideEngageMaterials: currentSelection.brideEngageMaterials.map(
-          (material) => material._id
-        ),
-        brideEngagePatterns: currentSelection.brideEngagePatterns.map(
-          (pattern) => pattern._id
-        ),
-        brideEngageHeadwears: currentSelection.brideEngageHeadwears.map(
-          (headwear) => headwear._id
-        ),
-      };
-    } else if (type === "groom-engage") {
-      newSelectionData = {
-        ...newSelectionData,
-        groomEngageOutfits: currentSelection.groomEngageOutfits.map(
-          (outfit) => outfit._id
-        ),
-        groomEngageAccessories: currentSelection.groomEngageAccessories.map(
-          (accessory) => accessory._id
-        ),
-      };
-    } else if (type === "tone-color") {
-      newSelectionData = {
-        ...newSelectionData,
-        weddingToneColors: currentSelection.weddingToneColors.map(
-          (color) => color._id
-        ),
-        engageToneColors: currentSelection.engageToneColors.map(
-          (color) => color._id
-        ),
-      };
-    } else if (type === "wedding-venue") {
-      newSelectionData = {
-        ...newSelectionData,
-        weddingVenues: currentSelection.weddingVenues.map((venue) => venue._id),
-      };
-    } else if (type === "wedding-theme") {
-      newSelectionData = {
-        ...newSelectionData,
-        weddingThemes: currentSelection.weddingThemes.map((theme) => theme._id),
-      };
-    }
-
-    const newSelection = await UserSelection.create(newSelectionData);
-
-    // Create the album with the new selection
-    const album = await Album.create({
-      user: userId,
-      name,
-      selections: [newSelection._id],
-      note,
-    });
-
-    await album.populate({
-      path: "selections",
-    });
-
-    // Populate selections based on their type
-    for (let selection of album.selections) {
-      if (selection.type === "wedding-dress") {
-        await selection.populate([
+      // Populate based on type
+      if (type === "wedding-dress") {
+        await currentSelection.populate([
           "styles",
           "materials",
           "necklines",
@@ -530,8 +383,8 @@ exports.createAlbum = async (req, res) => {
           "accessories.crowns",
           "flowers",
         ]);
-      } else if (selection.type === "vest") {
-        await selection.populate([
+      } else if (type === "vest") {
+        await currentSelection.populate([
           "vestStyles",
           "vestColors",
           "vestMaterials",
@@ -539,29 +392,202 @@ exports.createAlbum = async (req, res) => {
           "vestPockets",
           "vestDecorations",
         ]);
-      } else if (selection.type === "bride-engage") {
-        await selection.populate([
+      } else if (type === "bride-engage") {
+        await currentSelection.populate([
           "brideEngageStyles",
           "brideEngageMaterials",
           "brideEngagePatterns",
           "brideEngageHeadwears",
         ]);
-      } else if (selection.type === "groom-engage") {
-        await selection.populate([
+      } else if (type === "groom-engage") {
+        await currentSelection.populate([
           "groomEngageOutfits",
           "groomEngageAccessories",
         ]);
-      } else if (selection.type === "tone-color") {
-        await selection.populate(["weddingToneColors", "engageToneColors"]);
+      } else if (type === "tone-color") {
+        await currentSelection.populate([
+          "weddingToneColors",
+          "engageToneColors",
+        ]);
+      } else if (type === "wedding-venue") {
+        await currentSelection.populate(["weddingVenues"]);
+      } else if (type === "wedding-theme") {
+        await currentSelection.populate(["weddingThemes"]);
       }
-    }
 
-    res.status(201).json({
-      success: true,
-      data: album,
-    });
+      // Create a new selection with the same choices but unpinned
+      let newSelectionData = {
+        user: userId,
+        type,
+        isPinned: false,
+      };
+
+      if (type === "wedding-dress") {
+        newSelectionData = {
+          ...newSelectionData,
+          styles: currentSelection.styles.map((style) => style._id),
+          materials: currentSelection.materials.map((material) => material._id),
+          necklines: currentSelection.necklines.map((neckline) => neckline._id),
+          details: currentSelection.details.map((detail) => detail._id),
+          accessories: {
+            veils: currentSelection.accessories.veils.map((veil) => veil._id),
+            jewelries: currentSelection.accessories.jewelries.map(
+              (jewelry) => jewelry._id
+            ),
+            hairpins: currentSelection.accessories.hairpins.map(
+              (hairpin) => hairpin._id
+            ),
+            crowns: currentSelection.accessories.crowns.map(
+              (crown) => crown._id
+            ),
+          },
+          flowers: currentSelection.flowers.map((flower) => flower._id),
+        };
+      } else if (type === "vest") {
+        newSelectionData = {
+          ...newSelectionData,
+          vestStyles: currentSelection.vestStyles.map((style) => style._id),
+          vestColors: currentSelection.vestColors.map((color) => color._id),
+          vestMaterials: currentSelection.vestMaterials.map(
+            (material) => material._id
+          ),
+          vestLapels: currentSelection.vestLapels.map((lapel) => lapel._id),
+          vestPockets: currentSelection.vestPockets.map((pocket) => pocket._id),
+          vestDecorations: currentSelection.vestDecorations.map(
+            (decoration) => decoration._id
+          ),
+        };
+      } else if (type === "bride-engage") {
+        newSelectionData = {
+          ...newSelectionData,
+          brideEngageStyles: currentSelection.brideEngageStyles.map(
+            (style) => style._id
+          ),
+          brideEngageMaterials: currentSelection.brideEngageMaterials.map(
+            (material) => material._id
+          ),
+          brideEngagePatterns: currentSelection.brideEngagePatterns.map(
+            (pattern) => pattern._id
+          ),
+          brideEngageHeadwears: currentSelection.brideEngageHeadwears.map(
+            (headwear) => headwear._id
+          ),
+        };
+      } else if (type === "groom-engage") {
+        newSelectionData = {
+          ...newSelectionData,
+          groomEngageOutfits: currentSelection.groomEngageOutfits.map(
+            (outfit) => outfit._id
+          ),
+          groomEngageAccessories: currentSelection.groomEngageAccessories.map(
+            (accessory) => accessory._id
+          ),
+        };
+      } else if (type === "tone-color") {
+        newSelectionData = {
+          ...newSelectionData,
+          weddingToneColors: currentSelection.weddingToneColors.map(
+            (color) => color._id
+          ),
+          engageToneColors: currentSelection.engageToneColors.map(
+            (color) => color._id
+          ),
+        };
+      } else if (type === "wedding-venue") {
+        newSelectionData = {
+          ...newSelectionData,
+          weddingVenues: currentSelection.weddingVenues.map(
+            (venue) => venue._id
+          ),
+        };
+      } else if (type === "wedding-theme") {
+        newSelectionData = {
+          ...newSelectionData,
+          weddingThemes: currentSelection.weddingThemes.map(
+            (theme) => theme._id
+          ),
+        };
+      }
+
+      const newSelection = await UserSelection.create(newSelectionData);
+
+      // Create the album with the new selection
+      const album = await Album.create({
+        user: userId,
+        name,
+        authorName: authorName || "",
+        coverImage: coverImage || "",
+        selections: [newSelection._id],
+        note,
+      });
+
+      await album.populate({
+        path: "selections",
+      });
+
+      // Populate selections based on their type
+      for (let selection of album.selections) {
+        if (selection.type === "wedding-dress") {
+          await selection.populate([
+            "styles",
+            "materials",
+            "necklines",
+            "details",
+            "accessories.veils",
+            "accessories.jewelries",
+            "accessories.hairpins",
+            "accessories.crowns",
+            "flowers",
+          ]);
+        } else if (selection.type === "vest") {
+          await selection.populate([
+            "vestStyles",
+            "vestColors",
+            "vestMaterials",
+            "vestLapels",
+            "vestPockets",
+            "vestDecorations",
+          ]);
+        } else if (selection.type === "bride-engage") {
+          await selection.populate([
+            "brideEngageStyles",
+            "brideEngageMaterials",
+            "brideEngagePatterns",
+            "brideEngageHeadwears",
+          ]);
+        } else if (selection.type === "groom-engage") {
+          await selection.populate([
+            "groomEngageOutfits",
+            "groomEngageAccessories",
+          ]);
+        } else if (selection.type === "tone-color") {
+          await selection.populate(["weddingToneColors", "engageToneColors"]);
+        }
+      }
+
+      return res.status(201).json({
+        success: true,
+        data: album,
+      });
+    } else {
+      // Tạo album trống mới (không từ pinned selection)
+      const album = await Album.create({
+        user: userId,
+        name,
+        authorName: authorName || "",
+        coverImage: coverImage || "",
+        selections: [],
+        note: note || "",
+        isPublic: false,
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: album,
+      });
+    }
   } catch (error) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -627,6 +653,117 @@ exports.getUserAlbums = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Update album name
+exports.updateAlbum = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { albumId } = req.params;
+    const { name, note, customImages } = req.body;
+
+    // Build update object
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (note !== undefined) updateData.note = note;
+    if (customImages !== undefined) updateData.customImages = customImages;
+
+    const album = await Album.findOneAndUpdate(
+      { _id: albumId, user: userId },
+      updateData,
+      { new: true, runValidators: true }
+    ).populate({
+      path: "selections",
+    });
+
+    if (!album) {
+      return res.status(404).json({
+        success: false,
+        message: "Album not found",
+      });
+    }
+
+    // Populate selections based on their type
+    for (let selection of album.selections) {
+      if (selection.type === "wedding-dress") {
+        await selection.populate([
+          "styles",
+          "materials",
+          "necklines",
+          "details",
+          "accessories.veils",
+          "accessories.jewelries",
+          "accessories.hairpins",
+          "accessories.crowns",
+          "flowers",
+        ]);
+      } else if (selection.type === "vest") {
+        await selection.populate([
+          "vestStyles",
+          "vestColors",
+          "vestMaterials",
+          "vestLapels",
+          "vestPockets",
+          "vestDecorations",
+        ]);
+      } else if (selection.type === "bride-engage") {
+        await selection.populate([
+          "brideEngageStyles",
+          "brideEngageMaterials",
+          "brideEngagePatterns",
+          "brideEngageHeadwears",
+        ]);
+      } else if (selection.type === "groom-engage") {
+        await selection.populate([
+          "groomEngageOutfits",
+          "groomEngageAccessories",
+        ]);
+      } else if (selection.type === "tone-color") {
+        await selection.populate(["weddingToneColors", "engageToneColors"]);
+      } else if (selection.type === "wedding-venue") {
+        await selection.populate(["weddingVenues"]);
+      } else if (selection.type === "wedding-theme") {
+        await selection.populate(["weddingThemes"]);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: album,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Delete album
+exports.deleteAlbum = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { albumId } = req.params;
+
+    const album = await Album.findOneAndDelete({ _id: albumId, user: userId });
+
+    if (!album) {
+      return res.status(404).json({
+        success: false,
+        message: "Album not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Album deleted successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
       success: false,
       message: error.message,
     });

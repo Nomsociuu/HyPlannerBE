@@ -627,3 +627,36 @@ exports.getUserAccountStatus = async (req, res) => {
     res.status(500).json({ message: "Lỗi máy chủ." });
   }
 };
+
+/**
+ * @desc    Cập nhật Expo push notification token
+ * @route   POST /auth/push-token
+ * @access  Private
+ */
+exports.updatePushToken = async (req, res) => {
+  try {
+    const { pushToken } = req.body;
+    const userId = req.user._id;
+
+    if (!pushToken) {
+      return res.status(400).json({ message: "Push token is required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.pushToken = pushToken;
+    user.pushTokenUpdatedAt = new Date();
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Push token updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating push token:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

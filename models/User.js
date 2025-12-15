@@ -40,6 +40,9 @@ const UserSchema = new mongoose.Schema({
   pushTokenUpdatedAt: {
     type: Date,
   },
+  weddingDate: {
+    type: Date, // Ngày cưới của người dùng
+  },
 });
 
 // Mã hóa mật khẩu trước khi lưu

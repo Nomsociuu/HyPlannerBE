@@ -15,6 +15,18 @@ const weddingEventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    brideFather: {
+      type: String,
+    },
+    brideMother: {
+      type: String,
+    },
+    groomFather: {
+      type: String,
+    },
+    groomMother: {
+      type: String,
+    },
     budget: {
       type: Number,
       required: true,

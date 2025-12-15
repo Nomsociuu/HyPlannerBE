@@ -176,6 +176,7 @@ exports.facebookToken = async (req, res) => {
         name: user.fullName,
         email: user.email,
         picture: user.picture,
+        weddingDate: user.weddingDate,
       },
     });
   } catch (error) {
@@ -329,6 +330,7 @@ exports.verifyEmail = asyncHandler(async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       picture: user.picture,
+      weddingDate: user.weddingDate,
     },
   });
 });
@@ -371,6 +373,7 @@ exports.loginUser = async (req, res) => {
           fullName: user.fullName,
           email: user.email,
           picture: user.picture,
+          weddingDate: user.weddingDate,
         },
       });
     } else {
@@ -428,6 +431,13 @@ exports.updateUserProfile = asyncHandler(async (req, res) => {
   user.email = req.body.email || user.email; // Cẩn thận khi cho phép đổi email
   user.picture = req.body.picture || user.picture;
 
+  // Xử lý cập nhật ngày cưới
+  if (req.body.weddingDate !== undefined) {
+    user.weddingDate = req.body.weddingDate
+      ? new Date(req.body.weddingDate)
+      : null;
+  }
+
   const updatedUser = await user.save();
 
   res.json({
@@ -435,6 +445,7 @@ exports.updateUserProfile = asyncHandler(async (req, res) => {
     fullName: updatedUser.fullName,
     email: updatedUser.email,
     picture: updatedUser.picture,
+    weddingDate: updatedUser.weddingDate,
   });
 });
 
@@ -517,6 +528,7 @@ exports.verifyEmailChange = asyncHandler(async (req, res) => {
     fullName: updatedUser.fullName,
     email: updatedUser.email,
     picture: updatedUser.picture,
+    weddingDate: updatedUser.weddingDate,
   });
 });
 // === HÀM 1: GỬI YÊU CẦU QUÊN MẬT KHẨU ===

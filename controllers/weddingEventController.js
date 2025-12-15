@@ -408,3 +408,68 @@ exports.checkUserInEvent = async (req, res) => {
     return res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
   }
 };
+
+// Update wedding event information
+// PUT http://localhost:8082/weddingEvents/updateWeddingEvent/:eventId
+exports.updateWeddingEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const {
+      brideName,
+      groomName,
+      brideFather,
+      brideMother,
+      groomFather,
+      groomMother,
+      timeToMarried,
+    } = req.body;
+
+    // Find the wedding event
+    const event = await WeddingEvent.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Wedding event not found" });
+    }
+
+    // Verify that the user is the creator
+    if (event.creatorId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Only the event creator can update wedding information",
+      });
+    }
+
+    // Validate timeToMarried if provided
+    if (timeToMarried) {
+      if (new Date(timeToMarried) <= Date.now()) {
+        return res
+          .status(400)
+          .json({ message: "timeToMarried must be in the future" });
+      }
+      event.timeToMarried = timeToMarried;
+      event.weddingDate = timeToMarried; // Update weddingDate as well
+    }
+
+    // Update fields if provided
+    if (brideName !== undefined) event.brideName = brideName;
+    if (groomName !== undefined) event.groomName = groomName;
+    if (brideFather !== undefined) event.brideFather = brideFather;
+    if (brideMother !== undefined) event.brideMother = brideMother;
+    if (groomFather !== undefined) event.groomFather = groomFather;
+    if (groomMother !== undefined) event.groomMother = groomMother;
+
+    await event.save();
+
+    // Track with Mixpanel
+    mixpanel.track("Wedding Event - Updated", {
+      distinct_id: req.user._id.toString(),
+      eventId: event._id.toString(),
+      fieldsUpdated: Object.keys(req.body).join(", "),
+    });
+
+    res.status(200).json({
+      message: "Wedding event updated successfully",
+      event,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

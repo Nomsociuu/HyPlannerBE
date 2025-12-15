@@ -32,6 +32,12 @@ routes.post(
   weddingEventController.leaveWeddingEvent
 );
 
+routes.put(
+  "/updateWeddingEvent/:eventId",
+  authMiddleware.protect,
+  weddingEventController.updateWeddingEvent
+);
+
 routes.post("/checkAndInsertTasks", weddingEventController.checkAndInsertTasks);
 routes.post(
   "/checkAndInsertActivities",

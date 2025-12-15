@@ -2,13 +2,14 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 const UserSchema = new mongoose.Schema({
-  googleId: { type: String },
-  facebookId: { type: String },
-  fullName: { type: String, required: true },
+  googleId: { type: String, index: true },
+  facebookId: { type: String, index: true },
+  fullName: { type: String, required: true, index: true },
   email: {
     type: String,
     required: true,
     unique: true,
+    index: true,
     match: [/\S+@\S+\.\S+/, "is invalid"],
   },
   password: { type: String },
@@ -59,5 +60,9 @@ UserSchema.pre("save", async function (next) {
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// ✅ COMPOUND INDEX for common queries
+UserSchema.index({ email: 1, isVerified: 1 });
+UserSchema.index({ accountType: 1, accountExpires: 1 });
 
 module.exports = mongoose.model("User", UserSchema);

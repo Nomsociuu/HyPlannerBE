@@ -3,7 +3,6 @@ const mixpanel = require("../service/mixpanelServer");
 
 // Hàm helper để trích xuất src từ iframe
 function extractSrcFromIframe(htmlString) {
-  console.log("Extracting src from iframe HTML:", htmlString);
   if (!htmlString || typeof htmlString !== "string") {
     return "";
   }
@@ -96,7 +95,6 @@ const createInvitationLetter = async (req, res) => {
       data: savedInvitation,
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
@@ -117,7 +115,6 @@ const getUserInvitation = async (req, res) => {
     // Nếu tìm thấy, trả về dữ liệu
     res.status(200).json(invitation);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
@@ -144,7 +141,6 @@ const deleteUserInvitation = async (req, res) => {
     // Trả về thông báo thành công
     res.status(200).json({ message: "Đã xóa website thành công." });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
@@ -173,9 +169,6 @@ const updateUserInvitation = async (req, res) => {
       bankAccount, // <--- events ở đây
     } = req.body;
 
-    console.log("Received album data:", album);
-    console.log("Received events data:", events);
-
     // Cập nhật các trường thông thường
     if (groomName) invitation.groomName = groomName;
     if (brideName) invitation.brideName = brideName;
@@ -188,8 +181,6 @@ const updateUserInvitation = async (req, res) => {
     if (album !== undefined) {
       if (Array.isArray(album)) {
         invitation.album = album;
-      } else {
-        console.error("Album is not an array:", album);
       }
     }
 
@@ -203,7 +194,6 @@ const updateUserInvitation = async (req, res) => {
         if (event && typeof event.embedMapUrl === "string") {
           // Trích xuất URL thực sự từ thẻ iframe (nếu có)
           const extractedUrl = extractSrcFromIframe(event.embedMapUrl);
-          console.log("Extracted URL:", extractedUrl);
           // Trả về event mới với embedMapUrl đã được xử lý
           return { ...event, embedMapUrl: extractedUrl };
         }
@@ -218,7 +208,6 @@ const updateUserInvitation = async (req, res) => {
     const updatedInvitation = await invitation.save();
     res.status(200).json(updatedInvitation);
   } catch (error) {
-    console.error("Lỗi khi cập nhật:", error); // Log lỗi chi tiết hơn
     res.status(500).json({ message: "Lỗi máy chủ nội bộ khi cập nhật." });
   }
 };
@@ -257,7 +246,6 @@ const addGuestbookMessage = async (req, res) => {
       data: invitation.guestbookMessages[0],
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
   }
 };
@@ -285,7 +273,6 @@ const incrementRsvpCount = async (req, res) => {
       count: invitation.guestRsvpCount,
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
   }
 };

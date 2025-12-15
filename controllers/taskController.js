@@ -31,7 +31,6 @@ exports.getTask = async (req, res) => {
     }
     res.json(taskDoc);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Lỗi khi lấy thông tin công việc" });
   }
 };
@@ -74,7 +73,6 @@ exports.createTask = async (req, res) => {
       .status(201)
       .json({ task: savedTask, message: "Tạo công việc thành công" });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Lỗi khi tạo công việc" });
   }
 };

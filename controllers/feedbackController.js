@@ -9,22 +9,22 @@ exports.createFeedback = async (req, res) => {
 
     // Validate input
     if (!star || !content) {
-      return res.status(400).json({ 
-        message: "Vui lòng cung cấp đủ thông tin đánh giá" 
+      return res.status(400).json({
+        message: "Vui lòng cung cấp đủ thông tin đánh giá",
       });
     }
 
     if (star < 1 || star > 5) {
-      return res.status(400).json({ 
-        message: "Số sao phải từ 1 đến 5" 
+      return res.status(400).json({
+        message: "Số sao phải từ 1 đến 5",
       });
     }
 
     // Kiểm tra user đã feedback chưa
     const existingFeedback = await Feedback.findOne({ userId });
     if (existingFeedback) {
-      return res.status(400).json({ 
-        message: "Bạn đã đánh giá rồi. Vui lòng sử dụng chức năng chỉnh sửa." 
+      return res.status(400).json({
+        message: "Bạn đã đánh giá rồi. Vui lòng sử dụng chức năng chỉnh sửa.",
       });
     }
 
@@ -37,15 +37,15 @@ exports.createFeedback = async (req, res) => {
 
     await newFeedback.save();
 
-    res.status(201).json({ 
-      message: "Cảm ơn bạn đã đánh giá!", 
-      feedback: newFeedback 
+    res.status(201).json({
+      message: "Cảm ơn bạn đã đánh giá!",
+      feedback: newFeedback,
     });
   } catch (error) {
     console.error("Error creating feedback:", error);
-    res.status(500).json({ 
-      message: "Lỗi máy chủ", 
-      error: error.message 
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message,
     });
   }
 };
@@ -59,14 +59,14 @@ exports.updateFeedback = async (req, res) => {
 
     // Validate input
     if (!star || !content) {
-      return res.status(400).json({ 
-        message: "Vui lòng cung cấp đủ thông tin đánh giá" 
+      return res.status(400).json({
+        message: "Vui lòng cung cấp đủ thông tin đánh giá",
       });
     }
 
     if (star < 1 || star > 5) {
-      return res.status(400).json({ 
-        message: "Số sao phải từ 1 đến 5" 
+      return res.status(400).json({
+        message: "Số sao phải từ 1 đến 5",
       });
     }
 
@@ -78,20 +78,20 @@ exports.updateFeedback = async (req, res) => {
     );
 
     if (!feedback) {
-      return res.status(404).json({ 
-        message: "Không tìm thấy đánh giá của bạn" 
+      return res.status(404).json({
+        message: "Không tìm thấy đánh giá của bạn",
       });
     }
 
-    res.status(200).json({ 
-      message: "Cập nhật đánh giá thành công", 
-      feedback 
+    res.status(200).json({
+      message: "Cập nhật đánh giá thành công",
+      feedback,
     });
   } catch (error) {
     console.error("Error updating feedback:", error);
-    res.status(500).json({ 
-      message: "Lỗi máy chủ", 
-      error: error.message 
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message,
     });
   }
 };
@@ -108,17 +108,17 @@ exports.getMyFeedback = async (req, res) => {
     );
 
     if (!feedback) {
-      return res.status(404).json({ 
-        message: "Bạn chưa có đánh giá nào" 
+      return res.status(404).json({
+        message: "Bạn chưa có đánh giá nào",
       });
     }
 
     res.status(200).json(feedback);
   } catch (error) {
     console.error("Error getting feedback:", error);
-    res.status(500).json({ 
-      message: "Lỗi máy chủ", 
-      error: error.message 
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message,
     });
   }
 };
@@ -132,40 +132,57 @@ exports.deleteFeedback = async (req, res) => {
     const feedback = await Feedback.findOneAndDelete({ userId });
 
     if (!feedback) {
-      return res.status(404).json({ 
-        message: "Không tìm thấy đánh giá của bạn" 
+      return res.status(404).json({
+        message: "Không tìm thấy đánh giá của bạn",
       });
     }
 
-    res.status(200).json({ 
-      message: "Xóa đánh giá thành công" 
+    res.status(200).json({
+      message: "Xóa đánh giá thành công",
     });
   } catch (error) {
     console.error("Error deleting feedback:", error);
-    res.status(500).json({ 
-      message: "Lỗi máy chủ", 
-      error: error.message 
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message,
     });
   }
 };
 
 // Lấy tất cả feedback (for admin/developer)
-// GET http://localhost:8082/feedback/all
+// GET http://localhost:8082/feedback/all?page=1&limit=20
 exports.getAllFeedback = async (req, res) => {
   try {
-    const feedbacks = await Feedback.find()
-      .populate("userId", "username email")
-      .sort({ createdAt: -1 });
+    // ✅ OPTIMIZED: Add pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [feedbacks, total] = await Promise.all([
+      Feedback.find()
+        .populate("userId", "username email")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Feedback.countDocuments(),
+    ]);
 
     res.status(200).json({
       count: feedbacks.length,
       feedbacks,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasMore: page * limit < total,
+      },
     });
   } catch (error) {
     console.error("Error getting all feedback:", error);
-    res.status(500).json({ 
-      message: "Lỗi máy chủ", 
-      error: error.message 
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message,
     });
   }
 };
@@ -175,7 +192,7 @@ exports.getAllFeedback = async (req, res) => {
 exports.getFeedbackStatistics = async (req, res) => {
   try {
     const totalFeedback = await Feedback.countDocuments();
-    
+
     const averageRating = await Feedback.aggregate([
       {
         $group: {
@@ -204,9 +221,9 @@ exports.getFeedbackStatistics = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting feedback statistics:", error);
-    res.status(500).json({ 
-      message: "Lỗi máy chủ", 
-      error: error.message 
+    res.status(500).json({
+      message: "Lỗi máy chủ",
+      error: error.message,
     });
   }
 };

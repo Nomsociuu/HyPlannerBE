@@ -272,51 +272,36 @@ exports.getUserSelections = async (req, res) => {
       query.type = type;
     }
 
-    const selections = await UserSelection.find(query);
+    // ✅ FIX N+1 QUERY - Populate tất cả trong 1 query duy nhất
+    const selections = await UserSelection.find(query)
+      .populate("styles")
+      .populate("materials")
+      .populate("necklines")
+      .populate("details")
+      .populate("accessories.veils")
+      .populate("accessories.jewelries")
+      .populate("accessories.hairpins")
+      .populate("accessories.crowns")
+      .populate("flowers")
+      .populate("vestStyles")
+      .populate("vestColors")
+      .populate("vestMaterials")
+      .populate("vestLapels")
+      .populate("vestPockets")
+      .populate("vestDecorations")
+      .populate("brideEngageStyles")
+      .populate("brideEngageMaterials")
+      .populate("brideEngagePatterns")
+      .populate("brideEngageHeadwears")
+      .populate("groomEngageOutfits")
+      .populate("groomEngageAccessories")
+      .populate("weddingToneColors")
+      .populate("engageToneColors")
+      .populate("weddingVenues")
+      .populate("weddingThemes")
+      .lean();
 
-    // Populate based on each selection's type
-    for (let selection of selections) {
-      if (selection.type === "wedding-dress") {
-        await selection.populate([
-          "styles",
-          "materials",
-          "necklines",
-          "details",
-          "accessories.veils",
-          "accessories.jewelries",
-          "accessories.hairpins",
-          "accessories.crowns",
-          "flowers",
-        ]);
-      } else if (selection.type === "vest") {
-        await selection.populate([
-          "vestStyles",
-          "vestColors",
-          "vestMaterials",
-          "vestLapels",
-          "vestPockets",
-          "vestDecorations",
-        ]);
-      } else if (selection.type === "bride-engage") {
-        await selection.populate([
-          "brideEngageStyles",
-          "brideEngageMaterials",
-          "brideEngagePatterns",
-          "brideEngageHeadwears",
-        ]);
-      } else if (selection.type === "groom-engage") {
-        await selection.populate([
-          "groomEngageOutfits",
-          "groomEngageAccessories",
-        ]);
-      } else if (selection.type === "tone-color") {
-        await selection.populate(["weddingToneColors", "engageToneColors"]);
-      } else if (selection.type === "wedding-venue") {
-        await selection.populate(["weddingVenues"]);
-      } else if (selection.type === "wedding-theme") {
-        await selection.populate(["weddingThemes"]);
-      }
-    }
+    // ✅ Không cần loop - tất cả data đã được populate sẵn
 
     res.status(200).json({
       success: true,
@@ -521,49 +506,39 @@ exports.createAlbum = async (req, res) => {
         note,
       });
 
+      // ✅ FIX N+1 QUERY - Populate tất cả trong 1 lần
       await album.populate({
         path: "selections",
+        populate: [
+          { path: "styles" },
+          { path: "materials" },
+          { path: "necklines" },
+          { path: "details" },
+          { path: "accessories.veils" },
+          { path: "accessories.jewelries" },
+          { path: "accessories.hairpins" },
+          { path: "accessories.crowns" },
+          { path: "flowers" },
+          { path: "vestStyles" },
+          { path: "vestColors" },
+          { path: "vestMaterials" },
+          { path: "vestLapels" },
+          { path: "vestPockets" },
+          { path: "vestDecorations" },
+          { path: "brideEngageStyles" },
+          { path: "brideEngageMaterials" },
+          { path: "brideEngagePatterns" },
+          { path: "brideEngageHeadwears" },
+          { path: "groomEngageOutfits" },
+          { path: "groomEngageAccessories" },
+          { path: "weddingToneColors" },
+          { path: "engageToneColors" },
+          { path: "weddingVenues" },
+          { path: "weddingThemes" },
+        ],
       });
 
-      // Populate selections based on their type
-      for (let selection of album.selections) {
-        if (selection.type === "wedding-dress") {
-          await selection.populate([
-            "styles",
-            "materials",
-            "necklines",
-            "details",
-            "accessories.veils",
-            "accessories.jewelries",
-            "accessories.hairpins",
-            "accessories.crowns",
-            "flowers",
-          ]);
-        } else if (selection.type === "vest") {
-          await selection.populate([
-            "vestStyles",
-            "vestColors",
-            "vestMaterials",
-            "vestLapels",
-            "vestPockets",
-            "vestDecorations",
-          ]);
-        } else if (selection.type === "bride-engage") {
-          await selection.populate([
-            "brideEngageStyles",
-            "brideEngageMaterials",
-            "brideEngagePatterns",
-            "brideEngageHeadwears",
-          ]);
-        } else if (selection.type === "groom-engage") {
-          await selection.populate([
-            "groomEngageOutfits",
-            "groomEngageAccessories",
-          ]);
-        } else if (selection.type === "tone-color") {
-          await selection.populate(["weddingToneColors", "engageToneColors"]);
-        }
-      }
+      // ✅ Không cần loop - tất cả data đã được populate sẵn
 
       return res.status(201).json({
         success: true,
@@ -597,55 +572,39 @@ exports.createAlbum = async (req, res) => {
 exports.getUserAlbums = async (req, res) => {
   try {
     const userId = req.user._id;
+    // ✅ FIX NESTED N+1 QUERY - Populate tất cả trong 1 query với nested populate
     const albums = await Album.find({ user: userId }).populate({
       path: "selections",
+      populate: [
+        { path: "styles" },
+        { path: "materials" },
+        { path: "necklines" },
+        { path: "details" },
+        { path: "accessories.veils" },
+        { path: "accessories.jewelries" },
+        { path: "accessories.hairpins" },
+        { path: "accessories.crowns" },
+        { path: "flowers" },
+        { path: "vestStyles" },
+        { path: "vestColors" },
+        { path: "vestMaterials" },
+        { path: "vestLapels" },
+        { path: "vestPockets" },
+        { path: "vestDecorations" },
+        { path: "brideEngageStyles" },
+        { path: "brideEngageMaterials" },
+        { path: "brideEngagePatterns" },
+        { path: "brideEngageHeadwears" },
+        { path: "groomEngageOutfits" },
+        { path: "groomEngageAccessories" },
+        { path: "weddingToneColors" },
+        { path: "engageToneColors" },
+        { path: "weddingVenues" },
+        { path: "weddingThemes" },
+      ],
     });
 
-    // Populate selections based on their type
-    for (let album of albums) {
-      for (let selection of album.selections) {
-        if (selection.type === "wedding-dress") {
-          await selection.populate([
-            "styles",
-            "materials",
-            "necklines",
-            "details",
-            "accessories.veils",
-            "accessories.jewelries",
-            "accessories.hairpins",
-            "accessories.crowns",
-            "flowers",
-          ]);
-        } else if (selection.type === "vest") {
-          await selection.populate([
-            "vestStyles",
-            "vestColors",
-            "vestMaterials",
-            "vestLapels",
-            "vestPockets",
-            "vestDecorations",
-          ]);
-        } else if (selection.type === "bride-engage") {
-          await selection.populate([
-            "brideEngageStyles",
-            "brideEngageMaterials",
-            "brideEngagePatterns",
-            "brideEngageHeadwears",
-          ]);
-        } else if (selection.type === "groom-engage") {
-          await selection.populate([
-            "groomEngageOutfits",
-            "groomEngageAccessories",
-          ]);
-        } else if (selection.type === "tone-color") {
-          await selection.populate(["weddingToneColors", "engageToneColors"]);
-        } else if (selection.type === "wedding-venue") {
-          await selection.populate(["weddingVenues"]);
-        } else if (selection.type === "wedding-theme") {
-          await selection.populate(["weddingThemes"]);
-        }
-      }
-    }
+    // ✅ Không cần nested loop - tất cả data đã được populate sẵn
 
     res.status(200).json({
       success: true,

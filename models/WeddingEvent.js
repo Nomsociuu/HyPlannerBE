@@ -6,6 +6,7 @@ const weddingEventSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     brideName: {
       type: String,
@@ -34,11 +35,13 @@ const weddingEventSchema = new mongoose.Schema(
     timeToMarried: {
       type: Date,
       required: true,
+      index: true,
     },
     member: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        index: true,
       },
     ],
     phases: [

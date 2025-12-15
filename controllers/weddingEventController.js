@@ -144,7 +144,6 @@ exports.checkAndInsertTasks = async (req, res) => {
       phases: createdPhases,
     });
   } catch (error) {
-    console.error("Error inserting tasks:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -162,9 +161,9 @@ exports.checkAndInsertActivities = async (req, res) => {
     }
 
     // Tìm wedding event
-    const event = await WeddingEvent.findById(eventId).populate(
-      "groupActivities"
-    );
+    const event = await WeddingEvent.findById(eventId)
+      .populate("groupActivities")
+      .lean();
     if (!event) {
       return res.status(404).json({ message: "Wedding event not found" });
     }
@@ -222,7 +221,6 @@ exports.checkAndInsertActivities = async (req, res) => {
       groupActivities: createdGroupActivities,
     });
   } catch (error) {
-    console.error("Error inserting activities:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -235,7 +233,8 @@ exports.checkEventData = async (req, res) => {
 
     const event = await WeddingEvent.findById(eventId)
       .populate("phases")
-      .populate("groupActivities");
+      .populate("groupActivities")
+      .lean();
 
     if (!event) {
       return res.status(404).json({ message: "Wedding event not found" });
@@ -254,7 +253,6 @@ exports.checkEventData = async (req, res) => {
       event: event,
     });
   } catch (error) {
-    console.error("Error checking event data:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -404,7 +402,6 @@ exports.checkUserInEvent = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Lỗi khi kiểm tra sự kiện cưới của người dùng:", error);
     return res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
   }
 };

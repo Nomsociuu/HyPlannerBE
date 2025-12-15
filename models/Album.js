@@ -7,6 +7,7 @@ const AlbumSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     name: {
       type: String,
@@ -67,5 +68,10 @@ const AlbumSchema = new Schema(
     timestamps: true,
   }
 );
+
+// ✅ COMPOUND INDEXES for common queries
+AlbumSchema.index({ user: 1, createdAt: -1 });
+AlbumSchema.index({ isPublic: 1, isFeatured: 1, totalVotes: -1 });
+AlbumSchema.index({ isPublic: 1, averageRating: -1 });
 
 module.exports = mongoose.model("Album", AlbumSchema);

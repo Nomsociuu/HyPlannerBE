@@ -5,10 +5,12 @@ const phaseSchema = new mongoose.Schema(
     phaseTimeStart: {
       type: Date,
       required: true,
+      index: true,
     },
     phaseTimeEnd: {
       type: Date,
       required: true,
+      index: true,
     },
     tasks: [
       {

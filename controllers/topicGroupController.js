@@ -27,7 +27,7 @@ exports.createTopicGroup = async (req, res) => {
     });
 
     await newGroup.save();
-    await newGroup.populate("createdBy", "fullName picture email");
+    await newGroup.populate("createdBy", "fullName picture email").lean();
 
     mixpanel.track("Community - Create Topic Group", {
       distinct_id: userId.toString(),
@@ -41,7 +41,6 @@ exports.createTopicGroup = async (req, res) => {
       group: newGroup,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi tạo Topic Group:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,
@@ -72,7 +71,8 @@ exports.getAllTopicGroups = async (req, res) => {
       .populate("createdBy", "fullName picture")
       .sort({ totalMembers: -1, createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     const total = await TopicGroup.countDocuments(filter);
 
@@ -91,7 +91,6 @@ exports.getAllTopicGroups = async (req, res) => {
       totalGroups: total,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi lấy danh sách Topic Groups:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,
@@ -107,7 +106,8 @@ exports.getTopicGroupById = async (req, res) => {
 
     const group = await TopicGroup.findById(id)
       .populate("createdBy", "fullName picture email")
-      .populate("members", "fullName picture");
+      .populate("members", "fullName picture")
+      .lean();
 
     if (!group) {
       return res.status(404).json({
@@ -124,7 +124,6 @@ exports.getTopicGroupById = async (req, res) => {
 
     res.status(200).json({ group });
   } catch (error) {
-    console.error("❌ Lỗi khi lấy thông tin Topic Group:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,
@@ -168,7 +167,6 @@ exports.joinTopicGroup = async (req, res) => {
       group,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi tham gia Topic Group:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,
@@ -219,7 +217,6 @@ exports.leaveTopicGroup = async (req, res) => {
       message: "Rời nhóm thành công!",
     });
   } catch (error) {
-    console.error("❌ Lỗi khi rời Topic Group:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,
@@ -247,7 +244,8 @@ exports.getTopicGroupPosts = async (req, res) => {
       .populate("userId", "fullName picture email")
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     const total = await Post.countDocuments({
       topicGroupId: id,
@@ -269,7 +267,6 @@ exports.getTopicGroupPosts = async (req, res) => {
       totalPosts: total,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi lấy bài viết Topic Group:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,
@@ -318,7 +315,6 @@ exports.updateTopicGroup = async (req, res) => {
       group,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi cập nhật Topic Group:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,
@@ -360,7 +356,6 @@ exports.deleteTopicGroup = async (req, res) => {
       message: "Xóa nhóm thành công!",
     });
   } catch (error) {
-    console.error("❌ Lỗi khi xóa Topic Group:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,
@@ -379,14 +374,14 @@ exports.getMyTopicGroups = async (req, res) => {
       isActive: true,
     })
       .populate("createdBy", "fullName picture")
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: -1 })
+      .lean();
 
     res.status(200).json({
       groups,
       total: groups.length,
     });
   } catch (error) {
-    console.error("❌ Lỗi khi lấy nhóm của user:", error);
     res.status(500).json({
       message: "Lỗi máy chủ nội bộ",
       error: error.message,

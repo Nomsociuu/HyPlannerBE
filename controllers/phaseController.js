@@ -13,7 +13,7 @@ exports.getAllPhases = async (req, res) => {
         path: "tasks",
         populate: {
           path: "member",
-          select: "-password",
+          select: "fullName picture", // ✅ OPTIMIZED: Only select needed fields
         },
       },
     });

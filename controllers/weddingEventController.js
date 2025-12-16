@@ -359,6 +359,71 @@ exports.leaveWeddingEvent = async (req, res) => {
   }
 };
 
+// Delete a wedding event (Creator only)
+// DELETE http://localhost:8082/weddingEvents/deleteWeddingEvent/:eventId
+exports.deleteWeddingEvent = async (req, res) => {
+  const { eventId } = req.params;
+  const userId = req.user._id;
+
+  try {
+    const event = await WeddingEvent.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Sự kiện cưới không tồn tại" });
+    }
+
+    // Chỉ creator mới có quyền xóa
+    if (event.creatorId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        message: "Chỉ người tạo sự kiện mới có quyền xóa kế hoạch cưới",
+      });
+    }
+
+    // Xóa tất cả phases và tasks liên quan
+    if (event.phases && event.phases.length > 0) {
+      for (const phaseId of event.phases) {
+        // Tìm và xóa tất cả tasks trong phase
+        const phase = await Phase.findById(phaseId);
+        if (phase && phase.tasks && phase.tasks.length > 0) {
+          await Task.deleteMany({ _id: { $in: phase.tasks } });
+        }
+        // Xóa phase
+        await Phase.findByIdAndDelete(phaseId);
+      }
+    }
+
+    // Xóa tất cả group activities và activities liên quan
+    if (event.groupActivities && event.groupActivities.length > 0) {
+      for (const groupActivityId of event.groupActivities) {
+        const groupActivity = await GroupActivity.findById(groupActivityId);
+        if (
+          groupActivity &&
+          groupActivity.activities &&
+          groupActivity.activities.length > 0
+        ) {
+          await Activity.deleteMany({ _id: { $in: groupActivity.activities } });
+        }
+        await GroupActivity.findByIdAndDelete(groupActivityId);
+      }
+    }
+
+    // Xóa wedding event
+    await WeddingEvent.findByIdAndDelete(eventId);
+
+    // Track với Mixpanel
+    mixpanel.track("Wedding Event - Deleted", {
+      distinct_id: userId.toString(),
+      eventId: eventId.toString(),
+      memberCount: event.member.length,
+    });
+
+    res.status(200).json({
+      message: "Đã xóa kế hoạch cưới và tất cả dữ liệu liên quan thành công",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
+  }
+};
+
 /**
  * @desc     Kiểm tra xem người dùng đã tham gia sự kiện cưới nào chưa
  * @route    GET /api/wedding-events/check-user

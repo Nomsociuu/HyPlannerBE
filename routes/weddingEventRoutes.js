@@ -32,6 +32,12 @@ routes.post(
   weddingEventController.leaveWeddingEvent
 );
 
+routes.delete(
+  "/deleteWeddingEvent/:eventId",
+  authMiddleware.protect,
+  weddingEventController.deleteWeddingEvent
+);
+
 routes.put(
   "/updateWeddingEvent/:eventId",
   authMiddleware.protect,

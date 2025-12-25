@@ -1,5 +1,7 @@
 const phase = require("../models/Phase");
 const task = require("../models/Task");
+const WeddingEvent = require("../models/WeddingEvent");
+const notificationController = require("./notificationController");
 const mixpanel = require("../service/mixpanelServer");
 
 // GET: http://localhost:8082/tasks/getAllTasks/phaseId
@@ -54,9 +56,12 @@ exports.createTask = async (req, res) => {
 
     const savedTask = await newTask.save();
     // Cập nhật mảng tasks trong Phase
-    await phase.findByIdAndUpdate(phaseId, {
+    const phaseDoc = await phase.findByIdAndUpdate(phaseId, {
       $push: { tasks: savedTask._id },
     });
+
+    // Lấy wedding event để tạo notification
+    const weddingEvent = await WeddingEvent.findOne({ phases: phaseId });
 
     // Track với Mixpanel
     if (member && member.length > 0) {
@@ -67,6 +72,29 @@ exports.createTask = async (req, res) => {
         hasNote: !!taskNote,
         hasMember: member && member.length > 0,
       });
+    }
+
+    // Tạo notification cho các member được assign
+    if (member && member.length > 0 && weddingEvent) {
+      for (const memberId of member) {
+        try {
+          await notificationController.createNotification({
+            userId: memberId,
+            weddingEventId: weddingEvent._id,
+            type: "task_assigned",
+            title: "🎯 Công việc mới được giao",
+            message: `Bạn được giao công việc "${taskName}". Hãy kiểm tra và hoàn thành đúng hạn nhé!`,
+            data: {
+              taskId: savedTask._id,
+              taskName: taskName,
+              phaseId: phaseId,
+            },
+            priority: "medium",
+          });
+        } catch (error) {
+          console.error("Error creating task notification:", error);
+        }
+      }
     }
 
     res
@@ -83,11 +111,9 @@ exports.markCompleted = async (req, res) => {
   const { completed } = req.body;
 
   try {
-    const updatedTask = await task.findByIdAndUpdate(
-      taskId,
-      { completed },
-      { new: true }
-    );
+    const updatedTask = await task
+      .findByIdAndUpdate(taskId, { completed }, { new: true })
+      .populate("phase");
 
     if (!updatedTask) {
       return res.status(404).json({ message: "Công việc không tồn tại" });
@@ -103,6 +129,41 @@ exports.markCompleted = async (req, res) => {
           completed: completed,
         }
       );
+    }
+
+    // Tạo notification khi task được hoàn thành
+    if (completed && updatedTask.member && updatedTask.member.length > 0) {
+      const weddingEvent = await WeddingEvent.findOne({
+        phases: updatedTask.phase._id,
+      });
+
+      if (weddingEvent) {
+        // Notify all wedding event members (except task assignee)
+        for (const memberId of weddingEvent.member) {
+          if (!updatedTask.member.includes(memberId)) {
+            try {
+              await notificationController.createNotification({
+                userId: memberId,
+                weddingEventId: weddingEvent._id,
+                type: "task_completed",
+                title: "✅ Công việc hoàn thành",
+                message: `Công việc "${updatedTask.taskName}" đã được hoàn thành!`,
+                data: {
+                  taskId: updatedTask._id,
+                  taskName: updatedTask.taskName,
+                  phaseId: updatedTask.phase._id,
+                },
+                priority: "low",
+              });
+            } catch (error) {
+              console.error(
+                "Error creating task completion notification:",
+                error
+              );
+            }
+          }
+        }
+      }
     }
 
     res.json({

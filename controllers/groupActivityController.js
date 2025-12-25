@@ -5,13 +5,22 @@ const activity = require("../models/Activity");
 // GET: http://localhost:8082/groupActivities/getAllActivities/eventId
 exports.getAllActivities = async (req, res) => {
   const { eventId } = req.params;
+  const userId = req.user._id;
+
   try {
-    const event = await WeddingEvent.findById(eventId).populate({
+    // Check if user is creator
+    const event = await WeddingEvent.findOne({
+      _id: eventId,
+      creatorId: userId,
+    }).populate({
       path: "groupActivities",
       populate: { path: "activities" },
     });
+
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      return res
+        .status(403)
+        .json({ message: "Chỉ người tạo mới có quyền xem ngân sách" });
     }
     res.json(event.groupActivities);
   } catch (error) {
@@ -23,8 +32,21 @@ exports.getAllActivities = async (req, res) => {
 exports.createGroupActivity = async (req, res) => {
   const { groupName } = req.body;
   const { eventId } = req.params;
+  const userId = req.user._id;
 
   try {
+    // Check if user is creator
+    const event = await WeddingEvent.findOne({
+      _id: eventId,
+      creatorId: userId,
+    });
+
+    if (!event) {
+      return res
+        .status(403)
+        .json({ message: "Chỉ người tạo mới có quyền tạo ngân sách" });
+    }
+
     // Tạo mới groupActivity và thêm activity vào mảng activities
     const newActivity = new groupActivities({
       groupName,

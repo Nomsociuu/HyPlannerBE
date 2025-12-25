@@ -31,11 +31,13 @@ const ratingRoutes = require("../routes/ratingRoutes");
 const savedPostRoutes = require("../routes/savedPostRoutes");
 const notificationRoutes = require("../routes/notificationRoutes");
 const { handlePayOsWebhook } = require("../controllers/paymentController");
-const cron = require("node-cron");
-const notificationController = require("../controllers/notificationController");
 
 const connectDB = require("../config/db");
 const configurePassport = require("../config/passport");
+
+// Import notification schedulers
+require("../cron/inAppNotificationScheduler");
+require("../cron/pushNotificationScheduler");
 
 const app = express();
 
@@ -113,19 +115,6 @@ const errorHandler = (err, req, res, next) => {
 };
 
 app.use(errorHandler);
-
-// Setup cron job to check table deadlines daily at 9:00 AM
-cron.schedule("0 9 * * *", async () => {
-  console.log("Running daily table deadline check...");
-  try {
-    await notificationController.checkTableDeadlineNotifications();
-    console.log("Table deadline check completed");
-  } catch (error) {
-    console.error("Error in table deadline check:", error);
-  }
-});
-
-console.log("✅ Cron job scheduled: Daily table deadline check at 9:00 AM");
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port http://localhost:${process.env.PORT}`);

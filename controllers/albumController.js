@@ -1021,3 +1021,138 @@ exports.checkAlbumInteraction = async (req, res) => {
     });
   }
 };
+
+// Generate share code for album
+// POST /albums/:id/generate-share-code
+exports.generateShareCode = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { id } = req.params;
+
+    const album = await Album.findOne({ _id: id, user: userId });
+    if (!album) {
+      return res
+        .status(404)
+        .json({ message: "Album không tồn tại hoặc không có quyền truy cập" });
+    }
+
+    // Generate random 8-character code (alphanumeric)
+    const generateCode = () => {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let code = "";
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    };
+
+    // Ensure unique code
+    let shareCode;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      shareCode = generateCode();
+      const existing = await Album.findOne({ shareCode });
+      if (!existing) break;
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      return res
+        .status(500)
+        .json({ message: "Không thể tạo mã share code duy nhất" });
+    }
+
+    album.shareCode = shareCode;
+    await album.save();
+
+    res.status(200).json({
+      success: true,
+      shareCode: shareCode,
+      message: "Đã tạo mã share code thành công",
+    });
+  } catch (error) {
+    console.error("❌ Lỗi khi tạo share code:", error);
+    res.status(500).json({
+      message: "Lỗi máy chủ nội bộ",
+      error: error.message,
+    });
+  }
+};
+
+// Clone album by share code
+// POST /albums/clone-by-code
+exports.cloneAlbumByCode = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { shareCode } = req.body;
+
+    if (!shareCode || shareCode.trim() === "") {
+      return res
+        .status(400)
+        .json({ message: "Mã share code không được để trống" });
+    }
+
+    // Find album by share code
+    const sourceAlbum = await Album.findOne({
+      shareCode: shareCode.toUpperCase(),
+    }).populate("selections");
+
+    if (!sourceAlbum) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy album với mã này" });
+    }
+
+    // Clone selections first
+    const clonedSelectionIds = [];
+    if (sourceAlbum.selections && sourceAlbum.selections.length > 0) {
+      for (const selection of sourceAlbum.selections) {
+        const selectionData = selection.toObject();
+        delete selectionData._id;
+        delete selectionData.user;
+        delete selectionData.createdAt;
+        delete selectionData.updatedAt;
+
+        const newSelection = new UserSelection({
+          ...selectionData,
+          user: userId,
+        });
+        await newSelection.save();
+        clonedSelectionIds.push(newSelection._id);
+      }
+    }
+
+    // Clone album
+    const clonedAlbum = new Album({
+      user: userId,
+      name: `${sourceAlbum.name} (Sao chép)`,
+      authorName: sourceAlbum.authorName,
+      coverImage: sourceAlbum.coverImage,
+      selections: clonedSelectionIds,
+      images: sourceAlbum.images || [],
+      customImages: [], // Don't copy custom uploaded images
+      description: sourceAlbum.description,
+      note: sourceAlbum.note,
+      isPublic: false, // Default to private
+    });
+
+    await clonedAlbum.save();
+
+    // Populate for response
+    await clonedAlbum.populate("selections");
+
+    res.status(201).json({
+      success: true,
+      album: clonedAlbum,
+      message: "Đã sao chép album thành công",
+    });
+  } catch (error) {
+    console.error("❌ Lỗi khi clone album:", error);
+    res.status(500).json({
+      message: "Lỗi máy chủ nội bộ",
+      error: error.message,
+    });
+  }
+};

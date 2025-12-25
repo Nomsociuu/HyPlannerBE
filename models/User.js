@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema({
   },
   accountType: {
     type: String,
-    enum: ["FREE", "VIP", "SUPER"], // Chỉ chấp nhận các giá trị này
+    enum: ["FREE", "VIP", "PRO"], // Chỉ chấp nhận các giá trị này
     default: "FREE",
   },
   accountExpires: {

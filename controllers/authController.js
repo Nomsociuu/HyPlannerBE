@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const WeddingEvent = require("../models/WeddingEvent");
 const passport = require("passport");
 const axios = require("axios");
 const asyncHandler = require("express-async-handler");
@@ -436,6 +437,18 @@ exports.updateUserProfile = asyncHandler(async (req, res) => {
     user.weddingDate = req.body.weddingDate
       ? new Date(req.body.weddingDate)
       : null;
+
+    // Cập nhật cả weddingEvent.timeToMarried nếu user là creator hoặc member
+    if (user.weddingDate) {
+      const weddingEvent = await WeddingEvent.findOne({
+        $or: [{ creatorId: user._id }, { member: user._id }],
+      });
+
+      if (weddingEvent) {
+        weddingEvent.timeToMarried = user.weddingDate;
+        await weddingEvent.save();
+      }
+    }
   }
 
   const updatedUser = await user.save();

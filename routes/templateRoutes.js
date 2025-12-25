@@ -5,18 +5,22 @@ const path = require("path");
 
 // Định nghĩa ảnh mẫu cho từng template
 const templateImages = {
-  1: "https://images.pexels.com/photos/1801263/pexels-photo-1801263.jpeg?_gl=1*set4wg*_ga*NTA0MTc2NDYuMTc1OTQzNzY2MQ..*_ga_8JE65Q40S6*czE3NTk0Mzc2NjAkbzEkZzEkdDE3NTk0Mzc2NjckajUzJGwwJGgw",
-  2: "https://images.pexels.com/photos/2219276/pexels-photo-2219276.jpeg?_gl=1*1jvtq01*_ga*NTA0MTc2NDYuMTc1OTQzNzY2MQ..*_ga_8JE65Q40S6*czE3NTk0Mzc2NjAkbzEkZzEkdDE3NTk0Mzc3MjckajU5JGwwJGgw",
-  3: "https://as1.ftcdn.net/v2/jpg/01/75/22/66/1000_F_175226614_P4iBRGUzBPXoXR7x1AnMqXqp2gUL0tJG.jpg",
-  4: "https://assets.minted.com/image/upload/v1735792462/Minted_Onsite_Assets/2025/SEO%20Content%20Articles/wedding-processional-01.jpg",
-  5: "https://images.pexels.com/photos/169198/pexels-photo-169198.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  6: "https://images.pexels.com/photos/2253833/pexels-photo-2253833.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  7: "https://images.pexels.com/photos/2291593/pexels-photo-2291593.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  8: "https://images.pexels.com/photos/3779693/pexels-photo-3779693.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  9: "https://images.pexels.com/photos/4114755/pexels-photo-4114755.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  10: "https://images.pexels.com/photos/157757/weddings-planners-places-location-157757.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  11: "https://images.pexels.com/photos/1444442/pexels-photo-1444442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  12: "https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  1: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667417/download_d10emq.jpg",
+  2: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667399/ee9138c3161766d811f401484930f2ad_xdtlxv.jpg",
+  3: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667393/e09aec818ca43fdcae6729bc13386fc8_kcmut6.jpg",
+  4: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667375/65c724ee200078ed7875f41b74053c8d_cwrkaa.jpg",
+  5: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667369/7b699032cbe8fcd3022f753e7ec28254_ghl1pu.jpg",
+  6: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667363/cdc21a3396dc951c2b3b629f79020a74_yv39pm.jpg",
+  7: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667357/oge_jqldjy.jpg",
+  8: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667346/okkkk_ljlww6.jpg",
+  9: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667322/ok_hirb90.jpg",
+  10: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667316/wmremove-transformed_xylbai.jpg",
+  11: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667293/chat_edit_image_20251221_054120_weioig.png",
+  12: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667301/chat_edit_image_20251221_054636_dmvwkn.png",
+  13: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667288/chat_edit_image_20251221_055558_nhkunh.png",
+  14: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667282/chat_edit_image_20251221_055251_qxa5mo.png",
+  15: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667276/wmremove-transformed_2_vw2kzx.jpg",
+  16: "https://res.cloudinary.com/dqtemoeoz/image/upload/v1766667270/wmremove-transformed_3_jg6dwo.jpg",
 };
 
 // Hàm tự động đọc templates từ folder views

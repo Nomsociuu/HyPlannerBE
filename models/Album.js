@@ -63,6 +63,12 @@ const AlbumSchema = new Schema(
       type: Boolean,
       default: false, // Cho Inspire Board
     },
+    shareCode: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows null values but enforces uniqueness when set
+      index: true,
+    },
   },
   {
     timestamps: true,

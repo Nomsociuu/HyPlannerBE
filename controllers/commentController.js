@@ -1,5 +1,7 @@
 const Comment = require("../models/Comment");
 const Post = require("../models/Post");
+const WeddingEvent = require("../models/WeddingEvent");
+const notificationController = require("./notificationController");
 const mixpanel = require("../service/mixpanelServer");
 
 // Tạo comment mới
@@ -70,6 +72,37 @@ exports.createComment = async (req, res) => {
       isReply: !!parentCommentId,
       contentLength: content.length,
     });
+
+    // Tạo notification cho chủ post (nếu không phải tự comment)
+    if (post.userId.toString() !== userId.toString()) {
+      try {
+        const userWeddingEvent = await WeddingEvent.findOne({
+          member: post.userId,
+        });
+
+        if (userWeddingEvent) {
+          const commenter = req.user;
+          await notificationController.createNotification({
+            userId: post.userId,
+            weddingEventId: userWeddingEvent._id,
+            type: "post_commented",
+            title: "💬 Bình luận mới",
+            message: `${
+              commenter.fullName || "Một người"
+            } đã bình luận vào bài viết của bạn: "${content.substring(0, 50)}${
+              content.length > 50 ? "..." : ""
+            }"`,
+            data: {
+              postId: post._id,
+              postTitle: post.content.substring(0, 50) + "...",
+            },
+            priority: "low",
+          });
+        }
+      } catch (error) {
+        console.error("Error creating comment notification:", error);
+      }
+    }
 
     res.status(201).json({
       message: "Comment thành công!",

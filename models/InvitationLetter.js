@@ -120,7 +120,4 @@ const InvitationLetter = mongoose.model(
   invitationLetterSchema
 );
 
-// ✅ ADD INDEX for slug field (used in invitation lookup)
-invitationLetterSchema.index({ slug: 1 });
-
 module.exports = InvitationLetter;

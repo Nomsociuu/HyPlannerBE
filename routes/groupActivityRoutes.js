@@ -2,6 +2,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 const groupActivityController = require("../controllers/groupActivityController");
 const routes = require("express").Router();
 
+// Protect all routes - require authentication
+routes.use(authMiddleware.protect);
+
 routes.get(
   "/getAllActivities/:eventId",
   groupActivityController.getAllActivities

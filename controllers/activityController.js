@@ -1,5 +1,6 @@
 const groupActivities = require("../models/GroupActivity");
 const activity = require("../models/Activity");
+const WeddingEvent = require("../models/WeddingEvent");
 const mixpanel = require("../service/mixpanelServer");
 
 // GET: http://localhost:8082/activities/getActivity/:activityId
@@ -20,7 +21,26 @@ exports.createActivity = async (req, res) => {
   const { activityName, activityNote, expectedBudget, actualBudget, payer } =
     req.body;
   const { groupActivityId } = req.params;
+  const userId = req.user._id;
+
   try {
+    // Check if user is creator by finding wedding event through groupActivity
+    const groupActivity = await groupActivities.findById(groupActivityId);
+    if (!groupActivity) {
+      return res.status(404).json({ message: "Nhóm hoạt động không tồn tại" });
+    }
+
+    const event = await WeddingEvent.findOne({
+      groupActivities: groupActivityId,
+      creatorId: userId,
+    });
+
+    if (!event) {
+      return res
+        .status(403)
+        .json({ message: "Chỉ người tạo mới có quyền thêm ngân sách" });
+    }
+
     const newActivity = new activity({
       activityName,
       activityNote,
@@ -55,7 +75,29 @@ exports.updateActivity = async (req, res) => {
   const { activityId } = req.params;
   const { activityName, activityNote, expectedBudget, actualBudget, payer } =
     req.body;
+  const userId = req.user._id;
+
   try {
+    // Find which groupActivity contains this activity
+    const groupActivity = await groupActivities.findOne({
+      activities: activityId,
+    });
+    if (!groupActivity) {
+      return res.status(404).json({ message: "Hoạt động không tồn tại" });
+    }
+
+    // Check if user is creator
+    const event = await WeddingEvent.findOne({
+      groupActivities: groupActivity._id,
+      creatorId: userId,
+    });
+
+    if (!event) {
+      return res
+        .status(403)
+        .json({ message: "Chỉ người tạo mới có quyền sửa ngân sách" });
+    }
+
     const updatedActivity = await activity.findByIdAndUpdate(
       activityId,
       {
@@ -79,7 +121,29 @@ exports.updateActivity = async (req, res) => {
 // DELETE: http://localhost:8082/activities/deleteActivity/activityId
 exports.deleteActivity = async (req, res) => {
   const { activityId } = req.params;
+  const userId = req.user._id;
+
   try {
+    // Find which groupActivity contains this activity
+    const groupActivity = await groupActivities.findOne({
+      activities: activityId,
+    });
+    if (!groupActivity) {
+      return res.status(404).json({ message: "Hoạt động không tồn tại" });
+    }
+
+    // Check if user is creator
+    const event = await WeddingEvent.findOne({
+      groupActivities: groupActivity._id,
+      creatorId: userId,
+    });
+
+    if (!event) {
+      return res
+        .status(403)
+        .json({ message: "Chỉ người tạo mới có quyền xóa ngân sách" });
+    }
+
     const deletedActivity = await activity.findByIdAndDelete(activityId);
     if (!deletedActivity) {
       return res.status(404).json({ message: "Hoạt động không tồn tại" });

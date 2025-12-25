@@ -26,6 +26,10 @@ router.delete("/:id/like", albumController.unlikeAlbum);
 router.post("/:id/save", albumController.saveAlbum);
 router.delete("/:id/save", albumController.unsaveAlbum);
 
+// Share & Clone
+router.post("/:id/generate-share-code", albumController.generateShareCode);
+router.post("/clone-by-code", albumController.cloneAlbumByCode);
+
 // Selection management
 router.post("/:id/add-selection", albumController.addSelectionToAlbum);
 router.post("/:id/remove-selection", albumController.removeSelectionFromAlbum);

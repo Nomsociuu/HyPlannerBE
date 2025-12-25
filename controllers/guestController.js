@@ -40,15 +40,15 @@ exports.createGuest = async (req, res) => {
       });
     }
 
-    // Verify wedding event belongs to user
+    // Verify wedding event belongs to user (creator only)
     const weddingEvent = await WeddingEvent.findOne({
       _id: weddingEventId,
       creatorId: userId,
     });
 
     if (!weddingEvent) {
-      return res.status(404).json({
-        message: "Không tìm thấy sự kiện cưới hoặc bạn không có quyền truy cập",
+      return res.status(403).json({
+        message: "Chỉ người tạo mới có quyền quản lý danh sách khách mời",
       });
     }
 

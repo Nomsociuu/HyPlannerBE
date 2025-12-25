@@ -125,8 +125,8 @@ const handlePayOsWebhook = async (req, res) => {
             const expiryDate = new Date();
             expiryDate.setFullYear(expiryDate.getFullYear() + 1);
             user.accountExpires = expiryDate;
-          } else if (order.packageType === "SUPER") {
-            user.accountType = "SUPER";
+          } else if (order.packageType === "PRO") {
+            user.accountType = "PRO";
             user.accountExpires = null;
           }
           await user.save();

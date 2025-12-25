@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema(
     },
     packageType: {
       type: String,
-      enum: ["VIP", "SUPER"],
+      enum: ["VIP", "PRO"],
       required: true,
     },
     amount: {

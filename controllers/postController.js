@@ -1,5 +1,7 @@
 const Post = require("../models/Post");
 const Comment = require("../models/Comment");
+const notificationController = require("./notificationController");
+const WeddingEvent = require("../models/WeddingEvent");
 const mixpanel = require("../service/mixpanelServer");
 
 // Tạo post mới
@@ -348,6 +350,38 @@ exports.reactToPost = async (req, res) => {
 
     // === QUAN TRỌNG: Populate thông tin người đăng bài để trả về Full Object ===
     await post.populate("userId", "fullName picture email");
+
+    // Tạo notification cho chủ post (khi có người khác like)
+    const isNewReaction =
+      (type === "like" && !hasLiked) || (type === "love" && !hasLoved);
+    if (isNewReaction && post.userId._id.toString() !== userId.toString()) {
+      try {
+        // Lấy wedding event của user để gửi notification
+        const userWeddingEvent = await WeddingEvent.findOne({
+          member: post.userId._id,
+        });
+
+        if (userWeddingEvent) {
+          const reactor = req.user;
+          await notificationController.createNotification({
+            userId: post.userId._id,
+            weddingEventId: userWeddingEvent._id,
+            type: "post_liked",
+            title: "❤️ Bài viết của bạn được thích",
+            message: `${reactor.fullName || "Một người"} đã ${
+              type === "love" ? "yêu thích" : "thích"
+            } bài viết của bạn`,
+            data: {
+              postId: post._id,
+              postTitle: post.content.substring(0, 50) + "...",
+            },
+            priority: "low",
+          });
+        }
+      } catch (error) {
+        console.error("Error creating post like notification:", error);
+      }
+    }
 
     // Track Mixpanel (Giữ nguyên)
     const action =

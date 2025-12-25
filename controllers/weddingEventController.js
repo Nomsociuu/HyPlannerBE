@@ -1,10 +1,12 @@
 const WeddingEvent = require("../models/WeddingEvent");
+const User = require("../models/User");
 const mongoose = require("mongoose");
 // const phase = require("../models/Phase");
 const Activity = require("../models/Activity");
 const GroupActivity = require("../models/GroupActivity");
 const Task = require("../models/Task");
 const Phase = require("../models/Phase");
+const notificationController = require("./notificationController");
 const Hashids = require("hashids/cjs");
 const mixpanel = require("../service/mixpanelServer");
 
@@ -315,6 +317,35 @@ exports.joinWeddingEvent = async (req, res) => {
 
     event.member.push(userId);
     await event.save();
+
+    // Lấy thông tin user mới tham gia
+    const newUser = await User.findById(userId);
+
+    // Tạo notification cho các members hiện tại
+    if (event.member.length > 1) {
+      for (const memberId of event.member) {
+        if (memberId.toString() !== userId.toString()) {
+          try {
+            await notificationController.createNotification({
+              userId: memberId,
+              weddingEventId: event._id,
+              type: "member_joined",
+              title: "👥 Thành viên mới tham gia",
+              message: `${
+                newUser?.fullName || "Một người"
+              } đã tham gia vào sự kiện cưới của bạn!`,
+              data: {
+                memberId: userId,
+                memberName: newUser?.fullName || "Unknown",
+              },
+              priority: "low",
+            });
+          } catch (error) {
+            console.error("Error creating member joined notification:", error);
+          }
+        }
+      }
+    }
 
     res
       .status(200)

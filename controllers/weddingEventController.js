@@ -161,9 +161,9 @@ exports.checkAndInsertActivities = async (req, res) => {
     }
 
     // Tìm wedding event
-    const event = await WeddingEvent.findById(eventId)
-      .populate("groupActivities")
-      .lean();
+    const event = await WeddingEvent.findById(eventId).populate(
+      "groupActivities"
+    );
     if (!event) {
       return res.status(404).json({ message: "Wedding event not found" });
     }

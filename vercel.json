@@ -1,16 +1,6 @@
 {
   "version": 2,
   "installCommand": "npm install --legacy-peer-deps",
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": "views/**",
-        "maxDuration": 10
-      }
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
@@ -19,11 +9,5 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "api/index.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
   }
 }

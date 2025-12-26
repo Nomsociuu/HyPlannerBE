@@ -115,6 +115,10 @@ app.use(
   })
 );
 app.use(express.json());
+
+// ⚠️ Session disabled for serverless - JWT is used instead
+// Uncomment only if you need OAuth callbacks with session
+/*
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your-secret-key",
@@ -126,8 +130,10 @@ app.use(
     },
   })
 );
+*/
+
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session()); // Disabled - not needed for JWT
 
 // ✅ DB Connection middleware - ensures DB is connected before handling requests
 app.use(async (req, res, next) => {
@@ -142,11 +148,8 @@ app.use(async (req, res, next) => {
   }
 });
 
-// ✅ Load routes on first request
-app.use((req, res, next) => {
-  getRoutes();
-  next();
-});
+// ✅ Load routes once before handling any request
+getRoutes();
 
 // Health check endpoint
 app.get("/", (req, res) => {
@@ -154,15 +157,7 @@ app.get("/", (req, res) => {
     status: "✅ API is running",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-  });
-});
-
-// Health check endpoint
-app.get("/", (req, res) => {
-  res.json({
-    status: "✅ API is running",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+    db: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
   });
 });
 

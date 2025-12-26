@@ -12,8 +12,14 @@ const cache = (duration = 3600) => {
       return next();
     }
 
-    // Skip caching if Redis is not connected or null
-    if (!client || !client.isOpen) {
+    // Skip caching if Redis is not enabled
+    if (!client) {
+      return next();
+    }
+
+    // Try to get Redis client (lazy loading)
+    const redisClient = await client.getClient().catch(() => null);
+    if (!redisClient || !redisClient.isOpen) {
       return next();
     }
 
@@ -21,7 +27,7 @@ const cache = (duration = 3600) => {
 
     try {
       // Try to get cached data
-      const cachedData = await client.get(key);
+      const cachedData = await redisClient.get(key);
 
       if (cachedData) {
         console.log(`✅ Cache HIT: ${key}`);
@@ -36,7 +42,7 @@ const cache = (duration = 3600) => {
       // Override res.json to cache the response
       res.json = (data) => {
         // Cache the response data
-        client
+        redisClient
           .setEx(key, duration, JSON.stringify(data))
           .then(() => {
             console.log(`💾 Cached: ${key} (TTL: ${duration}s)`);

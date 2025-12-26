@@ -1,0 +1,256 @@
+name: Scheduled Notifications
+
+on:
+  schedule:
+    # Morning tasks (08:00 Vietnam = 01:00 UTC)
+    - cron: '0 1 * * *'
+    # Evening tasks (20:00 Vietnam = 13:00 UTC)
+    - cron: '0 13 * * *'
+    # Random tip (15:00 Vietnam = 08:00 UTC, Tuesday & Friday only)
+    - cron: '0 8 * * 2,5'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: 'Task type to run'
+        required: true
+        type: choice
+        options:
+          - morning
+          - evening
+          - random-tip
+          - all
+
+jobs:
+  morning-notifications:
+    name: Morning Notifications (08:00 VN)
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 1 * * *' || github.event.inputs.task_type == 'morning' || github.event.inputs.task_type == 'all'
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check API Health
+        run: |
+          echo "🔍 Checking API health..."
+          curl -f ${{ secrets.API_URL }}/health || exit 1
+
+      - name: Wedding Date Notifications
+        run: |
+          echo "💍 Running wedding date notifications..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/wedding-notifications" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Wedding notifications completed"
+
+      - name: Task Deadline Notifications
+        run: |
+          echo "📋 Running task deadline notifications..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/task-notifications" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Task notifications completed"
+
+      - name: Table Deadline Notifications
+        run: |
+          echo "🪑 Running table deadline notifications..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/table-notifications" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Table notifications completed"
+
+      - name: Push Countdown Reminder
+        run: |
+          echo "⏰ Running countdown push..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/push-countdown" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Countdown push completed"
+
+      - name: Push Task Reminder
+        run: |
+          echo "✅ Running task reminder push..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/push-task-reminder" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Task reminder push completed"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "📊 Morning notifications summary:"
+          echo "- Wedding notifications: ${{ steps.wedding.outcome || 'completed' }}"
+          echo "- Task notifications: ${{ steps.task.outcome || 'completed' }}"
+          echo "- Table notifications: ${{ steps.table.outcome || 'completed' }}"
+          echo "- Countdown push: ${{ steps.countdown.outcome || 'completed' }}"
+          echo "- Task reminder push: ${{ steps.reminder.outcome || 'completed' }}"
+
+  evening-notifications:
+    name: Evening Notifications (20:00 VN)
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 13 * * *' || github.event.inputs.task_type == 'evening' || github.event.inputs.task_type == 'all'
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check API Health
+        run: |
+          echo "🔍 Checking API health..."
+          curl -f ${{ secrets.API_URL }}/health || exit 1
+
+      - name: Task Deadline Check (Evening)
+        run: |
+          echo "📋 Running evening task deadline check..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/task-notifications" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Evening task check completed"
+
+      - name: Push Budget Reminder
+        run: |
+          echo "💰 Running budget reminder push..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/push-budget-reminder" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Budget reminder push completed"
+
+      - name: Push Inactive User Reminder
+        run: |
+          echo "👋 Running inactive user reminder push..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/push-inactive-reminder" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Inactive reminder push completed"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "📊 Evening notifications summary:"
+          echo "- Task check: ${{ steps.task-evening.outcome || 'completed' }}"
+          echo "- Budget reminder: ${{ steps.budget.outcome || 'completed' }}"
+          echo "- Inactive reminder: ${{ steps.inactive.outcome || 'completed' }}"
+
+  random-tip:
+    name: Random Tip (Tuesday & Friday 15:00 VN)
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 8 * * 2,5' || github.event.inputs.task_type == 'random-tip' || github.event.inputs.task_type == 'all'
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check API Health
+        run: |
+          echo "🔍 Checking API health..."
+          curl -f ${{ secrets.API_URL }}/health || exit 1
+
+      - name: Push Random Tip
+        run: |
+          echo "💡 Running random tip push..."
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "${{ secrets.API_URL }}/api/cron/push-random-tip" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Failed with status $http_code"
+            exit 1
+          fi
+          echo "✅ Random tip push completed"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "📊 Random tip summary:"
+          echo "- Random tip: ${{ steps.tip.outcome || 'completed' }}"

@@ -41,63 +41,59 @@ const ensureDBConnection = async () => {
 // ✅ OPTIMIZATION 2: Configure passport once
 configurePassport(passport);
 
-// ✅ OPTIMIZATION 3: Lazy load routes to reduce cold start
-// Routes are loaded on first request, not on function initialization
-const getRoutes = () => {
-  if (!app._routesLoaded) {
-    const phaseRoutes = require("../routes/phaseRoutes");
-    const taskRoutes = require("../routes/taskRoutes");
-    const weddingEventRoutes = require("../routes/weddingEventRoutes");
-    const weddingCostumeRoutes = require("../routes/weddingCostumeRoutes");
-    const userSelectionRoutes = require("../routes/userSelectionRoutes");
-    const groupActivityRoutes = require("../routes/groupActivityRoutes");
-    const activityRoutes = require("../routes/activityRoutes");
-    const authRoutes = require("../routes/authRoutes");
-    const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
-    const publicRoutes = require("../routes/publicRoutes");
-    const templateRoutes = require("../routes/templateRoutes");
-    const paymentRoutes = require("../routes/paymentRoutes");
-    const feedbackRoutes = require("../routes/feedbackRoutes");
-    const postRoutes = require("../routes/postRoutes");
-    const commentRoutes = require("../routes/commentRoutes");
-    const uploadRoutes = require("../routes/uploadRoutes");
-    const guestRoutes = require("../routes/guestRoutes");
-    const topicGroupRoutes = require("../routes/topicGroupRoutes");
-    const albumRoutes = require("../routes/albumRoutes");
-    const voteRoutes = require("../routes/voteRoutes");
-    const ratingRoutes = require("../routes/ratingRoutes");
-    const savedPostRoutes = require("../routes/savedPostRoutes");
-    const notificationRoutes = require("../routes/notificationRoutes");
-    const cronRoutes = require("../routes/cronRoutes");
+// ✅ OPTIMIZATION 3: Load routes once at initialization
+// Since cold start always requires loading routes anyway, do it eagerly
+const loadRoutes = () => {
+  const phaseRoutes = require("../routes/phaseRoutes");
+  const taskRoutes = require("../routes/taskRoutes");
+  const weddingEventRoutes = require("../routes/weddingEventRoutes");
+  const weddingCostumeRoutes = require("../routes/weddingCostumeRoutes");
+  const userSelectionRoutes = require("../routes/userSelectionRoutes");
+  const groupActivityRoutes = require("../routes/groupActivityRoutes");
+  const activityRoutes = require("../routes/activityRoutes");
+  const authRoutes = require("../routes/authRoutes");
+  const invitationLetterRoutes = require("../routes/invitationLetterRoutes");
+  const publicRoutes = require("../routes/publicRoutes");
+  const templateRoutes = require("../routes/templateRoutes");
+  const paymentRoutes = require("../routes/paymentRoutes");
+  const feedbackRoutes = require("../routes/feedbackRoutes");
+  const postRoutes = require("../routes/postRoutes");
+  const commentRoutes = require("../routes/commentRoutes");
+  const uploadRoutes = require("../routes/uploadRoutes");
+  const guestRoutes = require("../routes/guestRoutes");
+  const topicGroupRoutes = require("../routes/topicGroupRoutes");
+  const albumRoutes = require("../routes/albumRoutes");
+  const voteRoutes = require("../routes/voteRoutes");
+  const ratingRoutes = require("../routes/ratingRoutes");
+  const savedPostRoutes = require("../routes/savedPostRoutes");
+  const notificationRoutes = require("../routes/notificationRoutes");
+  const cronRoutes = require("../routes/cronRoutes");
 
-    // Register routes
-    app.use("/auth", authRoutes);
-    app.use("/phases", phaseRoutes);
-    app.use("/tasks", taskRoutes);
-    app.use("/weddingEvents", weddingEventRoutes);
-    app.use("/wedding-costume", weddingCostumeRoutes);
-    app.use("/user-selections", userSelectionRoutes);
-    app.use("/groupActivities", groupActivityRoutes);
-    app.use("/activities", activityRoutes);
-    app.use("/invitation", invitationLetterRoutes);
-    app.use("/inviletter", publicRoutes);
-    app.use("/templates", templateRoutes);
-    app.use("/payments", paymentRoutes);
-    app.use("/feedback", feedbackRoutes);
-    app.use("/posts", postRoutes);
-    app.use("/comments", commentRoutes);
-    app.use("/upload", uploadRoutes);
-    app.use("/guests", guestRoutes);
-    app.use("/topic-groups", topicGroupRoutes);
-    app.use("/albums", albumRoutes);
-    app.use("/votes", voteRoutes);
-    app.use("/ratings", ratingRoutes);
-    app.use("/saved-posts", savedPostRoutes);
-    app.use("/notifications", notificationRoutes);
-    app.use("/api/cron", cronRoutes);
-
-    app._routesLoaded = true;
-  }
+  // Register routes
+  app.use("/auth", authRoutes);
+  app.use("/phases", phaseRoutes);
+  app.use("/tasks", taskRoutes);
+  app.use("/weddingEvents", weddingEventRoutes);
+  app.use("/wedding-costume", weddingCostumeRoutes);
+  app.use("/user-selections", userSelectionRoutes);
+  app.use("/groupActivities", groupActivityRoutes);
+  app.use("/activities", activityRoutes);
+  app.use("/invitation", invitationLetterRoutes);
+  app.use("/inviletter", publicRoutes);
+  app.use("/templates", templateRoutes);
+  app.use("/payments", paymentRoutes);
+  app.use("/feedback", feedbackRoutes);
+  app.use("/posts", postRoutes);
+  app.use("/comments", commentRoutes);
+  app.use("/upload", uploadRoutes);
+  app.use("/guests", guestRoutes);
+  app.use("/topic-groups", topicGroupRoutes);
+  app.use("/albums", albumRoutes);
+  app.use("/votes", voteRoutes);
+  app.use("/ratings", ratingRoutes);
+  app.use("/saved-posts", savedPostRoutes);
+  app.use("/notifications", notificationRoutes);
+  app.use("/api/cron", cronRoutes);
 };
 
 // ✅ MIDDLEWARE: Must be before routes
@@ -159,11 +155,8 @@ app.get("/", (req, res) => {
   });
 });
 
-// ✅ Lazy load routes on first request (not at startup)
-app.use((req, res, next) => {
-  getRoutes();
-  next();
-});
+// ✅ Load all routes once at startup (after middleware, before error handler)
+loadRoutes();
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;

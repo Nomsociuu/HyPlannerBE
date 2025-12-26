@@ -36,7 +36,7 @@ jobs:
       - name: Check API Health
         run: |
           echo "🔍 Checking API health..."
-          curl -f ${{ secrets.API_URL }}/health || exit 1
+          curl -f ${{ secrets.API_URL }}/ || exit 1
 
       - name: Wedding Date Notifications
         run: |
@@ -152,7 +152,7 @@ jobs:
       - name: Check API Health
         run: |
           echo "🔍 Checking API health..."
-          curl -f ${{ secrets.API_URL }}/health || exit 1
+          curl -f ${{ secrets.API_URL }}/ || exit 1
 
       - name: Task Deadline Check (Evening)
         run: |
@@ -229,7 +229,7 @@ jobs:
       - name: Check API Health
         run: |
           echo "🔍 Checking API health..."
-          curl -f ${{ secrets.API_URL }}/health || exit 1
+          curl -f ${{ secrets.API_URL }}/ || exit 1
 
       - name: Push Random Tip
         run: |

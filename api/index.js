@@ -149,10 +149,7 @@ app.use(async (req, res, next) => {
   }
 });
 
-// ✅ Load routes once before handling any request
-getRoutes();
-
-// Health check endpoint
+// Health check endpoint - define first to avoid being overridden
 app.get("/", (req, res) => {
   res.json({
     status: "✅ API is running",
@@ -160,6 +157,12 @@ app.get("/", (req, res) => {
     uptime: process.uptime(),
     db: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
   });
+});
+
+// ✅ Lazy load routes on first request (not at startup)
+app.use((req, res, next) => {
+  getRoutes();
+  next();
 });
 
 const errorHandler = (err, req, res, next) => {

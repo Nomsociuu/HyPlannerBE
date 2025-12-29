@@ -5,17 +5,17 @@ const routes = require("express").Router();
 routes.get("/getActivity/:activityId", activityController.getActivity);
 routes.post(
   "/createActivity/:groupActivityId",
-  authMiddleware,
+  authMiddleware.protect,
   activityController.createActivity
 );
 routes.put(
   "/updateActivity/:activityId",
-  authMiddleware,
+  authMiddleware.protect,
   activityController.updateActivity
 );
 routes.delete(
   "/deleteActivity/:activityId",
-  authMiddleware,
+  authMiddleware.protect,
   activityController.deleteActivity
 );
 

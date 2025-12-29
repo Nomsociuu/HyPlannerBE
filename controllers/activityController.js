@@ -86,16 +86,19 @@ exports.updateActivity = async (req, res) => {
       return res.status(404).json({ message: "Hoạt động không tồn tại" });
     }
 
-    // Check if user is creator
+    // Check if user is creator or has edit permission
     const event = await WeddingEvent.findOne({
       groupActivities: groupActivity._id,
-      creatorId: userId,
+      $or: [
+        { creatorId: userId },
+        { "sharers.userId": userId, "sharers.permission": "edit" },
+      ],
     });
 
     if (!event) {
       return res
         .status(403)
-        .json({ message: "Chỉ người tạo mới có quyền sửa ngân sách" });
+        .json({ message: "Bạn không có quyền chỉnh sửa ngân sách này" });
     }
 
     const updatedActivity = await activity.findByIdAndUpdate(
@@ -107,14 +110,16 @@ exports.updateActivity = async (req, res) => {
         actualBudget,
         payer,
       },
-      { new: true }
+      { new: true, runValidators: true }
     );
     if (!updatedActivity) {
       return res.status(404).json({ message: "Hoạt động không tồn tại" });
     }
     res.json(updatedActivity);
   } catch (error) {
-    res.status(500).json({ message: "Lỗi khi cập nhật hoạt động" });
+    console.error("Error updating activity:", error);
+    const errorMessage = error.message || "Lỗi khi cập nhật hoạt động";
+    res.status(500).json({ message: errorMessage, error: error.toString() });
   }
 };
 

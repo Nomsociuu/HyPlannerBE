@@ -111,9 +111,11 @@ exports.markCompleted = async (req, res) => {
   const { completed } = req.body;
 
   try {
-    const updatedTask = await task
-      .findByIdAndUpdate(taskId, { completed }, { new: true })
-      .populate("phase");
+    const updatedTask = await task.findByIdAndUpdate(
+      taskId,
+      { completed },
+      { new: true }
+    );
 
     if (!updatedTask) {
       return res.status(404).json({ message: "Công việc không tồn tại" });
@@ -133,33 +135,39 @@ exports.markCompleted = async (req, res) => {
 
     // Tạo notification khi task được hoàn thành
     if (completed && updatedTask.member && updatedTask.member.length > 0) {
-      const weddingEvent = await WeddingEvent.findOne({
-        phases: updatedTask.phase._id,
-      });
+      // Tìm phase chứa task này
+      const Phase = require("../models/Phase");
+      const phase = await Phase.findOne({ tasks: taskId });
 
-      if (weddingEvent) {
-        // Notify all wedding event members (except task assignee)
-        for (const memberId of weddingEvent.member) {
-          if (!updatedTask.member.includes(memberId)) {
-            try {
-              await notificationController.createNotification({
-                userId: memberId,
-                weddingEventId: weddingEvent._id,
-                type: "task_completed",
-                title: "✅ Công việc hoàn thành",
-                message: `Công việc "${updatedTask.taskName}" đã được hoàn thành!`,
-                data: {
-                  taskId: updatedTask._id,
-                  taskName: updatedTask.taskName,
-                  phaseId: updatedTask.phase._id,
-                },
-                priority: "low",
-              });
-            } catch (error) {
-              console.error(
-                "Error creating task completion notification:",
-                error
-              );
+      if (phase) {
+        const weddingEvent = await WeddingEvent.findOne({
+          phases: phase._id,
+        });
+
+        if (weddingEvent) {
+          // Notify all wedding event members (except task assignee)
+          for (const memberId of weddingEvent.member) {
+            if (!updatedTask.member.includes(memberId)) {
+              try {
+                await notificationController.createNotification({
+                  userId: memberId,
+                  weddingEventId: weddingEvent._id,
+                  type: "task_completed",
+                  title: "✅ Công việc hoàn thành",
+                  message: `Công việc "${updatedTask.taskName}" đã được hoàn thành!`,
+                  data: {
+                    taskId: updatedTask._id,
+                    taskName: updatedTask.taskName,
+                    phaseId: phase._id,
+                  },
+                  priority: "low",
+                });
+              } catch (error) {
+                console.error(
+                  "Error creating task completion notification:",
+                  error
+                );
+              }
             }
           }
         }
@@ -173,7 +181,11 @@ exports.markCompleted = async (req, res) => {
       }`,
     });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi khi cập nhật trạng thái công việc" });
+    console.error("Mark Task Completed Error:", error.message);
+    res.status(500).json({
+      message: "Lỗi khi cập nhật trạng thái công việc",
+      error: error.message,
+    });
   }
 };
 

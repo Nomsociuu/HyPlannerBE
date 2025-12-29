@@ -75,6 +75,11 @@ exports.updateActivity = async (req, res) => {
   const { activityId } = req.params;
   const { activityName, activityNote, expectedBudget, actualBudget, payer } =
     req.body;
+
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ message: "Vui lòng đăng nhập để tiếp tục" });
+  }
+
   const userId = req.user._id;
 
   try {
